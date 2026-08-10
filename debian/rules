@@ -1,0 +1,9 @@
+#!/usr/bin/make -f
+
+export PYBUILD_NAME=styler-linux
+
+%:
+	dh $@ --buildsystem=pybuild
+
+override_dh_auto_test:
+	PYTHONPATH=. python3 -m pytest -q

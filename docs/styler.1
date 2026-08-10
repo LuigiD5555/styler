@@ -1,0 +1,61 @@
+.TH STYLER 1 "August 2026" "Styler 0.9.1" "User Commands"
+.SH NAME
+styler \- build, apply and remove reproducible Linux changes
+.SH SYNOPSIS
+.B styler
+.br
+.B styler change
+.I ACTION
+.br
+.B styler constructor
+.I ACTION
+.br
+.B styler baseline
+.I ACTION
+.br
+.B styler package
+.I ACTION
+.SH DESCRIPTION
+Styler provides a catalog of semantic Linux changes and a unified Change Constructor. The constructor selects a baseline, detects applications and visual resources, synthesizes an internal recipe, compiles a PipeCraft DAG, and exports the result.
+.PP
+The only portable file extension is
+.BR .stylerpkg .
+A package may contain either a baseline or a change, as declared by its manifest.
+.SH COMMANDS
+.TP
+.B styler change --help
+Plan, integrate, or remove catalog changes.
+.TP
+.B styler constructor --help
+Scan the system, build an automatic plan, and export a change package.
+.TP
+.B styler baseline --help
+Capture, select, import, export, repair, or delete baselines.
+.TP
+.B styler package --help
+Inspect, import, export, or delete .stylerpkg files. Change packages are applied from the change command, not directly from package management.
+
+.SH CONSTRUCTOR EXIT STATUS
+.B styler constructor export
+returns 0 when every selected element was included. It returns 1 when a package was created with omissions; each omission is printed as an
+.B OMITIDO
+line with its reason.
+
+.SH BUILT-IN YAML CHANGES
+Styler 0.9.1 can load built-in declarative YAML changes and compile them to the same PipeCraft workflow used by the Changes interface. AppImageLauncher and Affinity for Linux are the first two built-in YAML changes. Affinity depends on AppImageLauncher; selecting Affinity composes both definitions automatically. The bundled provider is limited to Ubuntu/Debian-family x86_64 systems. Before downloading AppImageLauncher, Styler checks the YAML-declared ail-cli capability and reuses an existing installation when available.
+
+.SH FILES
+.TP
+.I ~/.local/share/styler
+Default Styler library.
+.TP
+.I ~/.local/share/styler/.styler
+Internal state, runs, receipts, baselines, and indexes.
+.SH SAFETY
+Importing a package never executes it. Execution requires an explicit plan and approval.
+
+.SH BASELINE CATALOG AUTHORING
+The Tools constructor can export the selected baseline as-is, or prepare a separate official catalog candidate. The latter requires explicit confirmation that the capture came from a clean installation and leaves the local custom baseline unchanged. Place the resulting .stylerpkg in styler/baselines/catalog/ before building a later release.
+
+.SH IDENTIFICADORES DE PAQUETE
+Al crear paquetes, Styler normaliza automáticamente el texto humano a un identificador seguro. La validación de paquetes importados permanece estricta.

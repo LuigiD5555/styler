@@ -1,0 +1,99 @@
+# Capacidades de escritorio. El perfil guarda la INTENCIÓN (environment_id);
+# aquí vive cómo se satisface en cada familia y cómo se comprueba.
+
+[[capability]]
+id = "kde-plasma"
+identity = "org.kde.plasma"
+title = "KDE Plasma"
+verify_executables = ["plasmashell"]
+guide = "https://kde.org/distributions/"
+version_policy = "latest"          # si ya está, se pide la versión más reciente
+
+  [[capability.provider]]
+  family = "ubuntu"
+  manager = "apt"
+  package = "kde-plasma-desktop"
+
+  [[capability.provider]]
+  family = "debian"
+  manager = "apt"
+  package = "kde-standard"
+
+  [[capability.provider]]
+  family = "arch"
+  manager = "pacman"
+  package = "plasma-meta"
+
+  [[capability.provider]]
+  family = "fedora"
+  manager = "dnf"
+  package = "@kde-desktop"
+
+  [[capability.provider]]
+  family = "suse"
+  manager = "zypper"
+  package = "patterns-kde-kde_plasma"
+
+[[capability]]
+id = "xfce"
+identity = "org.xfce.xfce"
+title = "Xfce"
+verify_executables = ["xfce4-session"]
+version_policy = "present"
+
+  [[capability.provider]]
+  family = "ubuntu"
+  manager = "apt"
+  package = "xfce4"
+
+  [[capability.provider]]
+  family = "debian"
+  manager = "apt"
+  package = "xfce4"
+
+  [[capability.provider]]
+  family = "arch"
+  manager = "pacman"
+  package = "xfce4"
+
+  [[capability.provider]]
+  family = "fedora"
+  manager = "dnf"
+  package = "@xfce-desktop"
+
+  [[capability.provider]]
+  family = "suse"
+  manager = "zypper"
+  package = "patterns-xfce-xfce"
+
+[[capability]]
+id = "gnome"
+identity = "org.gnome.Shell"
+title = "GNOME"
+verify_executables = ["gnome-shell"]
+version_policy = "present"
+
+  [[capability.provider]]
+  family = "ubuntu"
+  manager = "apt"
+  package = "ubuntu-desktop"
+
+  [[capability.provider]]
+  family = "debian"
+  manager = "apt"
+  package = "gnome"
+
+  [[capability.provider]]
+  family = "arch"
+  manager = "pacman"
+  package = "gnome"
+
+  [[capability.provider]]
+  family = "fedora"
+  manager = "dnf"
+  package = "@gnome-desktop"
+
+  [[capability.provider]]
+  family = "suse"
+  manager = "zypper"
+  package = "patterns-gnome-gnome"

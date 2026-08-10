@@ -1,0 +1,117 @@
+styler (0.9.1-1) unstable; urgency=medium
+
+  * Reutiliza AppImageLauncher cuando ail-cli ya está instalado.
+  * Evita descargar o reinstalar el proveedor al integrar Affinity.
+
+ -- Styler contributors <noreply@example.invalid>  Mon, 10 Aug 2026 10:55:00 -0600
+
+styler (0.9.0-1) unstable; urgency=medium
+
+  * Añade catálogo de cambios incorporados definidos en YAML.
+  * AppImageLauncher y Affinity para Linux se componen como DAG declarativos.
+  * Añade primitivas genéricas para GitHub Releases, paquetes locales y AppImage.
+  * Affinity reutiliza AppImageLauncher como dependencia y usa el mismo flujo de Cambios/PipeCraft.
+  * Verifica assets de release mediante SHA-256 y restringe el proveedor incluido a APT x86_64.
+
+ -- Styler contributors <noreply@example.invalid>  Mon, 10 Aug 2026 04:35:00 +0000
+
+styler (0.8.3-1) unstable; urgency=medium
+
+  * Solicita autorización administrativa antes de ejecutar DAG que requieren root.
+  * Mantiene vigente la credencial sudo durante integraciones largas.
+  * Los fallos de comandos muestran salida real, comando, código técnico y log durable.
+  * Los resultados fallidos distinguen la reversión de efectos parciales.
+  * El DAG de PhotoGIMP y los DAG importados permanecen sin cambios.
+
+ -- Styler contributors <noreply@example.invalid>  Sun, 09 Aug 2026 21:40:00 +0000
+
+styler (0.8.2-1) unstable; urgency=medium
+
+  * El Constructor vuelve a Detección después de crear un paquete.
+  * Los cambios ya empaquetados no reaparecen mientras su estado siga idéntico.
+  * Un cambio vuelve a aparecer si su versión/contenido cambia o se elimina su paquete local.
+
+ -- Styler contributors <noreply@example.invalid>  Sun, 09 Aug 2026 21:20:00 +0000
+
+styler (0.8.1-1) unstable; urgency=medium
+
+  * Las baselines precargadas son defaults por identidad de distribución y plataforma, nunca un default global.
+  * La baseline incluida de Linux Mint se limita a 22.3, XFCE, X11, stable y x86_64.
+  * El catálogo retira baselines oficiales empacadas que ya no pertenecen a la versión instalada.
+
+ -- Styler contributors <noreply@example.com>  Sun, 09 Aug 2026 20:28:00 +0000
+
+styler (0.8.0-1) unstable; urgency=medium
+
+  * Incluye una línea base oficial precargada para Linux Mint 22.3 XFCE X11 x86_64.
+  * La línea base compatible se registra desde el catálogo incluido y queda disponible como recomendación predeterminada.
+
+ -- Styler contributors <noreply@example.invalid>  Sun, 09 Aug 2026 20:20:00 +0000
+
+styler (0.7.6-1) unstable; urgency=medium
+
+  * Los DAG de .stylerpkg vuelven a mostrar la acción de integración en Cambios.
+  * Seleccionar Configurar ya no condiciona la posibilidad de integrar un DAG portable.
+  * Los cambios locales importados o creados por el Constructor pueden eliminarse desde Cambios.
+  * Eliminado el estado mostrar/ocultar de paquetes: un paquete registrado aparece; para quitarlo se elimina.
+  * Eliminar una fuente disponible no deshace efectos ya aplicados; los recibos de retiro se conservan.
+
+ -- Styler contributors <noreply@example.invalid>  Sun, 09 Aug 2026 20:00:00 +0000
+
+styler (0.7.5-1) unstable; urgency=medium
+
+  * Separada la selección de una línea base de su activación.
+  * Una línea base puede seleccionarse para exportar, eliminar o inspeccionar sin cambiar el punto de comparación activo.
+  * Añadida la acción explícita «Usar esta» para activar la línea base seleccionada.
+
+ -- Styler contributors <noreply@example.com>  Sun, 09 Aug 2026 16:00:00 +0000
+
+styler (0.7.4-1) unstable; urgency=medium
+
+  * Los DAG de paquetes .stylerpkg de tipo change aparecen en Cambios junto a
+    PhotoGIMP y usan el mismo flujo de revisión, integración y retiro.
+  * Importar o crear un paquete ya no ofrece una segunda ruta de ejecución.
+  * El DAG portable se conserva sin recompilar ni reordenar sus nodos.
+  * Se elimina la ruta pública separada `styler package plan/run`.
+  * Paquetes guardados indica explícitamente si el paquete es visible en Cambios.
+
+ -- Styler contributors <noreply@example.com>  Sat, 08 Aug 2026 21:00:00 -0600
+
+styler (0.7.3-1) unstable; urgency=medium
+
+  * Normaliza automáticamente nombres humanos usados como identificadores al
+    crear paquetes: mayúsculas, espacios y acentos dejan de bloquear el flujo.
+  * La validación de .stylerpkg importados continúa siendo estricta; solo la
+    autoría local realiza normalización.
+
+ -- Styler contributors <noreply@example.com>  Sat, 08 Aug 2026 17:20:00 -0600
+
+styler (0.7.2-1) unstable; urgency=medium
+
+  * Evita el fallo de Textual None.region al hacer clic en filas del Constructor.
+  * Permite exportar una línea base personalizada sin bloquear la selección.
+  * Añade exportación explícita de candidatas para el catálogo oficial sin
+    modificar la línea base personalizada local.
+
+ -- Styler contributors <noreply@example.com>  Thu, 06 Aug 2026 18:15:00 +0000
+
+styler (0.7.1-1) unstable; urgency=medium
+
+  * Constructor de cambios convertido en asistente de cuatro pasos con un solo
+    botón primario y bloqueo por paso.
+  * El plan informa qué elementos se omitieron y por qué; exportar con
+    omisiones exige confirmación explícita.
+  * Selector de archivos nativo (kdialog/zenity) en lugar de rutas escritas.
+  * Corregido DuplicateIds latente al reconstruir las listas del constructor.
+  * El inventario se lee una vez por sesión; build_package deja de sintetizar
+    la receta dos veces.
+
+ -- Styler contributors <noreply@example.com>  Thu, 06 Aug 2026 09:45:00 +0000
+
+styler (0.7.0-1) unstable; urgency=medium
+
+  * Unify Herramientas in the Change Constructor.
+  * Use .stylerpkg as the only portable format.
+  * Generate a semantic recipe and deterministic DAG from detected changes.
+
+ -- Styler contributors <noreply@example.invalid>  Thu, 06 Aug 2026 01:07:00 -0600

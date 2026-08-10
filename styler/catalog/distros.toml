@@ -1,0 +1,21 @@
+# Familias de distribuciones. Añadir una distribución nueva NO requiere tocar
+# Python: basta con añadirla aquí (o en un catálogo propio del usuario).
+[families.ubuntu]
+members = ["ubuntu", "linuxmint", "pop", "elementary", "zorin", "neon"]
+native_manager = "apt"
+
+[families.debian]
+members = ["debian", "raspbian", "devuan"]
+native_manager = "apt"
+
+[families.arch]
+members = ["arch", "manjaro", "endeavouros", "garuda", "cachyos"]
+native_manager = "pacman"
+
+[families.fedora]
+members = ["fedora", "rhel", "centos", "rocky", "almalinux", "nobara"]
+native_manager = "dnf"
+
+[families.suse]
+members = ["opensuse", "opensuse-tumbleweed", "opensuse-leap", "sles", "suse"]
+native_manager = "zypper"

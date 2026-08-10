@@ -1,0 +1,5 @@
+#!/bin/sh
+set -eu
+styler --help >/dev/null
+styler doctor >/dev/null
+python3 -c 'import styler; print(styler.__version__)'

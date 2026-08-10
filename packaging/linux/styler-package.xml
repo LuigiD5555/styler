@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="application/x-styler-package">
+    <comment>Paquete de Styler</comment>
+    <comment xml:lang="en">Styler package</comment>
+    <glob pattern="*.stylerpkg"/>
+    <sub-class-of type="application/zip"/>
+  </mime-type>
+</mime-info>

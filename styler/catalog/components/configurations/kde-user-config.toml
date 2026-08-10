@@ -1,0 +1,33 @@
+schema_version = 1
+id = "config.kde.user"
+name = "Configuración de usuario KDE"
+kind = "configuration"
+description = "Aplica personalización de usuario sobre un KDE Plasma ya instalado y verificado. No copia archivos si KDE no está disponible."
+
+requires = ["desktop.kde.verified"]
+optional_requires = []
+
+provides = ["config.kde.applicable"]
+
+conflicts = []
+criticality = "optional"
+
+[resources]
+exclusive = ["user-config:kde"]
+shared = []
+
+# Ruta real del recurso: aquí sí es fija (no depende del proveedor de KDE).
+[resources.paths]
+"user-config:kde" = "${HOME}/.config"
+
+[verification]
+checks = ["marker:config-kde-user"]
+
+[rollback]
+level = "full"
+strategy = "restore_user_config"
+
+[compatibility]
+wayland = "inherits_dependency"
+xwayland = "inherits_dependency"
+x11 = "inherits_dependency"

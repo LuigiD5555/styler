@@ -1,0 +1,13 @@
+# Remotos de Flatpak que Styler puede añadir por su cuenta: oficiales y firmados.
+# Cualquier otro se declara y se detiene; Styler no instala confianza ajena.
+[[remote]]
+name = "flathub"
+manager = "flatpak"
+url = "https://dl.flathub.org/repo/flathub.flatpakrepo"
+official = true
+
+[[remote]]
+name = "flathub-beta"
+manager = "flatpak"
+url = "https://flathub.org/beta-repo/flathub-beta.flatpakrepo"
+official = true

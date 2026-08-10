@@ -1,0 +1,40 @@
+# Equivalencias conocidas de aplicaciones entre gestores.
+#
+# NO es una lista obligatoria: si una aplicación no aparece aquí, Styler la
+# DESCUBRE preguntándole al gestor del equipo destino (pacman -Si, dnf list,
+# apt-cache policy, flatpak remote-info...). Este catálogo solo sirve para los
+# casos donde el nombre cambia entre distribuciones.
+[[application]]
+identity = "org.kde.krita"
+title = "Krita"
+names = { apt = "krita", pacman = "krita", dnf = "krita", zypper = "krita", flatpak = "org.kde.krita" }
+
+[[application]]
+identity = "org.gimp.GIMP"
+title = "GIMP"
+names = { apt = "gimp", pacman = "gimp", dnf = "gimp", zypper = "gimp", flatpak = "org.gimp.GIMP" }
+
+[[application]]
+identity = "org.kde.konsole"
+title = "Konsole"
+names = { apt = "konsole", pacman = "konsole", dnf = "konsole", zypper = "konsole", flatpak = "org.kde.konsole" }
+
+[[application]]
+identity = "org.kde.dolphin"
+title = "Dolphin"
+names = { apt = "dolphin", pacman = "dolphin", dnf = "dolphin", zypper = "dolphin", flatpak = "org.kde.dolphin" }
+
+[[application]]
+identity = "org.videolan.VLC"
+title = "VLC"
+names = { apt = "vlc", pacman = "vlc", dnf = "vlc", zypper = "vlc", flatpak = "org.videolan.VLC" }
+
+[[application]]
+identity = "org.mozilla.firefox"
+title = "Firefox"
+names = { apt = "firefox", pacman = "firefox", dnf = "firefox", zypper = "MozillaFirefox", flatpak = "org.mozilla.firefox" }
+
+[[application]]
+identity = "com.visualstudio.code"
+title = "Visual Studio Code"
+names = { apt = "code", pacman = "code", dnf = "code", flatpak = "com.visualstudio.code" }
