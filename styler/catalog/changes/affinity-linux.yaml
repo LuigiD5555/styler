@@ -1,0 +1,40 @@
+schema: styler.recipe/1
+recipe_id: affinity-linux
+name: Affinity para Linux
+description: Descarga Affinity Wine 10.10 AppImage y lo integra completamente en el escritorio.
+requires_changes: [appimagelauncher]
+metadata:
+  category: Creatividad · Affinity · AppImage
+  provider_label: DAG YAML incorporado
+  source_page: https://github.com/ryzendew/Linux-Affinity-Installer/releases/tag/Affinity-wine-10.10-Appimage
+  families: [ubuntu, debian]
+  architectures: [x86_64]
+operations:
+  - id: download
+    kind: release.fetch
+    title: Descargar Affinity AppImage
+    config:
+      source: github
+      repository: ryzendew/Linux-Affinity-Installer
+      tag: Affinity-wine-10.10-Appimage
+      asset: Affinity-3-x86_64.AppImage
+      artifact_id: affinity-appimage
+      sha256: 87e5e0c4acbb9fda012feeab9ac7f7e8301ce2893e130244dca37fea350c55b6
+
+  - id: integrate
+    kind: appimage.integrate
+    title: Integrar Affinity al escritorio
+    needs: [download]
+    requires: [appimage.integration.ready]
+    config:
+      backend: appimagelauncher
+      artifact_id: affinity-appimage
+      filename: Affinity-3-x86_64.AppImage
+      name_hint: Affinity
+
+  - id: verify
+    kind: appimage.verify
+    title: Verificar la integración de Affinity
+    needs: [integrate]
+    config:
+      name_hint: Affinity

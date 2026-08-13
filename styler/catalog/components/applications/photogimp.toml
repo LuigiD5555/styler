@@ -1,0 +1,50 @@
+schema_version = 1
+id = "app.photogimp"
+name = "PhotoGIMP"
+kind = "application_overlay"
+description = "Adaptación visual y de configuración para GIMP."
+
+requires = ["app.gimp.verified"]
+optional_requires = []
+
+provides = [
+  "app.photogimp.installed",
+  "app.gimp.photoshop_layout",
+]
+
+# Optional = el resolutor puede omitir este componente de un plan mayor.
+# NO significa que sus pasos puedan fallar en silencio: un componente pedido
+# explícitamente compila siempre con pasos obligatorios.
+criticality = "optional"
+
+# PhotoGIMP es un overlay XDG: su carpeta .config/GIMP se aplica siempre sobre
+# ~/.config/GIMP y su carpeta .local sobre ~/.local. El compilador fija ese
+# destino sin heredarlo del sandbox del proveedor de GIMP.
+[resources]
+exclusive = ["user-config:gimp"]
+shared = ["network"]
+
+# 'source' es el respaldo verificable, no la versión que se instala. El paso
+# de integración resuelve la publicación vigente del repositorio oficial y solo
+# usa esta URL cuando la API de GitHub no responde. Así se cumple el "descarga
+# la última release" del instructivo sin depender de un servicio externo.
+[providers.archive]
+type = "archive"
+families = ["*"]
+source = "https://github.com/Diolinux/PhotoGIMP/releases/download/3.0/PhotoGIMP-linux.zip"
+priority = 100
+
+[verification]
+checks = [
+  "directory:user-config:gimp",
+  "marker:photogimp",
+]
+
+[rollback]
+level = "full"
+strategy = "restore_user_config"
+
+[compatibility]
+wayland = "inherits_dependency"
+xwayland = "inherits_dependency"
+x11 = "inherits_dependency"

@@ -1,0 +1,44 @@
+schema_version = 1
+id = "app.vlc"
+name = "VLC"
+kind = "application"
+description = "Reproductor multimedia. Rama independiente: no depende de GIMP ni de PhotoGIMP."
+
+requires = []
+optional_requires = []
+
+provides = [
+  "app.vlc.installed",
+  "app.vlc.verified",
+]
+
+conflicts = []
+criticality = "optional"
+
+[resources]
+exclusive = ["apt", "dpkg"]
+shared = ["network"]
+
+[providers.ubuntu_apt]
+type = "apt"
+families = ["ubuntu", "debian"]
+packages = ["vlc"]
+priority = 100
+
+[providers.flatpak]
+type = "flatpak"
+families = ["*"]
+application_id = "org.videolan.VLC"
+priority = 80
+
+[verification]
+checks = ["executable:vlc"]
+
+[rollback]
+level = "best_effort"
+strategy = "provider_remove"
+
+[compatibility]
+wayland = "supported"
+xwayland = "supported"
+x11 = "supported"

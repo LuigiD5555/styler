@@ -1,0 +1,11 @@
+# Servidores oficiales de APT. Un host que no esté aquí se considera de un
+# tercero: Styler lo declara y se detiene, nunca instala su llave.
+official_hosts = [
+  "archive.ubuntu.com",
+  "security.ubuntu.com",
+  "ports.ubuntu.com",
+  "deb.debian.org",
+  "security.debian.org",
+  "packages.linuxmint.com",
+  "archive.raspberrypi.org",
+]

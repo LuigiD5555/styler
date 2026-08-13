@@ -1,0 +1,43 @@
+schema: styler.recipe/1
+recipe_id: appimagelauncher
+name: AppImageLauncher
+description: Integra aplicaciones AppImage en el escritorio mediante AppImageLauncher.
+metadata:
+  category: Sistema · AppImage · Integración
+  provider_label: DAG YAML incorporado
+  source_page: https://github.com/TheAssassin/AppImageLauncher/releases
+  families: [ubuntu, debian]
+  architectures: [x86_64]
+operations:
+  - id: download
+    kind: release.fetch
+    title: Descargar AppImageLauncher
+    config:
+      source: github
+      repository: TheAssassin/AppImageLauncher
+      tag: v3.0.0-beta-3
+      asset: appimagelauncher_3.0.0-beta-2-gha287.96cb937_amd64.deb
+      artifact_id: appimagelauncher-deb
+      sha256: 4117552105968a8011955d065b5fd55f547a2ed21dac1fe0a046ee9b60220c36
+      satisfied_by:
+        executable: ail-cli
+
+  - id: install
+    kind: package.install_artifact
+    title: Instalar AppImageLauncher
+    needs: [download]
+    config:
+      manager: apt
+      package_name: appimagelauncher
+      artifact_id: appimagelauncher-deb
+      filename: appimagelauncher_3.0.0-beta-2-gha287.96cb937_amd64.deb
+      satisfied_by:
+        executable: ail-cli
+
+  - id: verify
+    kind: executable.verify
+    title: Verificar AppImageLauncher
+    needs: [install]
+    provides: [appimage.integration.ready]
+    config:
+      executable: ail-cli

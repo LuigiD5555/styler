@@ -1,0 +1,61 @@
+# Gestores adicionales que hay que instalar antes de las aplicaciones.
+
+[[capability]]
+id = "flatpak"
+title = "Gestor Flatpak"
+verify_executables = ["flatpak"]
+
+  [[capability.provider]]
+  family = "ubuntu"
+  manager = "apt"
+  package = "flatpak"
+
+  [[capability.provider]]
+  family = "debian"
+  manager = "apt"
+  package = "flatpak"
+
+  [[capability.provider]]
+  family = "arch"
+  manager = "pacman"
+  package = "flatpak"
+
+  [[capability.provider]]
+  family = "fedora"
+  manager = "dnf"
+  package = "flatpak"
+
+  [[capability.provider]]
+  family = "suse"
+  manager = "zypper"
+  package = "flatpak"
+
+[[capability]]
+id = "snap"
+title = "Gestor Snap"
+verify_executables = ["snap"]
+
+  [[capability.provider]]
+  family = "ubuntu"
+  manager = "apt"
+  package = "snapd"
+
+  [[capability.provider]]
+  family = "debian"
+  manager = "apt"
+  package = "snapd"
+
+  [[capability.provider]]
+  family = "arch"
+  manager = "pacman"
+  package = "snapd"
+
+  [[capability.provider]]
+  family = "fedora"
+  manager = "dnf"
+  package = "snapd"
+
+  [[capability.provider]]
+  family = "suse"
+  manager = "zypper"
+  package = "snapd"

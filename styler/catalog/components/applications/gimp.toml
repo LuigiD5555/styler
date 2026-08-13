@@ -1,0 +1,89 @@
+schema_version = 1
+id = "app.gimp"
+name = "GIMP"
+kind = "application"
+description = "Editor de imágenes."
+capability_alias = "application.gimp"
+
+requires = []
+optional_requires = []
+
+provides = [
+  "app.gimp.installed",
+  "app.gimp.verified",
+]
+
+conflicts = []
+criticality = "required"
+
+[resources]
+exclusive = ["apt", "dpkg"]
+shared = ["network"]
+
+[providers.apt]
+type = "apt"
+families = ["ubuntu", "debian"]
+packages = ["gimp"]
+config_root = "${HOME}/.config/GIMP"
+priority = 100
+
+[providers.pacman]
+type = "pacman"
+families = ["arch"]
+packages = ["gimp"]
+config_root = "${HOME}/.config/GIMP"
+priority = 100
+
+[providers.aur]
+type = "aur"
+families = ["arch"]
+packages = ["gimp"]
+config_root = "${HOME}/.config/GIMP"
+priority = 70
+
+[providers.rpm]
+type = "rpm"
+families = ["fedora"]
+packages = ["gimp"]
+config_root = "${HOME}/.config/GIMP"
+priority = 100
+
+[providers.zypper]
+type = "zypper"
+families = ["suse"]
+packages = ["gimp"]
+config_root = "${HOME}/.config/GIMP"
+priority = 100
+
+[providers.flatpak]
+type = "flatpak"
+families = ["*"]
+application_id = "org.gimp.GIMP"
+config_root = "${HOME}/.var/app/org.gimp.GIMP/config/GIMP"
+priority = 80
+
+[providers.snap]
+type = "snap"
+families = ["*"]
+packages = ["gimp"]
+config_root = "${HOME}/snap/gimp/current/.config/GIMP"
+priority = 60
+
+[providers.appimage]
+type = "appimage"
+families = ["*"]
+packages = ["GIMP"]
+config_root = "${HOME}/.config/GIMP"
+priority = 40
+
+[verification]
+checks = ["executable:gimp"]
+
+[rollback]
+level = "best_effort"
+strategy = "provider_remove"
+
+[compatibility]
+wayland = "wayland_limited"
+xwayland = "supported"
+x11 = "supported"

@@ -1,0 +1,61 @@
+schema_version = 1
+id = "app.konsole"
+name = "Konsole"
+kind = "application"
+description = "Terminal de KDE."
+capability_alias = "application.konsole"
+
+requires = []
+provides = ["app.konsole.installed", "app.konsole.verified"]
+criticality = "optional"
+
+[resources]
+exclusive = ["apt", "dpkg"]
+shared = ["network"]
+
+[providers.apt]
+type = "apt"
+families = ["ubuntu", "debian"]
+packages = ["konsole"]
+config_root = "${HOME}/.local/share/konsole"
+priority = 100
+
+[providers.pacman]
+type = "pacman"
+families = ["arch"]
+packages = ["konsole"]
+config_root = "${HOME}/.local/share/konsole"
+priority = 100
+
+[providers.rpm]
+type = "rpm"
+families = ["fedora"]
+packages = ["konsole"]
+config_root = "${HOME}/.local/share/konsole"
+priority = 100
+
+[providers.zypper]
+type = "zypper"
+families = ["suse"]
+packages = ["konsole"]
+config_root = "${HOME}/.local/share/konsole"
+priority = 100
+
+[providers.flatpak]
+type = "flatpak"
+families = ["*"]
+application_id = "org.kde.konsole"
+config_root = "${HOME}/.var/app/org.kde.konsole"
+priority = 80
+
+[verification]
+checks = ["executable:konsole"]
+
+[rollback]
+level = "best_effort"
+strategy = "provider_remove"
+
+[compatibility]
+wayland = "supported"
+xwayland = "supported"
+x11 = "supported"

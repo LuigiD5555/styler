@@ -1,0 +1,62 @@
+schema_version = 1
+id = "desktop.kde.plasma"
+name = "KDE Plasma"
+kind = "desktop_environment"
+description = "Entorno de escritorio KDE Plasma."
+capability_alias = "desktop.kde-plasma"
+
+requires = []
+optional_requires = []
+
+provides = [
+  "desktop.kde.installed",
+  "desktop.kde.verified",
+  "session.kde.available",
+  "session.kde.wayland.candidate",
+  "session.kde.x11.fallback",
+]
+
+conflicts = []
+criticality = "required"
+
+[resources]
+exclusive = ["apt", "dpkg", "display-manager", "session-manager"]
+shared = ["filesystem:/etc"]
+
+# El primer paquete es el que se INSTALA; los demás son nombres alternativos
+# que deben RECONOCERSE si el sistema ya los tiene.
+[providers.apt]
+type = "apt"
+families = ["ubuntu", "debian"]
+packages = ["kde-plasma-desktop", "kde-standard", "kubuntu-desktop", "plasma-desktop", "plasma-workspace"]
+priority = 100
+
+[providers.pacman]
+type = "pacman"
+families = ["arch"]
+packages = ["plasma-meta", "plasma-desktop", "plasma-workspace"]
+priority = 100
+
+[providers.rpm]
+type = "rpm"
+families = ["fedora"]
+packages = ["plasma-desktop", "plasma-workspace"]
+priority = 100
+
+[providers.zypper]
+type = "zypper"
+families = ["suse"]
+packages = ["patterns-kde-kde_plasma", "plasma6-desktop"]
+priority = 100
+
+[verification]
+checks = ["executable:plasmashell"]
+
+[rollback]
+level = "best_effort"
+strategy = "provider_remove"
+
+[compatibility]
+wayland = "supported"
+xwayland = "supported"
+x11 = "supported"
