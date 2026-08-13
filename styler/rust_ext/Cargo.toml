@@ -1,0 +1,18 @@
+[package]
+name = "styler_rust"
+version = "0.6.7"
+edition = "2021"
+
+[lib]
+name = "styler_rust"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.22", features = ["extension-module"] }
+walkdir = "2.5"
+blake2 = "0.10"
+rayon = "1.10"
+
+[profile.release]
+lto = true
+codegen-units = 1
