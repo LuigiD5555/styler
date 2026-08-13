@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Styler
+Comment=Integra cambios reproducibles y verificables en Linux
+Exec=styler %f
+TryExec=styler
+Icon=preferences-desktop-theme
+Terminal=true
+Categories=Settings;Utility;
+MimeType=application/x-styler-package;
+Keywords=cambios;integración;Linux;PhotoGIMP;configuración;

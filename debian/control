@@ -1,0 +1,30 @@
+Source: styler
+Section: utils
+Priority: optional
+Maintainer: Styler contributors <noreply@example.invalid>
+Build-Depends:
+ debhelper-compat (= 13),
+ dh-sequence-python3,
+ pybuild-plugin-pyproject,
+ python3-all,
+ python3-setuptools,
+ python3-wheel,
+ python3-pytest,
+ python3-pytest-asyncio,
+ python3-textual (>= 0.89.1),
+ python3-yaml
+Standards-Version: 4.7.2
+Rules-Requires-Root: no
+
+Package: styler
+Architecture: all
+Depends:
+ ${misc:Depends},
+ ${python3:Depends},
+ python3-textual (>= 0.89.1),
+ python3-yaml
+Recommends: kdialog | zenity, python3-pyatspi
+Description: integrate semantic, reproducible changes on Linux
+ Styler resolves complete changes into visible pipelines with providers,
+ backups, verification, live PipeCraft process output and rollback information.
+ Every external command is executed through the single PipeCraft runtime boundary.
