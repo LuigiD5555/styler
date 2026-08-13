@@ -1,0 +1,125 @@
+# ============================================================
+# Python
+# ============================================================
+
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Python build / packaging artifacts
+/build/
+/dist/
+*.egg-info/
+.eggs/
+*.whl
+
+# Tests / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.hypothesis/
+
+# Linters / type checkers
+.mypy_cache/
+.ruff_cache/
+.pytype/
+.pyre/
+.tox/
+.nox/
+
+
+# ============================================================
+# Rust
+# ============================================================
+
+# Cargo build output
+**/target/
+
+# IMPORTANTE:
+# No ignorar Cargo.lock.
+# Styler es una aplicación y conviene fijar las versiones
+# exactas de las dependencias Rust.
+
+
+# ============================================================
+# Styler runtime / generated data
+# ============================================================
+
+# Biblioteca local de paquetes importados por Styler.
+# Es estado del usuario, no código fuente.
+/portable-packages/
+
+# Logs generados durante pruebas o ejecución
+*.log
+
+# Archivos temporales
+*.tmp
+*.temp
+*.bak
+*~
+
+
+# ============================================================
+# Linux package build artifacts
+# ============================================================
+
+# Debian
+*.deb
+*.udeb
+*.ddeb
+*.changes
+*.buildinfo
+*.dsc
+
+/debian/.debhelper/
+/debian/files
+/debian/*.substvars
+/debian/tmp/
+/debian/styler/
+
+# RPM
+*.rpm
+*.src.rpm
+
+# Arch / makepkg generated packages
+*.pkg.tar.zst
+*.pkg.tar.xz
+
+
+# ============================================================
+# Local development configuration
+# ============================================================
+
+.env
+.env.*
+!.env.example
+
+# Local-only GitHub Actions overrides
+/.github/workflows/*.local.yml
+
+
+# ============================================================
+# Editors / IDEs
+# ============================================================
+
+.idea/
+.vscode/
+
+*.swp
+*.swo
+
+
+# ============================================================
+# Operating system metadata
+# ============================================================
+
+.DS_Store
+Thumbs.db
+.directory

@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "styler-linux"
+version = "0.9.10"
+description = "Integra cambios semánticos, reproducibles y reversibles en Linux"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{name = "Styler contributors"}]
+dependencies = [
+    "textual>=0.89.1,<9",
+    "PyYAML>=6.0,<7",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "textual-dev",
+]
+
+[project.scripts]
+styler = "styler.launcher:main"
+styler-engine-bridge = "styler.engine_cli:main"
+
+[tool.setuptools.packages.find]
+include = ["styler*"]
+exclude = ["styler_before_v04*"]
+
+[tool.setuptools.package-data]
+"styler.tui" = ["styles/*.tcss"]
+# catalog/*.toml    -> catálogo de mundo (distros, escritorios, gestores)
+# catalog/components -> catálogo declarativo de componentes (0.13): los TOML
+#   están anidados por tipo (applications/, desktops/...) y traen assets
+#   (incluidos archivos ocultos como .photogimp-marker), así que hace falta
+#   el glob recursivo. Sin esto el wheel se instalaría sin catálogo.
+"styler" = [
+    "baselines/catalog/*.stylerpkg",
+    "catalog/*.toml",
+    "catalog/changes/*.yaml",
+    "catalog/components/*.toml",
+    "catalog/components/**/*.toml",
+    "catalog/components/assets/**/*",
+    "catalog/components/assets/**/.*",
+]

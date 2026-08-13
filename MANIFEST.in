@@ -1,0 +1,13 @@
+include LICENSE NOTICE README.md
+include docs/STYLER.md
+include docs/styler.1
+include scripts/build-rust-engine.sh
+recursive-include rust/styler-engine Cargo.toml *.rs
+recursive-include styler/rust_ext Cargo.toml *.rs
+include rust-toolchain.toml
+include scripts/verify-rust-plan.py
+
+recursive-include styler/baselines/catalog *.stylerpkg
+include scripts/capture-official-baseline.sh
+
+recursive-include styler/catalog/changes *.yaml
