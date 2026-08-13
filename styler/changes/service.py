@@ -1,4 +1,4 @@
-"""Servicio de cambios semánticos de Styler Reinvented 0.9.10.
+"""Servicio de cambios semánticos de Styler Reinvented 0.9.11.
 
 PhotoGIMP es el primer cambio completamente descrito. La implementación
 reutiliza el catálogo, el resolver, el compilador y el motor DAG existentes,

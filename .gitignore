@@ -111,6 +111,7 @@ coverage.xml
 
 .idea/
 .vscode/
+.lh
 
 *.swp
 *.swo

@@ -1,5 +1,5 @@
-# Styler Reinvented 0.9.10
-En 0.9.10, Styler protege el registro de cambios frente a fallos de almacenamiento: si `change-records.json` no puede escribirse, el DAG no arranca; si el sistema de archivos se vuelve de solo lectura durante una ejecución, Styler distingue el fallo de persistencia del resultado real del DAG, detiene los lotes y guarda un diagnóstico de emergencia fuera de la biblioteca.
+# Styler Reinvented 0.9.11
+En 0.9.11, Styler protege el registro de cambios frente a fallos de almacenamiento: si `change-records.json` no puede escribirse, el DAG no arranca; si el sistema de archivos se vuelve de solo lectura durante una ejecución, Styler distingue el fallo de persistencia del resultado real del DAG, detiene los lotes y guarda un diagnóstico de emergencia fuera de la biblioteca.
 
 La pantalla **Cambios** usa ahora la fila completa como selector. Un clic sobre cualquier parte de un cambio disponible lo añade o quita de la selección, y el único botón inferior de integración se adapta al contexto: con un elemento mantiene el flujo individual; con varios cambia a `Integrar lote (N)`. Se elimina así la casilla pequeña y el segundo botón específico para lotes.
 

@@ -1,5 +1,5 @@
 Name:           styler
-Version:        0.9.10
+Version:        0.9.11
 Release:        1%{?dist}
 Summary:        Integrate semantic, reproducible changes on Linux
 License:        Apache-2.0
@@ -58,7 +58,7 @@ command -v update-desktop-database >/dev/null 2>&1 && update-desktop-database %{
 %{_mandir}/man1/styler.1*
 
 %changelog
-* Mon Aug 10 2026 Styler contributors <noreply@example.invalid> - 0.9.10-1
+* Mon Aug 10 2026 Styler contributors <noreply@example.invalid> - 0.9.11-1
 - Refleja visualmente la selección múltiple de Cambios.
 
 * Mon Aug 10 2026 Styler contributors <noreply@example.invalid> - 0.9.7-1

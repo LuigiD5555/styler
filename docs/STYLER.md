@@ -1,7 +1,7 @@
-# Styler 0.9.10
+# Styler 0.9.11
 
 
-## Cambio 0.9.10
+## Cambio 0.9.11
 
 Styler valida que su registro de estado sea escribible antes de ejecutar un DAG y diferencia un error de almacenamiento del fallo del cambio. Si el registro se vuelve de solo lectura después de producir efectos, el lote se detiene, los recibos se conservan y se genera un diagnóstico de emergencia en `/tmp`.
 

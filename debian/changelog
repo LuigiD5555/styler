@@ -1,4 +1,4 @@
-styler (0.9.10-1) unstable; urgency=medium
+styler (0.9.11-1) unstable; urgency=medium
 
   * Guard change execution against read-only state storage.
   * Preserve DAG outcome and recovery diagnostics when state persistence fails.

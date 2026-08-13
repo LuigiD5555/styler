@@ -87,7 +87,7 @@ def _fake_python_that_builds_venvs(path: Path, *, fail_install: bool = False) ->
     install_branch = "exit 31" if fail_install else r"""
         cat > "$(dirname "$0")/styler" <<'STYLER'
 #!/usr/bin/env bash
-if [[ "${1:-}" == "--version" ]]; then echo 'Styler 0.9.10'; exit 0; fi
+if [[ "${1:-}" == "--version" ]]; then echo 'Styler 0.9.11'; exit 0; fi
 exit 0
 STYLER
         chmod +x "$(dirname "$0")/styler"
@@ -142,7 +142,7 @@ def test_installer_activates_only_a_fully_verified_staged_installation(tmp_path)
         capture_output=True,
         env=env,
     )
-    assert "0.9.10" in installed.stdout
+    assert "0.9.11" in installed.stdout
     assert not list((tmp_path / "data").glob("styler-install.*"))
 
 
@@ -409,7 +409,7 @@ def test_installer_creates_immediate_bridge_in_active_conda_path(tmp_path):
         capture_output=True,
     )
     assert resolved.stdout.splitlines()[0] == str(bridge)
-    assert "0.9.10" in resolved.stdout
+    assert "0.9.11" in resolved.stdout
 
 
 def test_uninstaller_removes_only_recorded_managed_bridge(tmp_path):
@@ -509,7 +509,7 @@ def test_installer_immediate_command_with_plain_python_and_system_path(tmp_path)
         capture_output=True,
     )
     assert resolved.stdout.splitlines()[0] == str(bridge)
-    assert "0.9.10" in resolved.stdout
+    assert "0.9.11" in resolved.stdout
 
 
 def test_installer_reuses_generic_user_bin_without_conda(tmp_path):
@@ -541,4 +541,4 @@ def test_installer_reuses_generic_user_bin_without_conda(tmp_path):
         capture_output=True,
     )
     assert resolved.stdout.splitlines()[0] == str(bridge)
-    assert "0.9.10" in resolved.stdout
+    assert "0.9.11" in resolved.stdout
