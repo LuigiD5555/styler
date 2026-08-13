@@ -1,0 +1,267 @@
+/* ----------------------------------------------------------------- botones */
+
+Button {
+    min-width: 12;
+    margin: 0 1 0 0;
+}
+
+Button.-primary,
+Button.-error {
+    border: none;
+}
+
+Button:disabled {
+    background: $surface;
+    color: $text-disabled;
+    border: none;
+    opacity: 60%;
+}
+
+/* El azul es la acción siguiente. Nada más. */
+Button.secondary {
+    background: $panel;
+    color: $text;
+    border: none;
+}
+
+Button.secondary:hover {
+    background: $surface;
+    color: $text;
+}
+
+/* Rojo solo donde algo se pierde. */
+Button.danger {
+    background: $panel;
+    color: $error;
+    border: none;
+}
+
+Button.danger:hover {
+    background: $error;
+    color: $text;
+}
+
+/* ------------------------------------------------------------------ estados */
+
+.badge-ok { color: $success; }
+.badge-review { color: $warning; }
+.badge-blocked { color: $error; }
+
+/* ------------------------------------------------------------------- filas */
+
+.selection-row {
+    padding: 0 1;
+}
+
+.selection-row:disabled {
+    color: $text-muted;
+}
+
+.history-name {
+    text-style: bold;
+    color: $text;
+}
+
+.history-meta {
+    color: $text-muted;
+}
+
+/* ----------------------------------------------------------------- modales */
+
+ModalScreen {
+    align: center middle;
+}
+
+.modal {
+    width: 68;
+    max-width: 92%;
+    height: auto;
+    max-height: 90%;
+    border: none;
+    background: $surface;
+    padding: 1 2;
+}
+
+.modal.tall {
+    height: 90%;
+}
+
+.modal.danger {
+    border-left: thick $error;
+}
+
+.modal-title {
+    text-style: bold;
+    padding: 0 0 1 0;
+}
+
+.modal-body { padding: 0 0 1 0; }
+.modal-recovery { color: $text-muted; padding: 0 0 1 0; }
+.modal-actions {
+    align: right middle;
+    height: 3;
+    min-height: 3;
+    padding: 0;
+    margin: 1 0 0 0;
+}
+
+.modal-scroll {
+    height: 1fr;
+    overflow-y: auto;
+}
+
+.modal-illustration {
+    color: $text-muted;
+    text-align: center;
+    padding: 0 0 1 0;
+}
+
+.technical {
+    color: $text-muted;
+    background: $background;
+    padding: 1;
+    max-height: 8;
+    overflow-y: auto;
+}
+
+/* ----------------------------------------------------------- ayuda visual */
+
+.help-modal {
+    width: 76;
+    height: 90%;
+    padding: 1;
+}
+
+.help-heading {
+    height: 2;
+    align: left middle;
+}
+
+.help-heading .modal-title {
+    width: 12;
+    padding: 0;
+}
+
+.help-instruction {
+    width: 1fr;
+    color: $text-muted;
+}
+
+.help-layout {
+    height: 1fr;
+}
+
+.help-index {
+    width: 26;
+    min-width: 22;
+    height: 1fr;
+    background: $background;
+    margin: 0 1 0 0;
+}
+
+.help-index ListView {
+    height: 1fr;
+    padding: 0;
+}
+
+.help-detail {
+    width: 1fr;
+    height: 1fr;
+    background: $panel;
+    padding: 1;
+}
+
+.help-illustration {
+    color: $text-muted;
+    text-align: center;
+    padding: 0;
+    min-height: 2;
+}
+
+.help-title {
+    text-style: bold;
+    color: $text;
+    padding: 0;
+}
+
+.help-summary,
+.help-example {
+    color: $text;
+    padding: 0;
+}
+
+.help-example-label {
+    text-style: bold;
+    color: $text-muted;
+}
+
+/* Filas semánticas de Styler Reinvented. */
+.change-row {
+    height: auto;
+    min-height: 5;
+    padding: 1 2;
+    margin: 0 0 1 0;
+    border-left: thick $surface;
+}
+
+.change-row.integrated {
+    border-left: thick $success;
+}
+
+.change-row.prepared,
+.change-row.needs_attention {
+    border-left: thick $warning;
+}
+
+.change-row.failed {
+    border-left: thick $error;
+}
+
+.change-name {
+    height: 1;
+    color: $text;
+    text-style: bold;
+}
+
+.change-meta {
+    height: 1;
+    color: $primary;
+}
+
+.change-category {
+    height: 1;
+    color: $text-muted;
+}
+
+.change-row-heading {
+    height: 2;
+    min-height: 2;
+    align: left middle;
+}
+
+.change-row-heading .change-name {
+    width: 1fr;
+    height: 2;
+    content-align: left middle;
+}
+
+/* La fila completa es el control de selección. El estado no depende de un
+   checkbox pequeño: borde, fondo y badge muestran qué cambios están elegidos. */
+.change-row.batch-selected {
+    border-left: thick $success;
+    background: $panel;
+}
+
+.change-row.batch-selected .change-name {
+    color: $success;
+}
+
+.batch-selected-badge {
+    width: 16;
+    min-width: 16;
+    height: 2;
+    content-align: left middle;
+    color: $success;
+    text-style: bold;
+    margin: 0 1 0 0;
+}

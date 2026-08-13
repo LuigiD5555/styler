@@ -1,0 +1,833 @@
+/* --------------------------------------------------------------- navegación */
+
+.nav {
+    dock: top;
+    height: 3;
+    background: $surface;
+    padding: 0 1;
+    align: left middle;
+}
+
+.nav-brand {
+    color: $text-muted;
+    text-style: bold;
+    width: 8;
+    padding: 1 1 0 1;
+}
+
+/* Cinco secciones × 12 columnas + marca ≈ 70: cabe en 80 columnas. */
+.nav-item {
+    background: $surface;
+    color: $text-muted;
+    border: none;
+    height: 3;
+    min-width: 12;
+    margin: 0;
+}
+
+.nav-item:hover {
+    background: $panel;
+    color: $text;
+}
+
+.nav-item.active {
+    background: $panel;
+    color: $text;
+    text-style: bold;
+}
+
+.nav-help {
+    width: 3;
+    min-width: 3;
+    height: 3;
+    margin: 0;
+    background: $surface;
+    color: $text-muted;
+    border: none;
+}
+
+.nav-help:hover,
+.nav-help:focus {
+    background: $panel;
+    color: $text;
+}
+
+/* -------------------------------------------------------------------- inicio */
+
+.hero {
+    height: auto;
+    background: $panel;
+    padding: 0 2;
+    margin: 1 0 0 0;
+}
+
+.hero-illustration {
+    width: 1fr;
+    height: 2;
+    color: $text-muted;
+    content-align: center middle;
+    text-align: center;
+}
+
+.hero-content {
+    height: auto;
+    align: left middle;
+}
+
+.hero-copy {
+    width: 1fr;
+    height: auto;
+    padding: 0;
+}
+
+.hero-action {
+    width: 18;
+    height: 3;
+    align: right middle;
+}
+
+.hero-title {
+    text-style: bold;
+    color: $text;
+}
+
+.hero-description {
+    color: $text-muted;
+    padding: 0 0 1 0;
+}
+
+.tiles {
+    height: auto;
+    layout: grid;
+    grid-size: 3;
+    grid-gutter: 1 2;
+    grid-rows: 8;
+    padding: 0 0 1 0;
+}
+
+.tile {
+    height: auto;
+    background: $surface;
+    padding: 1;
+}
+
+.tile:focus-within {
+    background: $panel;
+}
+
+.tile-value {
+    color: $text;
+    height: 2;
+}
+
+.tile-icon {
+    color: $primary;
+    text-style: bold;
+    height: 1;
+}
+
+.undo-strip {
+    layout: horizontal;
+    height: auto;
+    background: $panel;
+    border-left: thick $warning;
+    padding: 0 2;
+    margin: 1 0 0 0;
+}
+
+.undo-text {
+    width: 1fr;
+    padding: 1 0;
+    color: $text;
+}
+
+/* --------------------------------------------------------------- recopilar */
+
+RadioSet {
+    background: $surface;
+    border: none;
+    padding: 1 2;
+    margin: 1 0 0 0;
+    height: auto;
+    width: 1fr;
+}
+
+.scope-layout {
+    height: auto;
+    min-height: 8;
+    margin: 1 0 0 0;
+}
+
+.scope-layout RadioSet {
+    width: 1fr;
+    margin: 0 1 0 0;
+}
+
+.scope-preview {
+    width: 34;
+    min-width: 28;
+    height: auto;
+    background: $panel;
+    padding: 0 1;
+}
+
+#scope-illustration {
+    color: $text-muted;
+    height: 4;
+}
+
+.preview-title {
+    text-style: bold;
+    color: $text;
+    padding: 0;
+}
+
+.preview-text {
+    color: $text-muted;
+}
+
+.selection {
+    height: 1fr;
+    width: 1fr;
+    background: $surface;
+    padding: 1 2;
+    margin: 0 1 0 0;
+}
+
+.selection-layout {
+    height: 1fr;
+    min-height: 9;
+    margin: 1 0 0 0;
+}
+
+.selection-layout .detail {
+    width: 38;
+    min-width: 30;
+    height: 1fr;
+    max-height: 100%;
+    margin: 0;
+}
+
+.category {
+    text-style: bold;
+    color: $text;
+    background: $panel;
+    padding: 0 1;
+    margin: 1 0 0 0;
+}
+
+/* ------------------------------------------------------------------- listas */
+
+ListView {
+    background: $surface;
+    border: none;
+    height: 1fr;
+    padding: 1;
+}
+
+.scroller {
+    height: 1fr;
+}
+
+.history-row,
+.profile-row {
+    padding: 0 1;
+    border-left: thick $surface;
+}
+
+.history-row.undoable {
+    border-left: thick $success;
+}
+
+.empty-state {
+    padding: 2 4;
+    color: $text-muted;
+    background: $surface;
+    height: 1fr;
+    content-align: center middle;
+    text-align: center;
+}
+
+#origins-empty {
+    height: 1fr;
+}
+
+#origins-search {
+    margin: 1 0 0 0;
+}
+
+#origins-scroller.tall-scroller {
+    min-height: 14;
+    height: 2fr;
+}
+
+#origins-detail {
+    max-height: 7;
+}
+
+/* ----------------------------------------------------------------- importar */
+
+.dropzone {
+    height: auto;
+    background: $surface;
+    border: none;
+    padding: 1 2;
+    margin: 1 0;
+    align: center middle;
+}
+
+.dropzone-text {
+    color: $text-muted;
+    text-align: center;
+    padding: 0;
+}
+
+/* --------------------------------------------------------------- formularios */
+
+Input {
+    margin: 1 0 0 0;
+    border: tall $surface;
+    background: $surface;
+}
+
+Input:focus {
+    border: tall $primary;
+}
+
+ProgressBar {
+    margin: 1 0;
+}
+
+.option-card {
+    height: auto;
+    background: $surface;
+    padding: 1 2;
+    margin: 0 0 1 0;
+}
+
+.option-card:focus-within {
+    background: $panel;
+}
+
+.option-hint {
+    color: $text-muted;
+    padding: 0 0 0 2;
+}
+
+/* ------------------------------------------- progreso de restauración en vivo */
+
+.apply-progress-page {
+    height: 1fr;
+}
+
+#stage-count {
+    color: $text-muted;
+    height: 1;
+}
+
+.process-details {
+    height: 1fr;
+    min-height: 12;
+    margin: 1 0 0 0;
+    padding: 1 2;
+    background: $surface;
+    border: tall $panel;
+}
+
+.process-activity {
+    height: 1;
+    color: $success;
+    text-style: bold;
+}
+
+.process-command {
+    height: auto;
+    max-height: 3;
+    margin: 1 0;
+    color: $text;
+    background: $panel;
+    padding: 0 1;
+}
+
+#live-log {
+    height: 1fr;
+    min-height: 7;
+    background: $background;
+    border: none;
+    padding: 0 1;
+}
+
+#progress-note,
+#log-path {
+    height: auto;
+    max-height: 2;
+}
+
+/* ================================================= Styler Reinvented 0.1 */
+
+.changes-page {
+    height: 1fr;
+}
+
+.changes-heading {
+    height: auto;
+    min-height: 4;
+    align: left middle;
+}
+
+.changes-heading-copy {
+    width: 1fr;
+    height: auto;
+}
+
+.version-badge {
+    width: 18;
+    height: 3;
+    content-align: center middle;
+    background: $panel;
+    color: $primary;
+    text-style: bold;
+}
+
+.changes-columns {
+    height: 1fr;
+    min-height: 12;
+    margin: 1 0 0 0;
+}
+
+.change-column {
+    width: 1fr;
+    height: 1fr;
+    background: $surface;
+    padding: 1;
+}
+
+.column-title {
+    text-style: bold;
+    color: $text;
+    height: 1;
+}
+
+.column-subtitle {
+    color: $text-muted;
+    height: 2;
+}
+
+.change-column ListView {
+    height: 1fr;
+    padding: 0;
+    margin: 1 0 0 0;
+}
+
+.transfer-column {
+    width: 10;
+    min-width: 8;
+    height: 1fr;
+    align: center middle;
+    content-align: center middle;
+}
+
+.transfer-arrow {
+    width: 1fr;
+    height: 3;
+    text-align: center;
+    content-align: center middle;
+    color: $primary;
+    text-style: bold;
+}
+
+.transfer-label {
+    width: 1fr;
+    height: 2;
+    text-align: center;
+    color: $text-muted;
+}
+
+.change-detail-panel {
+    height: auto;
+    min-height: 9;
+    background: $panel;
+    padding: 1 2;
+    margin: 1 0 0 0;
+}
+
+.detail-title {
+    height: 1;
+    color: $text;
+    text-style: bold;
+}
+
+.detail-body {
+    height: auto;
+    max-height: 7;
+    color: $text;
+}
+
+.change-warning {
+    height: auto;
+    max-height: 6;
+    border-left: thick $warning;
+    background: $surface;
+    color: $warning;
+    padding: 1 2;
+    margin: 1 0 0 0;
+}
+
+.clean-state {
+    height: 1fr;
+    content-align: center middle;
+    text-align: center;
+    color: $text-muted;
+    padding: 2;
+}
+
+.provider-modal RadioSet {
+    margin: 0;
+}
+
+.provider-description {
+    height: auto;
+    color: $text-muted;
+    padding: 0 1 1 4;
+}
+
+.provider-consequence {
+    height: auto;
+    background: $panel;
+    padding: 1 2;
+    margin: 1 0 0 0;
+}
+
+.phase-review-list {
+    height: 1fr;
+    min-height: 12;
+    background: $surface;
+    padding: 1;
+}
+
+.phase-review-row {
+    height: auto;
+    min-height: 4;
+    padding: 1;
+    margin: 0 0 1 0;
+    background: $panel;
+}
+
+.phase-number {
+    width: 5;
+    color: $primary;
+    text-style: bold;
+}
+
+.phase-review-copy {
+    width: 1fr;
+    height: auto;
+}
+
+.phase-name,
+.technical-tool-title {
+    color: $text;
+    text-style: bold;
+}
+
+.phase-description,
+.technical-tool-description {
+    color: $text-muted;
+}
+
+.phase-weight {
+    width: 7;
+    color: $text-muted;
+    text-align: right;
+}
+
+.reinvented-progress-page {
+    height: 1fr;
+    padding: 1 4;
+}
+
+.progress-brand {
+    height: 2;
+    color: $primary;
+    text-style: bold;
+}
+
+.live-phase {
+    height: 2;
+    color: $text;
+    text-style: bold;
+}
+
+.live-operation {
+    height: auto;
+    min-height: 2;
+    color: $text-muted;
+}
+
+.progress-percent {
+    height: 1;
+    color: $primary;
+    text-style: bold;
+    text-align: right;
+}
+
+.phase-progress-label {
+    height: 1;
+    color: $text-muted;
+}
+
+#change-observability {
+    height: 1fr;
+    min-height: 14;
+    margin: 1 0 0 0;
+}
+
+.phase-status-list {
+    width: 34%;
+    height: 1fr;
+    min-height: 12;
+    background: $surface;
+    padding: 1 2;
+    margin: 0 1 0 0;
+    overflow-y: auto;
+}
+
+#change-process-details {
+    width: 1fr;
+    height: 1fr;
+    min-height: 12;
+    background: $surface;
+    border: tall $panel;
+    padding: 1 2;
+}
+
+#change-process-activity {
+    height: 1;
+    color: $success;
+    text-style: bold;
+}
+
+#change-process-command {
+    height: auto;
+    max-height: 3;
+    margin: 1 0;
+    padding: 0 1;
+    background: $panel;
+    color: $text;
+}
+
+#change-live-log {
+    height: 1fr;
+    min-height: 7;
+    background: $background;
+    border: none;
+    padding: 0 1;
+}
+
+#change-log-path {
+    height: auto;
+    max-height: 2;
+    color: $text-muted;
+}
+
+.progress-message {
+    height: auto;
+    min-height: 2;
+    color: $text-muted;
+    padding: 1 0 0 0;
+}
+
+.result-details,
+.handoff-path {
+    height: auto;
+    max-height: 12;
+    overflow-y: auto;
+    background: $surface;
+    padding: 1 2;
+    margin: 1 0 0 0;
+}
+
+.technical-tool-list {
+    height: auto;
+    margin: 1 0 0 0;
+}
+
+.technical-tool-row {
+    height: auto;
+    min-height: 5;
+    background: $surface;
+    padding: 1 2;
+    margin: 0 0 1 0;
+    align: left middle;
+}
+
+.technical-tool-copy {
+    width: 1fr;
+    height: auto;
+}
+
+/* ================================================================= *
+ * Constructor de cambios (pestaña Herramientas) — 0.7.1             *
+ * Todo va anclado a .constructor-page para no afectar Cambios ni    *
+ * Actividad, que dependen de las reglas genéricas de arriba.        *
+ * ================================================================= */
+
+.constructor-page {
+    height: 1fr;
+}
+
+.constructor-page .constructor-tabs {
+    align: left middle;
+}
+
+.constructor-page .constructor-tabs .active-tab {
+    text-style: bold;
+    border-bottom: tall $primary;
+}
+
+.constructor-page .constructor-chips {
+    height: 3;
+    margin: 1 0 1 0;
+}
+
+.constructor-page .step-chip {
+    width: 1fr;
+    height: 3;
+    content-align: center middle;
+    background: $surface;
+    color: $text-muted;
+    border-left: thick $surface;
+    margin: 0 1 0 0;
+}
+
+.constructor-page .step-chip.done {
+    color: $success;
+    border-left: thick $success;
+}
+
+.constructor-page .step-chip.current {
+    background: $panel;
+    color: $text;
+    text-style: bold;
+    border-left: thick $primary;
+}
+
+.constructor-page .constructor-step {
+    height: 1fr;
+}
+
+.constructor-page ListView {
+    height: 1fr;
+    min-height: 6;
+    padding: 0;
+    margin: 1 0 0 0;
+}
+
+.constructor-page .selection-columns {
+    height: 1fr;
+}
+
+.constructor-page .selection-columns > Vertical {
+    width: 1fr;
+    margin: 0 1 0 0;
+}
+
+.constructor-page .constructor-row {
+    height: 2;
+    padding: 0 1;
+    margin: 0 0 1 0;
+    border-left: thick $surface;
+}
+
+.constructor-page .constructor-row.ready   { border-left: thick $success; }
+.constructor-page .constructor-row.review  { border-left: thick $warning; }
+.constructor-page .constructor-row.chosen  { border-left: thick $primary; }
+.constructor-page .constructor-row.muted   { border-left: thick $border; }
+
+.constructor-page .constructor-row.muted .row-name {
+    color: $text-muted;
+}
+
+.constructor-page .row-name {
+    height: 1;
+    text-style: bold;
+    color: $text;
+}
+
+.constructor-page .row-meta {
+    height: 1;
+    color: $text-muted;
+}
+
+.constructor-page .plan-report {
+    background: $surface;
+    border-left: thick $primary;
+    padding: 1 2;
+    margin: 1 0 0 0;
+    max-height: 12;
+    overflow-y: auto;
+    color: $text;
+}
+
+.constructor-page .step-actions {
+    height: 3;
+    align: right middle;
+    margin: 1 0 0 0;
+}
+
+.constructor-page #constructor-destination {
+    width: 1fr;
+}
+
+.constructor-page ProgressBar {
+    margin: 1 0 0 0;
+}
+
+/* 0.9.7 · selección múltiple y ejecución secuencial de cambios. */
+.change-batch-bar {
+    height: 3;
+    min-height: 3;
+    background: $surface;
+    padding: 0 1;
+    margin: 1 0 0 0;
+    align: left middle;
+}
+
+.batch-selection-summary {
+    width: 1fr;
+    height: 3;
+    content-align: left middle;
+    color: $text-muted;
+}
+
+.change-batch-bar Button {
+    width: auto;
+    min-width: 20;
+}
+
+.batch-review-list,
+.batch-result-list {
+    height: 1fr;
+    min-height: 12;
+}
+
+.batch-review-item {
+    height: auto;
+    padding: 1 2;
+    margin: 0 0 1 0;
+    background: $surface;
+    border-left: thick $primary;
+}
+
+.batch-dag-summary {
+    height: auto;
+    color: $text-muted;
+    margin: 1 0 0 0;
+}
+
+.batch-result-item {
+    height: auto;
+    padding: 1 2;
+    margin: 0 0 1 0;
+    background: $surface;
+}

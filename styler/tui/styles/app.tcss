@@ -1,0 +1,141 @@
+/* Identidad visual de Styler.
+
+   Cuatro niveles de profundidad, y solo cuatro:
+     1. Página        fondo general, sin borde
+     2. Zona          superficie sin borde: listas, textos, explicaciones
+     3. Tarjeta       superficie elevada; el borde aparece al enfocar
+     4. Estado        insignias cortas: Listo, Revisar, No reversible
+
+   El color primario está reservado para LA ACCIÓN SIGUIENTE. No para títulos,
+   no para bordes decorativos, no para cada etiqueta.                          */
+
+Screen {
+    background: $background;
+    color: $text;
+}
+
+.page {
+    padding: 0 2 1 2;
+    height: 1fr;
+    overflow-y: auto;
+}
+
+.brand {
+    text-style: bold;
+    color: $text;
+    padding: 1 0 0 0;
+}
+
+.tagline {
+    color: $text-muted;
+    padding: 0 0 1 0;
+}
+
+.page-title {
+    text-style: bold;
+    color: $text;
+    padding: 1 0 1 0;
+}
+
+.title-row {
+    height: 3;
+    align: left middle;
+}
+
+.title-row .page-title {
+    width: 1fr;
+    padding: 1 0 0 0;
+}
+
+.inline-help {
+    width: 3;
+    min-width: 3;
+    height: 3;
+    margin: 0;
+    background: $surface;
+    color: $text-muted;
+    border: none;
+}
+
+.inline-help:hover {
+    background: $panel;
+    color: $text;
+}
+
+.page-title.success { color: $success; }
+.page-title.warning { color: $warning; }
+
+.section-title {
+    text-style: bold;
+    color: $text-muted;
+    padding: 1 0 0 0;
+}
+
+/* Pasos del asistente: la persona debe saber cuánto le falta. */
+.steps {
+    color: $text-muted;
+    padding: 0;
+}
+
+/* Franja explicativa: dice qué hace Styler y, sobre todo, qué NO hace. */
+.reassurance {
+    color: $text-muted;
+    background: $surface;
+    padding: 0 2;
+    margin: 0;
+}
+
+.summary {
+    background: $surface;
+    padding: 1 2;
+    margin: 0 0 1 0;
+}
+
+.stage {
+    color: $text-muted;
+    padding: 0 0 1 0;
+}
+
+.totals {
+    padding: 1 0 0 0;
+    color: $text-muted;
+}
+
+/* Detalle bajo demanda: contexto sin ruido en la lista. */
+.detail {
+    background: $surface;
+    border-left: thick $border;
+    padding: 1 2;
+    margin: 1 0 0 0;
+    max-height: 10;
+    overflow-y: auto;
+    color: $text;
+}
+
+.visual-detail {
+    min-height: 8;
+}
+
+.actions {
+    height: 3;
+    min-height: 3;
+    align: right middle;
+    padding: 0;
+    margin: 1 0 0 0;
+}
+
+.form-illustration,
+.flow-illustration {
+    color: $text-muted;
+    background: $surface;
+    padding: 1 2;
+    margin: 0 0 1 0;
+    text-align: center;
+}
+
+.empty-hint {
+    color: $text-muted;
+    padding: 1 2;
+}
+
+.hidden { display: none; }
