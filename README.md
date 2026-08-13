@@ -1,85 +1,414 @@
 # Styler Reinvented 0.9.11
-En 0.9.11, Styler protege el registro de cambios frente a fallos de almacenamiento: si `change-records.json` no puede escribirse, el DAG no arranca; si el sistema de archivos se vuelve de solo lectura durante una ejecución, Styler distingue el fallo de persistencia del resultado real del DAG, detiene los lotes y guarda un diagnóstico de emergencia fuera de la biblioteca.
 
-La pantalla **Cambios** usa ahora la fila completa como selector. Un clic sobre cualquier parte de un cambio disponible lo añade o quita de la selección, y el único botón inferior de integración se adapta al contexto: con un elemento mantiene el flujo individual; con varios cambia a `Integrar lote (N)`. Se elimina así la casilla pequeña y el segundo botón específico para lotes.
+> **Convierte cambios hechos en Linux en paquetes que puedes revisar, reproducir, compartir y retirar.**
 
-En 0.9.8, la selección múltiple de **Cambios** quedó reflejada directamente en cada fila mediante borde y estado visual. La selección sigue usando una única fuente de estado para que la interfaz y el lote interno no se desincronicen.
+Styler busca que una personalización de Linux deje de ser una colección de pasos difíciles de recordar.  
+Los cambios se presentan en una sola interfaz, se revisan antes de integrarlos y pueden conservarse como paquetes `.stylerpkg`.
 
-Historial 0.9.7: En 0.9.7, PhotoGIMP deja de depender de timeouts totales rígidos durante operaciones largas. Las instalaciones de paquetes se vigilan por inactividad observable: mientras apt/flatpak sigan produciendo salida, Styler renueva la espera. La inicialización de GIMP elimina el límite exterior fijo de 150 s y las esperas de creación/guardado de configuración se prolongan mientras el árbol de archivos siga cambiando, con un techo amplio de seguridad para evitar bloqueos infinitos.
+<!--
+CAPTURA PRINCIPAL
+Guarda una captura como: docs/images/styler-overview.png
+y descomenta este bloque:
 
-Historial 0.9.6: En 0.9.6, **Cambios** permite marcar varias transformaciones y revisarlas como un solo lote. Styler las ordena de forma estable, adelanta dependencias YAML seleccionadas explícitamente, ejecuta cada DAG de manera secuencial y reconstruye el siguiente plan justo antes de ejecutarlo. Así los DAG importados conservan su identidad y sus recibos, mientras que capacidades ya satisfechas por un cambio anterior pueden reconciliarse sin repetir trabajo. Si un cambio falla, el lote se detiene antes de iniciar los siguientes y la pantalla final distingue lo completado, lo fallido y lo pendiente.
+<p align="center">
+  <img src="docs/images/styler-overview.png"
+       alt="Vista principal de Styler"
+       width="900">
+</p>
+-->
 
-En 0.9.5, `bash ./install.sh` publica el comando `styler` de forma inmediata sin depender de Conda. La instalación real continúa en `${XDG_BIN_HOME:-$HOME/.local/bin}`; si esa ruta aún no era visible, el instalador inspecciona el `PATH` heredado y reutiliza cualquier directorio `bin` seguro, escribible y perteneciente al usuario (por ejemplo `~/bin`, pyenv, venv o Conda). En una instalación normal con Python del sistema, usa `/usr/local/bin` como respaldo administrado cuando esa ruta ya está en el `PATH`. El puente solo delega al ejecutable real y `uninstall.sh` lo elimina únicamente si reconoce la marca de Styler.
+---
 
-Desde 0.9.3, el instalador construye Styler desde una **copia temporal limpia** del código en lugar de reutilizar la carpeta extraída por el usuario. Se excluyen `build/`, `dist/`, `*.egg-info`, cachés de Python y otros residuos de compilaciones anteriores. Esto evita que permisos o metadatos heredados de un ZIP anterior rompan la creación del wheel. La baseline oficial incluida se distribuye con permisos de lectura normales (`0644`).
+## ¿Qué puedes hacer con Styler?
 
-Antes de descargar AppImageLauncher, el DAG comprueba la capacidad declarada `ail-cli`. Si ya existe, los pasos de descarga e instalación se satisfacen sin red ni reinstalación; Affinity continúa usando ese proveedor existente.
+| | |
+|---|---|
+| **Cambios** | Ver, seleccionar, integrar y retirar cambios disponibles. |
+| **Actividad** | Consultar operaciones aplicadas y deshacer las que sean reversibles. |
+| **Herramientas** | Abrir el **Constructor de cambios** para detectar y empaquetar personalizaciones. |
+| **`.stylerpkg`** | Importar, inspeccionar, exportar o eliminar paquetes portables de Styler. |
 
-Affinity declara a AppImageLauncher como requisito. Al integrar Affinity, Styler compone ambos YAML en un solo DAG: instala/reutiliza AppImageLauncher, descarga el AppImage oficial de Affinity, lo integra mediante `ail-cli` y verifica la entrada de escritorio. Los assets están fijados por tag, nombre y SHA-256. Esta definición inicial se ofrece solo en familias APT (Ubuntu/Debian, incluido Linux Mint) y x86_64 porque el proveedor incorporado usa el `.deb` amd64 de AppImageLauncher y el AppImage x86_64 de Affinity.
+No necesitas conocer la estructura interna de un DAG para usar la interfaz principal.  
+La parte técnica sigue disponible más abajo para quien quiera profundizar.
 
+---
 
-En 0.8.3, los cambios que necesitan permisos administrativos piden autorización antes de iniciar el DAG. Si un comando falla, Styler conserva y muestra la causa real, el comando, el código técnico y el log durable en vez de reducir todo a «código 1». El DAG no se modifica para conseguirlo.
+## Cómo funciona
 
-En 0.8.3, terminar un paquete cierra el ciclo del Constructor: conserva la línea base, limpia selección/plan/campos y vuelve a **Detección**. Los estados ya empaquetados dejan de ofrecerse mientras sigan idénticos; si una aplicación se actualiza, un archivo cambia o se elimina el paquete local que los representaba, vuelven a aparecer como pendientes.
-
-En 0.8.1, las líneas base oficiales precargadas son **defaults por identidad de sistema**, no un default global de Styler. La baseline incluida pertenece exclusivamente a **Linux Mint 22.3 · XFCE · X11 · stable · x86_64**. Solo se recomienda y adopta automáticamente cuando esa identidad coincide; otra distro, versión, escritorio, sesión, modelo de release o arquitectura necesita su propia baseline oficial.
-
-
-En 0.7.6, un DAG importado desde `.stylerpkg` se integra desde **Cambios** exactamente por el mismo flujo de revisión y PipeCraft que los demás cambios. La administración ya no ofrece "ocultar" paquetes: un cambio local se elimina de Styler cuando la persona decide borrarlo.
-
-Styler convierte cambios hechos en Linux en paquetes revisables, reproducibles y retirables.
-
-La aplicación conserva tres secciones superiores:
-
-- **Cambios:** integra y retira todos los cambios disponibles, tanto incorporados como PhotoGIMP como importados o creados mediante `.stylerpkg`.
-- **Actividad:** muestra operaciones aplicadas y permite deshacer las reversibles.
-- **Herramientas:** abre el **Constructor de cambios**.
-
-
-## Un solo flujo para aplicar cambios
-
-Importar o crear un `.stylerpkg` de tipo `change` **no lo ejecuta**. Styler registra sus DAG en el catálogo y los muestra en **Cambios**, junto a PhotoGIMP. Desde allí se revisan, se pasan a la selección y se integran con el flujo existente de PipeCraft.
-
-`Paquetes guardados` queda limitado a administración del artefacto: importar, inspeccionar, exportar o eliminar. No existe un segundo botón de aplicación para paquetes.
-
-## Constructor de cambios
-
-El constructor es un asistente de cuatro pasos y solo muestra el paso que corresponde:
-
-1. **Punto de partida:** elegir, importar o capturar la línea base.
-2. **Detección:** escanear aplicaciones, AppImages y recursos visuales.
-3. **Selección:** mover a la lista del paquete solo los elementos deseados.
-4. **Paquete:** generar el plan, desglosarlo cuando se necesite y crear el `.stylerpkg`.
-
-Las acciones poco frecuentes viven en **Más**. El informe del plan siempre distingue lo incluido de lo omitido y explica el motivo.
-
-En el paso **Punto de partida**, **Exportar seleccionada** conserva el tipo actual de la línea base. **Preparar para catálogo oficial** crea una copia oficial sin modificar la personalizada local y exige confirmar que la captura procede de una instalación limpia. El `.stylerpkg` resultante puede colocarse en `styler/baselines/catalog/` para distribuirlo como línea base recomendada en una versión posterior.
-
-## Un único formato
-
-El único formato portable de Styler es:
-
-```text
-.stylerpkg
+```mermaid
+flowchart LR
+    A["Cambio disponible"] --> B["Seleccionar"]
+    B --> C["Revisar"]
+    C --> D["Integrar"]
+    D --> E["Registrar actividad"]
+    E --> F["Retirar o deshacer<br/>cuando sea reversible"]
 ```
 
-Un `.stylerpkg` puede representar una línea base o un cambio. Las recetas YAML, los grafos, las acciones y los recursos son contenido interno del paquete; no son formatos públicos separados.
+Styler mantiene **un solo flujo de aplicación**.
 
-## Inicio
+Importar o crear un `.stylerpkg` de tipo `change` **no ejecuta el cambio inmediatamente**.  
+El cambio se registra en el catálogo y aparece en **Cambios**, donde se revisa y se integra igual que los cambios incorporados.
+
+`Paquetes guardados` se usa para administrar el artefacto: **importar, inspeccionar, exportar o eliminar**. La aplicación del cambio ocurre desde **Cambios**.
+
+---
+
+# Primeros pasos
+
+## 1. Ejecutar Styler
+
+Desde el proyecto:
 
 ```bash
 ./run-styler.sh
 ```
 
-O, después de instalar:
+O, después de instalarlo:
 
 ```bash
 styler
+```
+
+También puedes comprobar la versión y el estado básico de la instalación:
+
+```bash
 styler --version
 styler doctor
 ```
 
-CLI principal:
+<details>
+<summary><strong>▶ Ver instalación mediante el script del proyecto</strong></summary>
+
+<br>
+
+El instalador del proyecto puede ejecutarse con:
+
+```bash
+bash ./install.sh
+```
+
+Después de instalar, el comando principal es:
+
+```bash
+styler
+```
+
+El instalador publica el comando sin depender de Conda y administra la ubicación del ejecutable según el entorno disponible.
+
+</details>
+
+---
+
+## 2. Elegir un cambio
+
+Entra en **Cambios** y haz clic sobre cualquier parte de la fila del cambio que quieras integrar.
+
+En Styler 0.9.11 ya no hace falta acertar sobre una casilla pequeña: **la fila completa funciona como selector**.
+
+- Si seleccionas **un cambio**, el botón inferior mantiene el flujo individual.
+- Si seleccionas **varios cambios**, el mismo botón cambia a **`Integrar lote (N)`**.
+
+<!--
+CAPTURA SUGERIDA
+docs/images/change-selection.png
+
+<p align="center">
+  <img src="docs/images/change-selection.png"
+       alt="Selección de cambios en Styler"
+       width="900">
+</p>
+-->
+
+<details>
+<summary><strong>▶ Ejemplo: integrar un solo cambio</strong></summary>
+
+<br>
+
+Supongamos que **PhotoGIMP** aparece entre los cambios disponibles.
+
+1. Abre **Cambios**.
+2. Haz clic sobre la fila de **PhotoGIMP**.
+3. Styler deja ese cambio seleccionado.
+4. Usa el botón inferior para continuar con la integración individual.
+5. Revisa el plan antes de ejecutarlo.
+
+El cambio utiliza el mismo flujo de revisión e integración que los paquetes importados.
+
+</details>
+
+<details>
+<summary><strong>▶ Ejemplo: integrar varios cambios como lote</strong></summary>
+
+<br>
+
+Si tienes varios cambios disponibles:
+
+1. Selecciona el primero haciendo clic sobre su fila.
+2. Selecciona uno o más cambios adicionales.
+3. El botón inferior cambia automáticamente a:
+
+```text
+Integrar lote (N)
+```
+
+4. Revisa el conjunto antes de comenzar.
+5. Styler ejecuta los cambios de manera secuencial.
+
+Antes de ejecutar cada cambio, Styler reconstruye su plan con el estado actualizado del sistema.  
+Si uno falla, el lote se detiene antes de iniciar los siguientes y la pantalla final distingue lo completado, lo fallido y lo pendiente.
+
+</details>
+
+---
+
+## 3. Revisar antes de integrar
+
+La idea es que **seleccionar no signifique ejecutar inmediatamente**.
+
+```mermaid
+flowchart TD
+    A["Seleccionar cambio"] --> B["Preparar plan"]
+    B --> C{"¿Revisado?"}
+    C -- "No" --> B
+    C -- "Sí" --> D["Integrar"]
+```
+
+Los cambios importados desde `.stylerpkg` pasan por el mismo flujo de revisión que los cambios incorporados.
+
+Cuando una operación necesita permisos administrativos, Styler solicita autorización **antes de iniciar el DAG**.
+
+---
+
+# Constructor de cambios
+
+El **Constructor** sirve para convertir cambios detectados en tu sistema en un paquete portable de Styler.
+
+El asistente tiene cuatro etapas:
+
+```mermaid
+flowchart LR
+    A["1. Punto de partida"] --> B["2. Detección"]
+    B --> C["3. Selección"]
+    C --> D["4. Paquete"]
+```
+
+### 1. Punto de partida
+
+Elegir, importar o capturar la **línea base** que se utilizará como referencia.
+
+### 2. Detección
+
+Escanear aplicaciones, AppImages y recursos visuales.
+
+### 3. Selección
+
+Elegir únicamente los elementos que quieres incluir en el paquete.
+
+### 4. Paquete
+
+Generar el plan, revisar su desglose cuando sea necesario y crear el `.stylerpkg`.
+
+Las acciones menos frecuentes están agrupadas bajo **Más**.  
+El informe del plan distingue lo incluido de lo omitido y explica el motivo.
+
+<!--
+CAPTURA SUGERIDA
+docs/images/constructor.png
+
+<p align="center">
+  <img src="docs/images/constructor.png"
+       alt="Constructor de cambios de Styler"
+       width="900">
+</p>
+-->
+
+<details>
+<summary><strong>▶ Ejemplo: crear un paquete a partir de cambios detectados</strong></summary>
+
+<br>
+
+Un flujo típico es:
+
+1. Seleccionar una línea base.
+2. Ejecutar la detección.
+3. Revisar las aplicaciones, AppImages o recursos encontrados.
+4. Mover a la selección solamente aquello que quieres conservar.
+5. Generar el plan.
+6. Crear el paquete.
+
+El resultado portable utiliza la extensión:
+
+```text
+.stylerpkg
+```
+
+Al terminar el paquete, el Constructor conserva la línea base, limpia la selección y vuelve a **Detección**.
+
+Los estados ya empaquetados dejan de ofrecerse mientras sigan idénticos. Si una aplicación se actualiza, un archivo cambia o se elimina el paquete local que los representaba, pueden volver a aparecer como pendientes.
+
+</details>
+
+---
+
+# ¿Qué es un `.stylerpkg`?
+
+`.stylerpkg` es el **único formato portable de Styler**.
+
+Puede representar:
+
+- una **línea base**, o
+- un **cambio**.
+
+Las recetas YAML, grafos, acciones y recursos que pueda contener son detalles internos del paquete; no son formatos públicos independientes que el usuario tenga que administrar por separado.
+
+```mermaid
+flowchart TD
+    A[".stylerpkg"] --> B["Línea base"]
+    A --> C["Cambio"]
+```
+
+<details>
+<summary><strong>▶ ¿Qué ocurre al importar un paquete de cambio?</strong></summary>
+
+<br>
+
+Importarlo **no aplica automáticamente la modificación**.
+
+Styler registra sus DAG en el catálogo y el cambio aparece en **Cambios**.  
+Desde allí se selecciona, se revisa y se integra mediante el flujo normal.
+
+</details>
+
+---
+
+# Líneas base
+
+Una línea base sirve como punto de referencia para detectar qué cambió.
+
+Las líneas base oficiales precargadas son **defaults por identidad de sistema**, no un default global para cualquier instalación.
+
+La baseline oficial incluida actualmente pertenece a:
+
+```text
+Linux Mint 22.3
+XFCE
+X11
+stable
+x86_64
+```
+
+Solo se recomienda y adopta automáticamente cuando esa identidad coincide.  
+Otra distribución, versión, escritorio, sesión, modelo de release o arquitectura necesita su propia baseline oficial.
+
+<details>
+<summary><strong>▶ Preparar una línea base para el catálogo oficial</strong></summary>
+
+<br>
+
+En **Punto de partida**:
+
+- **Exportar seleccionada** conserva el tipo actual de la línea base.
+- **Preparar para catálogo oficial** crea una copia oficial sin modificar la personalizada local.
+- Para hacerlo, Styler exige confirmar que la captura procede de una instalación limpia.
+
+El `.stylerpkg` resultante puede colocarse en:
+
+```text
+styler/baselines/catalog/
+```
+
+El catálogo oficial acepta únicamente paquetes `.stylerpkg` de tipo `baseline`.
+
+</details>
+
+---
+
+# Actividad y recuperación
+
+**Actividad** muestra las operaciones aplicadas y permite deshacer aquellas que sean reversibles.
+
+Styler también conserva información de diagnóstico cuando una integración falla, en lugar de reducir el problema a un simple código genérico.
+
+En 0.9.11 se reforzó además la protección del registro de cambios:
+
+- Si `change-records.json` no puede escribirse, el DAG no arranca.
+- Si el sistema de archivos se vuelve de solo lectura durante una ejecución, Styler distingue el fallo de persistencia del resultado real del DAG.
+- Los lotes se detienen.
+- Se guarda un diagnóstico de emergencia fuera de la biblioteca.
+
+<!--
+CAPTURA SUGERIDA
+docs/images/activity.png
+
+<p align="center">
+  <img src="docs/images/activity.png"
+       alt="Actividad e historial de Styler"
+       width="900">
+</p>
+-->
+
+---
+
+# Ejemplos incluidos
+
+## PhotoGIMP
+
+PhotoGIMP aparece como un cambio incorporado y utiliza el mismo flujo de **Cambios** que un paquete importado.
+
+<details>
+<summary><strong>▶ Nota técnica sobre operaciones largas de PhotoGIMP</strong></summary>
+
+<br>
+
+Las operaciones largas ya no dependen de timeouts totales rígidos.
+
+Mientras `apt` o `flatpak` continúen produciendo salida, Styler renueva la espera.  
+La inicialización de GIMP tampoco depende del antiguo límite exterior fijo de 150 segundos: la espera puede continuar mientras el árbol de archivos siga cambiando, con un techo amplio de seguridad para evitar bloqueos infinitos.
+
+</details>
+
+## Affinity
+
+Affinity declara **AppImageLauncher** como requisito.
+
+Antes de descargar AppImageLauncher, Styler comprueba la capacidad `ail-cli`. Si ya existe, puede reutilizar ese proveedor sin reinstalarlo.
+
+<details>
+<summary><strong>▶ Ver cómo se integra Affinity</strong></summary>
+
+<br>
+
+Styler compone el cambio de Affinity y su requisito en un solo DAG:
+
+1. Instala o reutiliza AppImageLauncher.
+2. Descarga el AppImage oficial de Affinity.
+3. Lo integra mediante `ail-cli`.
+4. Verifica la entrada de escritorio.
+
+Los assets están fijados por tag, nombre y SHA-256.
+
+La definición incluida actualmente se ofrece solo para:
+
+```text
+Familias APT: Ubuntu / Debian / Linux Mint
+Arquitectura: x86_64
+```
+
+Esto se debe a que el proveedor incorporado utiliza el `.deb` amd64 de AppImageLauncher y el AppImage x86_64 de Affinity.
+
+</details>
+
+---
+
+# CLI
+
+La interfaz principal puede iniciarse con:
+
+```bash
+styler
+```
+
+Comandos disponibles para explorar funciones específicas:
 
 ```bash
 styler change --help
@@ -88,20 +417,143 @@ styler baseline --help
 styler package --help
 ```
 
-## Desarrollo
+---
+
+# Para desarrolladores
+
+La mayoría de usuarios no necesita esta sección.
+
+<details>
+<summary><strong>▶ Ejecutar las pruebas</strong></summary>
+
+<br>
 
 ```bash
 python -m pytest
+```
+
+</details>
+
+<details>
+<summary><strong>▶ Construir el wheel</strong></summary>
+
+<br>
+
+```bash
 python -m build --wheel --no-isolation
 ```
 
-El catálogo de líneas base oficiales acepta únicamente paquetes `.stylerpkg` de tipo `baseline` en `styler/baselines/catalog/`.
+</details>
 
-### PATH de instalación (0.9.4)
+<details>
+<summary><strong>▶ PATH de instalación</strong></summary>
 
-El instalador añade automáticamente `${XDG_BIN_HOME:-$HOME/.local/bin}` al `PATH`
-del propio proceso de instalación y lo deja persistido en `~/.profile` y en el
-archivo del shell interactivo compatible (`~/.bashrc`, `~/.zshrc`, etc.). No
-es necesario añadir manualmente una línea específica para un nombre de usuario.
-Si `install-styler.sh` se ejecuta con `source`, también actualiza el `PATH` del
-shell actual inmediatamente.
+<br>
+
+El instalador añade automáticamente:
+
+```text
+${XDG_BIN_HOME:-$HOME/.local/bin}
+```
+
+al `PATH` del proceso de instalación y lo deja persistido en `~/.profile` y en el archivo del shell interactivo compatible, como `~/.bashrc` o `~/.zshrc`.
+
+No es necesario añadir manualmente una ruta específica para un nombre de usuario.
+
+Si `install-styler.sh` se ejecuta con `source`, también actualiza inmediatamente el `PATH` del shell actual.
+
+</details>
+
+---
+
+# Historial resumido
+
+El README prioriza ahora el uso del programa. Los detalles históricos quedan plegados para no interrumpir la explicación principal.
+
+<details>
+<summary><strong>▶ 0.9.11</strong></summary>
+
+<br>
+
+- La fila completa de **Cambios** funciona como selector.
+- Un solo botón inferior decide entre integración individual y `Integrar lote (N)`.
+- Se elimina la casilla pequeña y el segundo botón específico para lotes.
+- Se protege `change-records.json` frente a fallos de almacenamiento.
+- Un fallo de persistencia puede distinguirse del resultado real del DAG.
+- Los lotes se detienen ante ese tipo de problema y Styler conserva un diagnóstico de emergencia.
+
+</details>
+
+<details>
+<summary><strong>▶ 0.9.8</strong></summary>
+
+<br>
+
+La selección múltiple de **Cambios** quedó reflejada directamente en cada fila mediante borde y estado visual. La selección utiliza una única fuente de estado para evitar desincronización entre la interfaz y el lote interno.
+
+</details>
+
+<details>
+<summary><strong>▶ 0.9.7</strong></summary>
+
+<br>
+
+PhotoGIMP dejó de depender de timeouts totales rígidos durante operaciones largas. Las instalaciones se vigilan por actividad observable y las esperas de inicialización de GIMP pueden prolongarse mientras el sistema siga mostrando cambios, con un límite amplio de seguridad.
+
+</details>
+
+<details>
+<summary><strong>▶ 0.9.6</strong></summary>
+
+<br>
+
+**Cambios** incorporó selección múltiple y ejecución secuencial por lotes. Styler reconstruye el siguiente plan justo antes de ejecutarlo y detiene el lote si un cambio falla.
+
+</details>
+
+<details>
+<summary><strong>▶ 0.9.5</strong></summary>
+
+<br>
+
+`bash ./install.sh` pasó a publicar el comando `styler` inmediatamente sin depender de Conda y con estrategias alternativas para encontrar una ubicación segura disponible en el `PATH`.
+
+</details>
+
+<details>
+<summary><strong>▶ 0.9.3</strong></summary>
+
+<br>
+
+El instalador pasó a construir Styler desde una copia temporal limpia del código, excluyendo residuos de compilaciones anteriores como `build/`, `dist/`, `*.egg-info` y cachés de Python.
+
+</details>
+
+<details>
+<summary><strong>▶ 0.8.3</strong></summary>
+
+<br>
+
+- Los cambios que necesitan permisos administrativos solicitan autorización antes de iniciar el DAG.
+- Los errores conservan la causa real, el comando, el código técnico y el log durable.
+- Al terminar un paquete, el Constructor vuelve a **Detección** conservando la línea base.
+
+</details>
+
+<details>
+<summary><strong>▶ 0.8.1</strong></summary>
+
+<br>
+
+Las líneas base oficiales pasaron a estar asociadas a una identidad concreta del sistema. La baseline incluida corresponde exclusivamente a **Linux Mint 22.3 · XFCE · X11 · stable · x86_64**.
+
+</details>
+
+<details>
+<summary><strong>▶ 0.7.6</strong></summary>
+
+<br>
+
+Los DAG importados desde `.stylerpkg` pasaron a integrarse desde **Cambios** mediante el mismo flujo de revisión y PipeCraft que los demás cambios.
+
+</details>
