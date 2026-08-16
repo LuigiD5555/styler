@@ -10,6 +10,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+      - name: Apply alpha.1 compile fix
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('vendor/pipecraft-1.5.0-alpha.1/crates/pipecraft-core/src/loader.rs')
+          s = p.read_text()
+          old = '            id: sid,\n'
+          if old not in s:
+              raise SystemExit('expected loader pattern not found')
+          p.write_text(s.replace(old, '            id: sid.clone(),\n', 1))
+          PY
       - name: Build PipeCraft 1.5.0-alpha.1
         run: cargo build --release --manifest-path vendor/pipecraft-1.5.0-alpha.1/Cargo.toml -p pipecraft-cli
       - name: Verify binary
