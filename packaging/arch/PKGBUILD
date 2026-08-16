@@ -1,6 +1,6 @@
 # Maintainer: Styler contributors
 pkgname=styler
-pkgver=0.9.11
+pkgver=0.10.0-alpha.1
 pkgrel=1
 pkgdesc="Integrate semantic, reproducible changes on Linux"
 arch=('any')

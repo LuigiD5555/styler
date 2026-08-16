@@ -1,4 +1,4 @@
-# Styler Reinvented 0.9.11
+# Styler Reinvented 0.10.0-alpha.1
 
 > **Convierte cambios hechos en Linux en paquetes que puedes revisar, reproducir, compartir y retirar.**
 
@@ -469,6 +469,21 @@ Si `install-styler.sh` se ejecuta con `source`, también actualiza inmediatament
 # Historial resumido
 
 El README prioriza ahora el uso del programa. Los detalles históricos quedan plegados para no interrumpir la explicación principal.
+
+<details>
+<summary><strong>▶ 0.10.0-alpha.1</strong></summary>
+
+<br>
+
+- PipeCraft **1.5** pasa a ser el runtime de producción preferido mediante IPC local.
+- Styler compila su `ExecutionPlan` a un pipeline transitorio de PipeCraft; el DAG, recursos, concurrencia, cancelación, eventos y persistencia pertenecen al motor Rust.
+- Los executors Linux de Styler se ejecutan como plugins externos `pipecraft.plugin/v1`; PipeCraft sigue sin conocer APT, Flatpak, receipts ni `.stylerpkg`.
+- El instalador compila un binario privado de PipeCraft cuando `cargo` está disponible; también se admite `PIPECRAFT_BIN` o un `pipecraft` existente en `PATH`.
+- Si el binario Rust no existe, el backend Python anterior permanece como compatibilidad temporal. Nunca se hace fallback local después de haber enviado un job a PipeCraft, evitando duplicar efectos.
+- `styler doctor` muestra el estado del binario y del servicio PipeCraft.
+- El servicio usa un workspace privado en `.styler/pipecraft/` y arranca bajo demanda.
+
+</details>
 
 <details>
 <summary><strong>▶ 0.9.11</strong></summary>

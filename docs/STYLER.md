@@ -1,5 +1,15 @@
-# Styler 0.9.11
+# Styler 0.10.0-alpha.1
 
+## Cambio 0.10.0-alpha.1
+
+Styler integra PipeCraft 1.5 como backend de ejecución preferente para los flujos productivos de Cambios y restauración. Styler conserva la semántica del dominio —catálogo, resolución, receipts, reconciliación, retiro y UI— y compila su `ExecutionPlan` ya expandido a un pipeline transitorio que PipeCraft ejecuta por IPC.
+
+- PipeCraft 1.5 corre como servicio Rust local y es dueño del scheduling del DAG, recursos, procesos, eventos, cancelación y persistencia de ejecución.
+- Los executors propios de Styler se invocan como plugins externos `pipecraft.plugin/v1`; el runtime Rust no conoce APT, Flatpak, overlays ni `.stylerpkg`.
+- Al aceptar un job, Styler persiste inmediatamente `pipecraft_run_id`. Si la conexión falla después de `submit`, Styler no repite el DAG con el runtime local porque el efecto remoto puede seguir en curso.
+- El runtime Python histórico permanece temporalmente como compatibilidad cuando PipeCraft no está disponible y para pruebas/extensiones internas. No es la ruta preferente cuando existe un binario PipeCraft 1.5 funcional.
+- El instalador puede compilar el PipeCraft vendorizado cuando existe `cargo`; también se admite un binario externo mediante `PIPECRAFT_BIN` o `PATH`.
+- Los estados semánticos adicionales de Styler se preservan en el resultado del plugin, mientras PipeCraft recibe estados canónicos para mantener correctos dependencias y resume.
 
 ## Cambio 0.9.11
 
@@ -262,7 +272,9 @@ PhotoGIMP continúa siendo el cambio de referencia del catálogo. Styler resuelv
 
 ## PipeCraft dentro de Styler
 
-PipeCraft sigue siendo el runtime único para planificar DAG, ejecutar operaciones, emitir eventos, guardar logs y registrar resultados. El Constructor genera una receta semántica y la compila a un workflow de PipeCraft; no crea una segunda ruta de ejecución.
+En 0.10, PipeCraft 1.5 es el backend de ejecución preferente de Styler. `ChangeService` y el puente de restauración producen el plan semántico en Styler; un adaptador lo convierte en un pipeline transitorio y lo envía al servicio Rust por `pipecraft.ipc/v1`. PipeCraft posee el ciclo operativo del DAG —scheduling, recursos, supervisión de procesos, eventos, cancelación y estado durable— mientras Styler conserva receipts, reconciliación del estado real, backups, undo y significado de cada operación.
+
+La ruta local Python permanece durante esta alpha como compatibilidad deliberada cuando no hay un binario PipeCraft disponible. La migración no crea dos autoridades simultáneas: si PipeCraft ya aceptó un `run_id`, Styler nunca repite automáticamente el mismo trabajo con el backend local.
 
 ## Auditoría de los archivos del ZIP
 

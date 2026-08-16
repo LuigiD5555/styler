@@ -1,5 +1,5 @@
 Name:           styler
-Version:        0.9.11
+Version:        0.10.0-alpha.1
 Release:        1%{?dist}
 Summary:        Integrate semantic, reproducible changes on Linux
 License:        Apache-2.0
