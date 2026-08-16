@@ -165,5 +165,5 @@ def run_overlays(
         run_id="overlays",
         labels=["styler", "overlay"],
     )
-    run = WorkflowEngine(extended_registry()).run(plan.workflow, context)
+    run = WorkflowEngine(extended_registry(), backend="auto").run(plan.workflow, context)
     return run.results

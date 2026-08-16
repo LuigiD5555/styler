@@ -1,0 +1,83 @@
+schema_version: pipecraft/v1
+name: build-test-deploy
+description: |
+  Generic build -> test -> deploy. Swap the argv lines for your stack
+  (npm/pytest/go test/cargo/maven). The pipeline shape doesn't change.
+
+context:
+  project_type: any
+  mode: pre_push_validation
+
+repos:
+  current:
+    path: .
+    visibility: local
+
+steps:
+  - id: install_deps
+    type: command
+    repo: current
+    description: Install dependencies in a clean, reproducible way.
+    with:
+      argv: ["echo", "<install: e.g. npm ci / pip install -r requirements.txt>"]
+      timeout: 300
+
+  - id: lint
+    type: command
+    repo: current
+    needs: [install_deps]
+    description: Static analysis before anything else.
+    with:
+      argv: ["echo", "<lint: e.g. ruff check . / eslint .>"]
+
+  - id: run_tests
+    type: command
+    repo: current
+    needs: [install_deps]
+    description: Full test suite. Required — failure stops the pipeline.
+    with:
+      argv: ["echo", "<tests: e.g. pytest -q / npm test / go test ./...>"]
+      timeout: 1200
+
+  - id: check_secrets
+    type: file_check
+    repo: current
+    needs: [install_deps]
+    description: Refuse to build/deploy if secrets are accidentally staged.
+    rules:
+      forbidden_paths:
+        - "**/.env*"
+        - "**/secrets/**"
+        - "**/*.pem"
+        - "**/*.key"
+      forbidden_terms:
+        - "AWS_SECRET_ACCESS_KEY="
+        - "-----BEGIN PRIVATE KEY-----"
+
+  - id: build_artifact
+    type: command
+    repo: current
+    needs: [lint, run_tests, check_secrets]
+    description: Build the deployable artifact.
+    with:
+      argv: ["echo", "<build: e.g. docker build -t myapp:local . / npm run build>"]
+
+  - id: approve_deploy
+    type: manual_approval
+    needs: [build_artifact]
+    description: Human sign-off before anything touches a real environment.
+    requires_approval: true
+
+  - id: deploy
+    type: command
+    repo: current
+    needs: [approve_deploy]
+    requires_approval: true
+    description: Only runs with --execute --approve.
+    with:
+      argv: ["echo", "<deploy: e.g. kubectl apply -f deploy/>"]
+
+on_error:
+  default: stop
+  steps:
+    lint: continue

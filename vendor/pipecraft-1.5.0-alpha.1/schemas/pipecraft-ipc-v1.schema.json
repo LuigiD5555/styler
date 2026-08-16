@@ -1,0 +1,203 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pipecraft.dev/schemas/pipecraft-ipc-v1.schema.json",
+  "title": "PipeCraft IPC v1 request",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/ping"
+    },
+    {
+      "$ref": "#/$defs/submit"
+    },
+    {
+      "$ref": "#/$defs/status"
+    },
+    {
+      "$ref": "#/$defs/jobs"
+    },
+    {
+      "$ref": "#/$defs/cancel"
+    },
+    {
+      "$ref": "#/$defs/resume"
+    },
+    {
+      "$ref": "#/$defs/events"
+    },
+    {
+      "$ref": "#/$defs/report"
+    }
+  ],
+  "$defs": {
+    "ping": {
+      "type": "object",
+      "properties": {
+        "op": {
+          "const": "ping"
+        }
+      },
+      "required": [
+        "op"
+      ],
+      "additionalProperties": false
+    },
+    "submit": {
+      "type": "object",
+      "properties": {
+        "op": {
+          "const": "submit"
+        },
+        "pipeline": {
+          "type": "string",
+          "minLength": 1
+        },
+        "execute": {
+          "type": "boolean",
+          "default": false
+        },
+        "approve": {
+          "type": "boolean",
+          "default": false
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "max_workers": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1
+        },
+        "from_step": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "only": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        }
+      },
+      "required": [
+        "op",
+        "pipeline"
+      ],
+      "additionalProperties": false
+    },
+    "status": {
+      "type": "object",
+      "properties": {
+        "op": {
+          "const": "status"
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "op",
+        "run_id"
+      ],
+      "additionalProperties": false
+    },
+    "jobs": {
+      "type": "object",
+      "properties": {
+        "op": {
+          "const": "jobs"
+        }
+      },
+      "required": [
+        "op"
+      ],
+      "additionalProperties": false
+    },
+    "cancel": {
+      "type": "object",
+      "properties": {
+        "op": {
+          "const": "cancel"
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "op",
+        "run_id"
+      ],
+      "additionalProperties": false
+    },
+    "resume": {
+      "type": "object",
+      "properties": {
+        "op": {
+          "const": "resume"
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "op",
+        "run_id"
+      ],
+      "additionalProperties": false
+    },
+    "events": {
+      "type": "object",
+      "properties": {
+        "op": {
+          "const": "events"
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "after": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000,
+          "default": 200
+        }
+      },
+      "required": [
+        "op",
+        "run_id"
+      ],
+      "additionalProperties": false
+    },
+    "report": {
+      "type": "object",
+      "properties": {
+        "op": {
+          "const": "report"
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "op",
+        "run_id"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

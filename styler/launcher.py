@@ -30,6 +30,20 @@ def _doctor(root: str) -> int:
     print(f"  Escritorio: {environment.desktop}")
     print(f"  Sesión: {environment.session}")
     print(f"  Selector gráfico: {'disponible' if native_dialog_available() else 'no disponible'}")
+    try:
+        from styler.pipecraft.service import locate_binary, workspace_for
+        from styler.pipecraft.client import PipeCraftClient
+        binary = locate_binary()
+        print(f"  PipeCraft 1.5: {'disponible' if binary else 'no compilado/no encontrado'}")
+        if binary:
+            print(f"  PipeCraft binario: {binary}")
+        try:
+            info = PipeCraftClient(workspace_for(Path(root))).ping()
+            print(f"  PipeCraft service: activo ({info.get('version', '?')}, {info.get('protocol', '?')})")
+        except Exception:
+            print("  PipeCraft service: detenido (se inicia bajo demanda)")
+    except Exception as exc:
+        print(f"  PipeCraft: diagnóstico no disponible ({exc})")
     return 0
 
 

@@ -32,8 +32,9 @@ from styler.runtime.validation import validate_workflow
 
 
 class WorkflowEngine:
-    def __init__(self, registry: ExecutorRegistry | None = None) -> None:
+    def __init__(self, registry: ExecutorRegistry | None = None, *, backend: str = "local") -> None:
         self.registry = registry or ExecutorRegistry.default()
+        self.backend = backend
 
     def validate(self, workflow: WorkflowDefinition) -> list[str]:
         errors = validate_workflow(workflow, self.registry.known_types())
@@ -73,6 +74,24 @@ class WorkflowEngine:
         return results
 
     def run(self, workflow: WorkflowDefinition, ctx: ExecutionContext) -> WorkflowRun:
+        # 0.10: los flujos productivos pueden delegar el DAG completo al
+        # servicio Rust PipeCraft 1.5. El backend local se conserva como
+        # compatibilidad para tests, extensiones en proceso y recuperación.
+        if self.backend in {"auto", "pipecraft"} and not ctx.preview:
+            from styler.pipecraft.engine import PipeCraftBackend
+            from styler.pipecraft.service import PipeCraftUnavailable, ensure_service
+            try:
+                # En auto sólo se permite fallback ANTES de enviar trabajo. Una
+                # desconexión posterior nunca vuelve a ejecutar localmente: eso
+                # podría duplicar efectos externos.
+                ensure_service(ctx.root)
+            except PipeCraftUnavailable:
+                if self.backend == "pipecraft":
+                    raise
+            else:
+                plan = self.compile(workflow)
+                return PipeCraftBackend(ctx.root).run(workflow, ctx, plan)
+
         run_id = ctx.run_id or self._make_run_id(workflow.name)
         run_ctx = ctx.for_run(run_id)
         run_ctx.artifacts_dir.mkdir(parents=True, exist_ok=True)

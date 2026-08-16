@@ -1,0 +1,20 @@
+schema_version: pipecraft/v1
+name: beta
+description: Second pipeline sharing one global exclusive resource.
+steps:
+  - id: prepare
+    type: note
+    description: Beta can prepare independently.
+
+  - id: critical
+    type: command
+    needs: [prepare]
+    exclusive_resources: [demo:critical-section]
+    with:
+      argv: ["sh", "-c", "echo beta-enter; sleep 1; echo beta-leave"]
+      inactivity_timeout: 10
+
+  - id: finish
+    type: note
+    needs: [critical]
+    description: Beta finished.

@@ -1,0 +1,24 @@
+[package]
+name = "pipecraft-runtime"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Concurrent DAG runtime with resources, conditions, resumable state, events and built-in step executors."
+
+[dependencies]
+pipecraft-core.workspace = true
+pipecraft-graph.workspace = true
+pipecraft-report.workspace = true
+serde.workspace = true
+serde_yaml.workspace = true
+serde_json.workspace = true
+chrono.workspace = true
+uuid.workspace = true
+walkdir.workspace = true
+globset.workspace = true
+libc.workspace = true
+tokio.workspace = true
+
+[dev-dependencies]
+tempfile = "3"

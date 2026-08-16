@@ -1,0 +1,9 @@
+schema_version: pipecraft/v1
+workspace:
+  name: multi-pipeline-global-resources
+paths:
+  pipeline_dir: .pipelines/pipelines
+  route_file: .pipelines/routes.yaml
+  runs_dir: .pipelines/runs
+defaults:
+  default_pipeline: alpha

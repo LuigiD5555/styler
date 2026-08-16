@@ -217,6 +217,9 @@ class ChangeService:
             self._state_dir,
             self.root / ".styler" / "runs",
             self.root / ".styler" / "receipts",
+            # PipeCraft 1.5 mantiene su journal/job store en un workspace
+            # privado. Se prueba antes de cualquier efecto igual que receipts.
+            self.root / ".styler" / "pipecraft" / ".pipelines",
         ):
             self._probe_directory_writable(directory)
         try:
@@ -1084,9 +1087,21 @@ class ChangeService:
                 )
             )
 
+        def runtime_submitted(run_id: str) -> None:
+            self._save_record(
+                change_id,
+                {
+                    "status": ChangeStatus.INTEGRATING,
+                    "pipecraft_run_id": run_id,
+                    "runtime_backend": "pipecraft/1.5",
+                    "message": "PipeCraft aceptó el DAG y lo está ejecutando.",
+                },
+            )
+
         context_values = {
             "home": str(self.home),
             "progress_callback": runtime_progress,
+            "run_submitted_callback": runtime_submitted,
             # Habilita los recibos: sin change_id, los ejecutores no
             # registran nada y el cambio no sería reversible.
             "change_id": change_id,
@@ -1146,7 +1161,7 @@ class ChangeService:
                 sudo_ticket.start()
         try:
             try:
-                run = WorkflowEngine(extended_registry()).run(plan.workflow, context)
+                run = WorkflowEngine(extended_registry(), backend="auto").run(plan.workflow, context)
             except OSError as exc:
                 if not self._is_storage_failure(exc):
                     raise
@@ -1232,6 +1247,8 @@ class ChangeService:
                     "required_packages": self._required_packages(plan.workflow),
                     "options": dict(plan.options),
                     "last_run_id": run.run_id,
+                    "pipecraft_run_id": run.run_id if ".styler/pipecraft" in str(getattr(run, "run_dir", "")).replace("\\", "/") else "",
+                    "runtime_backend": "pipecraft/1.5" if ".styler/pipecraft" in str(getattr(run, "run_dir", "")).replace("\\", "/") else "local-compat",
                     "reconciled_steps": dict(plan.reconciled_steps),
                     "attempt_mode": "continue" if plan.continuation_mode else "fresh",
                 },
@@ -1610,7 +1627,7 @@ class ChangeService:
             },
         )
         try:
-            run = WorkflowEngine(extended_registry()).run(workflow, context)
+            run = WorkflowEngine(extended_registry(), backend="auto").run(workflow, context)
         except OSError as exc:
             if not self._is_storage_failure(exc):
                 raise

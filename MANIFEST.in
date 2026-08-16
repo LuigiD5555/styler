@@ -11,3 +11,7 @@ recursive-include styler/baselines/catalog *.stylerpkg
 include scripts/capture-official-baseline.sh
 
 recursive-include styler/catalog/changes *.yaml
+
+# PipeCraft 1.5 source is shipped for the source installer. It is compiled into
+# the private Styler venv when cargo is available; it is not imported by Python.
+recursive-include vendor/pipecraft-1.5.0-alpha.1 *.toml *.rs *.md *.json *.yaml *.yml *.sh LICENSE NOTICE

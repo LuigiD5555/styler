@@ -1,0 +1,22 @@
+[package]
+name = "pipecraft-service"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Local IPC runtime service and durable job control for PipeCraft."
+
+[dependencies]
+pipecraft-core.workspace = true
+pipecraft-runtime.workspace = true
+pipecraft-report.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+chrono.workspace = true
+uuid.workspace = true
+tokio.workspace = true
+thiserror.workspace = true
+libc.workspace = true
+
+[dev-dependencies]
+tempfile = "3"

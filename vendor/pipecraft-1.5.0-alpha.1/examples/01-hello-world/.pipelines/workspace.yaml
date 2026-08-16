@@ -1,0 +1,11 @@
+schema_version: pipecraft/v1
+workspace:
+  name: getting-started
+  description: The four core ideas in PipeCraft — note, command, checklist, report.
+paths:
+  pipeline_dir: .pipelines/pipelines
+  route_file: .pipelines/routes.yaml
+  runs_dir: .pipelines/runs
+  outputs_dir: .pipelines/out
+defaults:
+  default_pipeline: hello-world

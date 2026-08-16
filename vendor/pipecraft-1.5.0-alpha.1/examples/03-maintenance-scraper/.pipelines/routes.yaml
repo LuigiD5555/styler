@@ -1,0 +1,7 @@
+schema_version: pipecraft/v1
+routes:
+  - id: scraper
+    when:
+      labels:
+        any: [scraper, selenium, browser, maintenance]
+    pipeline: scraper-maintenance

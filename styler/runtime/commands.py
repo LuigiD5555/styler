@@ -344,6 +344,39 @@ class PipeCraftRunner:
             kwargs.update(self._process_group_kwargs())
         return subprocess.Popen(argv, **kwargs)  # noqa: S603
 
+    def spawn_background_logged(
+        self,
+        argv: list[str],
+        log_path: str | Path,
+        *,
+        env: dict[str, str] | None = None,
+        cwd: str | Path | None = None,
+    ) -> Any:
+        """Inicia un servicio desacoplado conservando stdout/stderr en un log.
+
+        Se usa para el daemon PipeCraft 1.5 y mantiene en este módulo la única
+        frontera Python autorizada con ``subprocess``.
+        """
+        path = Path(log_path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        stream = path.open("ab", buffering=0)
+        try:
+            process = self.spawn(
+                argv,
+                stdin=subprocess.DEVNULL,
+                stdout=stream,
+                stderr=subprocess.STDOUT,
+                env=env,
+                cwd=cwd,
+                process_group=True,
+            )
+        except Exception:
+            stream.close()
+            raise
+        # Popen conserva el descriptor duplicado; el padre puede cerrar el suyo.
+        stream.close()
+        return process
+
     def spawn_protocol(
         self,
         argv: list[str],

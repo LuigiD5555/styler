@@ -1,0 +1,241 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://pipecraft.dev/schemas/pipecraft.schema.json",
+  "title": "PipeCraft Pipeline (pipecraft/v1, runtime 1.3-compatible)",
+  "description": "Schema for a single PipeCraft pipeline definition file.",
+  "type": "object",
+  "required": [
+    "name",
+    "steps"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "schema_version": {
+      "description": "Schema tag. Canonical: 'pipecraft/v1'. Legacy integer 1 is accepted.",
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "pipecraft/v1",
+            "1"
+          ]
+        },
+        {
+          "type": "integer",
+          "enum": [
+            1
+          ]
+        }
+      ]
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string"
+    },
+    "context": {
+      "type": "object"
+    },
+    "repos": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "visibility": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "target": {
+      "type": "object"
+    },
+    "targets": {
+      "type": "object"
+    },
+    "inputs": {
+      "type": "object"
+    },
+    "product_boundaries": {
+      "type": "object"
+    },
+    "capabilities": {
+      "type": "object"
+    },
+    "ui_rules": {
+      "type": "object"
+    },
+    "outputs": {
+      "type": "object"
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/step"
+      }
+    },
+    "on_error": {
+      "$ref": "#/definitions/on_error"
+    }
+  },
+  "definitions": {
+    "step": {
+      "type": "object",
+      "required": [
+        "id",
+        "type"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "description": "Executor type. V1 built-ins listed in enum; custom types are allowed if an executor is registered.",
+          "examples": [
+            "note",
+            "checklist",
+            "command",
+            "file_check",
+            "boundary_check",
+            "git_diff",
+            "copy_or_sync",
+            "plugin",
+            "manual_approval",
+            "target_plan"
+          ]
+        },
+        "description": {
+          "type": "string"
+        },
+        "repo": {
+          "type": "string"
+        },
+        "command": {
+          "type": "string"
+        },
+        "risk": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "requires_approval": {
+          "type": "boolean"
+        },
+        "needs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "rules": {
+          "type": "object"
+        },
+        "with": {
+          "type": "object",
+          "description": "Executor-specific configuration. Common keys: argv, command, timeout, inactivity_timeout, retries, retry_delay, env, source, destination, include, exclude, mode."
+        },
+        "run_if": {
+          "type": "string",
+          "enum": [
+            "all_success",
+            "all_complete",
+            "any_failed",
+            "always"
+          ],
+          "default": "all_success",
+          "description": "Dependency completion condition evaluated by the DAG scheduler."
+        },
+        "requires": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true,
+          "description": "Opaque capabilities that must have been provided by successful nodes before this step can run."
+        },
+        "provides": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true,
+          "description": "Opaque capabilities made available after this step succeeds."
+        },
+        "exclusive_resources": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true,
+          "description": "Named resources that this step must hold exclusively while running."
+        },
+        "shared_resources": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true,
+          "description": "Named resources that this step may share with other shared users while running."
+        },
+        "barrier": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, this step runs alone and waits for all currently running steps."
+        }
+      }
+    },
+    "policy": {
+      "type": "string",
+      "enum": [
+        "stop",
+        "continue",
+        "warn"
+      ]
+    },
+    "on_error": {
+      "type": "object",
+      "properties": {
+        "default": {
+          "$ref": "#/definitions/policy"
+        },
+        "steps": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/policy"
+          }
+        },
+        "types": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/policy"
+          }
+        },
+        "statuses": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/policy"
+          }
+        }
+      }
+    }
+  }
+}

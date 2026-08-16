@@ -631,6 +631,33 @@ if ! create_venv "$NEW_RELEASE_DIR"; then
   exit 1
 fi
 
+# Styler 0.10 usa PipeCraft 1.5 como runtime de producción. El código Rust se
+# incluye en el ZIP fuente para poder construir un binario privado dentro del
+# mismo release sin contaminar el sistema. Si cargo no está disponible, Styler
+# conserva temporalmente el backend local y `styler doctor` explica cómo activar
+# PipeCraft después mediante PIPECRAFT_BIN o PATH.
+PIPECRAFT_SOURCE="$BUILD_SOURCE_DIR/vendor/pipecraft-1.5.0-alpha.1"
+if command -v cargo >/dev/null 2>&1 && [[ -f "$PIPECRAFT_SOURCE/Cargo.toml" ]]; then
+  printf 'Compilando PipeCraft 1.5 para el runtime de Styler…
+'
+  if cargo build --release --manifest-path "$PIPECRAFT_SOURCE/Cargo.toml" -p pipecraft-cli; then
+    if [[ -x "$PIPECRAFT_SOURCE/target/release/pipecraft" ]]; then
+      install -m 0755 "$PIPECRAFT_SOURCE/target/release/pipecraft" "$NEW_RELEASE_DIR/bin/pipecraft"
+    else
+      printf 'Aviso: cargo terminó pero no produjo el binario pipecraft esperado; Styler usará compatibilidad local.
+' >&2
+    fi
+  else
+    printf 'Aviso: no se pudo compilar PipeCraft; Styler se instalará con backend local de compatibilidad.
+' >&2
+  fi
+else
+  printf 'Aviso: cargo no está disponible; PipeCraft no se compilará durante esta instalación.
+' >&2
+  printf 'Styler seguirá funcionando y podrá usar PipeCraft cuando exista en PATH o PIPECRAFT_BIN.
+' >&2
+fi
+
 PIP_ARGS=(--disable-pip-version-check)
 if [[ -d "$SOURCE_DIR/wheelhouse" ]] && compgen -G "$SOURCE_DIR/wheelhouse/*.whl" >/dev/null; then
   PIP_ARGS+=(--no-index --find-links "$SOURCE_DIR/wheelhouse")

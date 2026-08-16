@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pipecraft.dev/schemas/pipecraft-ipc-response-v1.schema.json",
+  "title": "PipeCraft IPC v1 response envelope",
+  "type": "object",
+  "properties": {
+    "protocol": {"const": "pipecraft.ipc/v1"},
+    "ok": {"type": "boolean"},
+    "data": {},
+    "error": {
+      "type": "object",
+      "properties": {
+        "code": {"type": "string", "minLength": 1},
+        "message": {"type": "string"}
+      },
+      "required": ["code", "message"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["protocol", "ok"],
+  "allOf": [
+    {
+      "if": {"properties": {"ok": {"const": true}}, "required": ["ok"]},
+      "then": {"required": ["data"], "not": {"required": ["error"]}},
+      "else": {"required": ["error"], "not": {"required": ["data"]}}
+    }
+  ],
+  "additionalProperties": false
+}

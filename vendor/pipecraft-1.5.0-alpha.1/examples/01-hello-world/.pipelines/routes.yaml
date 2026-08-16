@@ -1,0 +1,8 @@
+schema_version: pipecraft/v1
+routes:
+  - id: default_hello
+    description: Any of these labels routes to hello-world.
+    when:
+      labels:
+        any: [hello, demo, start]
+    pipeline: hello-world

@@ -1,0 +1,23 @@
+# Rust
+/target
+**/*.rs.bk
+# Cargo.lock is intentionally committed: this workspace ships a binary (pipecraft-cli).
+
+# PipeCraft run reports (generated)
+**/.pipelines/runs/
+
+# Editor / OS
+.DS_Store
+*.swp
+.idea/
+.vscode/
+
+# Python bridge
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.pytest_cache/
+python/build/
+python/dist/
+.venv/

@@ -1,0 +1,8 @@
+schema_version: pipecraft/v1
+routes:
+  - id: release
+    description: Cutting a versioned release.
+    when:
+      labels:
+        any: [release, tag, publish]
+    pipeline: release

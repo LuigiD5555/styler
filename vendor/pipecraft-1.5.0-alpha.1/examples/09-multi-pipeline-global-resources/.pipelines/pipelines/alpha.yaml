@@ -1,0 +1,20 @@
+schema_version: pipecraft/v1
+name: alpha
+description: First pipeline sharing one global exclusive resource.
+steps:
+  - id: prepare
+    type: note
+    description: Alpha can prepare independently.
+
+  - id: critical
+    type: command
+    needs: [prepare]
+    exclusive_resources: [demo:critical-section]
+    with:
+      argv: ["sh", "-c", "echo alpha-enter; sleep 1; echo alpha-leave"]
+      inactivity_timeout: 10
+
+  - id: finish
+    type: note
+    needs: [critical]
+    description: Alpha finished.
