@@ -305,6 +305,12 @@ def compile_workflow(
             provider=provider_id,
             rollback=component.rollback.to_dict(),
             config=install_config,
+            # Los gestores de paquetes son idempotentes y sus ejecutores
+            # comprueban el estado antes de cada intento. Un retry cubre fallos
+            # transitorios de red/locks sin reinstalar ni volver a descargar si
+            # el primer intento ya dejó el paquete instalado.
+            retries=1 if step_type == "install_package" else 0,
+            retry_delay=2.0 if step_type == "install_package" else 0.0,
         )
         steps.append(install_step)
 

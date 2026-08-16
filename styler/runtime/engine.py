@@ -347,6 +347,33 @@ class WorkflowEngine:
         last: StepResult | None = None
         for attempt in range(1, attempts + 1):
             began = time.monotonic()
+
+            # Entre intentos volvemos a observar el estado real. Esto es
+            # distinto de la reconciliación de una ejecución continuada: aquí
+            # sirve para que un intento que alcanzó a producir su efecto pero
+            # terminó con error no vuelva a producirlo. Por ejemplo, una
+            # descarga completa se reutiliza, un paquete ya instalado no se
+            # reinstala y un AppImage ya integrado no se integra otra vez.
+            if attempt > 1:
+                try:
+                    reconciled = executor.reconcile(step, ctx)
+                except Exception as exc:
+                    ctx.values.setdefault("reconciliation_warnings", []).append({
+                        "step_id": step.id,
+                        "step_type": step.step_type,
+                        "attempt": attempt,
+                        "error": str(exc),
+                    })
+                    reconciled = None
+                if reconciled is not None and reconciled.success:
+                    reconciled.status = Status.RECONCILED
+                    reconciled.data.setdefault("reconciled", True)
+                    reconciled.data.setdefault("retry_reconciled", True)
+                    reconciled.data.setdefault("attempt", attempt)
+                    reconciled.attempts = attempt
+                    last = reconciled
+                    break
+
             try:
                 result = executor.run(step, ctx)
             except Exception as exc:

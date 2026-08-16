@@ -211,6 +211,26 @@ class PackageInstallExecutor(StepExecutor):
                 data={"manager": manager, "name": name},
             )
 
+        # Instalar paquetes es idempotente, pero invocar de nuevo al gestor
+        # puede disparar red, locks y prompts innecesarios. Un retry primero
+        # observa el estado real y reutiliza la instalación si el intento
+        # anterior alcanzó a completarla.
+        if self._is_installed(manager, name):
+            return StepResult(
+                step.id,
+                step.step_type,
+                True,
+                Status.RECONCILED,
+                f"{name} ya está instalado; se reutilizará sin volver a descargarlo.",
+                data={
+                    "manager": manager,
+                    "name": name,
+                    "already_present": True,
+                    "reconciled": True,
+                    "install_skipped": True,
+                },
+            )
+
         from styler.receipts import ReceiptWriteError, ensure_receipts_writable
         try:
             ensure_receipts_writable(ctx)
