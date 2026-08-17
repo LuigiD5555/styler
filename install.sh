@@ -1,12 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-if [[ -f "$SCRIPT_DIR/../../pyproject.toml" ]]; then
-  SOURCE_DIR="$(cd -- "$SCRIPT_DIR/../.." && pwd)"
-else
-  SOURCE_DIR="$SCRIPT_DIR"
-fi
+SOURCE_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 BIN_HOME="${XDG_BIN_HOME:-$HOME/.local/bin}"
 ORIGINAL_PATH="${PATH:-}"
@@ -37,7 +32,7 @@ VENV_TEST_DIR=""
 
 usage() {
   cat <<'USAGE'
-Uso: scripts/local/install.sh [opciones]
+Uso: ./install.sh [opciones]
 
 Opciones:
   --install-dependencies  Si falta Python o el soporte para entornos virtuales,
@@ -481,7 +476,7 @@ EOF
   if [[ $INSTALL_DEPENDENCIES -eq 0 ]]; then
     cat >&2 <<'EOF'
 No se modificó la instalación. En una automatización puedes usar:
-  scripts/local/install.sh --install-dependencies --yes
+  ./install.sh --install-dependencies --yes
 EOF
     return 1
   fi
@@ -549,7 +544,7 @@ EOF
   if [[ $INSTALL_DEPENDENCIES -eq 0 ]]; then
     cat >&2 <<'EOF'
 No se modificó el sistema. Para automatizar la preparación ejecuta:
-  scripts/local/install-styler.sh --yes
+  ./install.sh --install-dependencies --yes
 EOF
     return 1
   fi
