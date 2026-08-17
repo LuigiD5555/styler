@@ -1,6 +1,6 @@
-# Styler 0.11.0-alpha.1
+# Styler
 
-## Cambio 0.11.0-alpha.1
+## Cambio 0.11.0
 
 Styler integra PipeCraft 1.5 como backend de ejecución preferente para los flujos productivos de Cambios y restauración. Styler conserva la semántica del dominio —catálogo, resolución, receipts, reconciliación, retiro y UI— y compila su `ExecutionPlan` ya expandido a un pipeline transitorio que PipeCraft ejecuta por IPC.
 
@@ -280,7 +280,7 @@ La ruta local Python permanece durante esta alpha como compatibilidad deliberada
 
 El paquete de release debe contener únicamente el código, pruebas, documentación vigente y archivos de distribución necesarios. La auditoría rechaza extensiones portables distintas de `.stylerpkg`, reportes históricos, logs, cachés, artefactos de compilación y formatos públicos retirados.
 
-### Cambio de arquitectura en 0.11.0-alpha.1
+### Cambio de arquitectura en 0.11.0
 
 - PipeCraft dejó de estar incluido como vendor dentro del repositorio de Styler. El runtime Rust se versiona y distribuye como proyecto independiente.
 - Los flujos productivos de integración/restauración fallan cerrado si PipeCraft no está disponible; `backend="auto"` ya no cae silenciosamente al scheduler Python.

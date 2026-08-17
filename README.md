@@ -1,4 +1,4 @@
-# Styler Reinvented 0.11.0-alpha.1
+# Styler
 
 > **Convierte cambios hechos en Linux en paquetes que puedes revisar, reproducir, compartir y retirar.**
 
@@ -471,7 +471,7 @@ Si `scripts/local/install-styler.sh` se ejecuta con `source`, también actualiza
 El README prioriza ahora el uso del programa. Los detalles históricos quedan plegados para no interrumpir la explicación principal.
 
 <details>
-<summary><strong>▶ 0.11.0-alpha.1</strong></summary>
+<summary><strong>▶ 0.11.0</strong></summary>
 
 <br>
 

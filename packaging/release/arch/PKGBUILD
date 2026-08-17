@@ -1,5 +1,5 @@
 pkgname=styler
-pkgver=0.11.0-alpha.1
+pkgver=0.11.0
 pkgrel=1
 pkgdesc="Integrate semantic, reproducible changes on Linux"
 arch=('x86_64')
