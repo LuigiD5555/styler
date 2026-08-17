@@ -5,7 +5,14 @@ if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
   set -Eeuo pipefail
 fi
 
-SOURCE_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "$SCRIPT_DIR/../../pyproject.toml" ]]; then
+  SOURCE_DIR="$(cd -- "$SCRIPT_DIR/../.." && pwd)"
+  INSTALL_SCRIPT="$SCRIPT_DIR/install.sh"
+else
+  SOURCE_DIR="$SCRIPT_DIR"
+  INSTALL_SCRIPT="$SOURCE_DIR/install.sh"
+fi
 ASSUME_YES=0
 
 usage() {
@@ -13,9 +20,9 @@ usage() {
 Instalador sencillo de Styler
 
 Uso:
-  ./install-styler.sh
-  ./install-styler.sh --yes
-  source ./install-styler.sh [--yes]  # también actualiza PATH en esta terminal
+  scripts/local/install-styler.sh
+  scripts/local/install-styler.sh --yes
+  source scripts/local/install-styler.sh [--yes]  # también actualiza PATH en esta terminal
 
 El instalador:
   1. Detecta la distribución Linux.
@@ -43,21 +50,21 @@ if [[ $ASSUME_YES -eq 1 ]]; then
   args+=(--yes)
 fi
 
-# Si se invoca de la forma habitual (./install-styler.sh), install.sh deja
+# Si se invoca de la forma habitual, install.sh deja
 # ~/.local/bin persistido en los archivos de inicio del shell. Un proceso hijo
 # no puede modificar el PATH de su shell padre; si el usuario *sourcea* este
 # wrapper, además actualizamos ese mismo shell de inmediato.
 if [[ "${BASH_SOURCE[0]}" != "$0" ]]; then
-  "$SOURCE_DIR/install.sh" "${args[@]}"
+  "$INSTALL_SCRIPT" "${args[@]}"
   BIN_HOME="${XDG_BIN_HOME:-$HOME/.local/bin}"
   case ":$PATH:" in
     *":$BIN_HOME:"*) ;;
     *) export PATH="$BIN_HOME:$PATH" ;;
   esac
   hash -r 2>/dev/null || true
-  unset SOURCE_DIR ASSUME_YES BIN_HOME
+  unset SCRIPT_DIR SOURCE_DIR INSTALL_SCRIPT ASSUME_YES BIN_HOME
   unset -v args 2>/dev/null || true
   return 0
 fi
 
-exec "$SOURCE_DIR/install.sh" "${args[@]}"
+exec "$INSTALL_SCRIPT" "${args[@]}"

@@ -116,7 +116,7 @@ def test_install_pre_and_post_create_baseline_and_event_log(monkeypatch, tmp_pat
 
 def test_packaging_hooks_do_not_call_removed_registry_cli():
     root = Path(__file__).resolve().parents[1]
-    source_installer = (root / "install.sh").read_text(encoding="utf-8")
+    source_installer = (root / "scripts" / "local" / "install.sh").read_text(encoding="utf-8")
     assert "styler.system_registry install-pre" in source_installer
     assert "registry-install-post" in source_installer
 
