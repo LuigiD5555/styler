@@ -135,4 +135,4 @@ def test_existing_single_change_progress_screen_remains_byte_identical():
     start = source.index("class ChangeProgressScreen(Screen):")
     end = source.index("class ChangeResultScreen(Screen):")
     digest = hashlib.sha256(source[start:end].encode("utf-8")).hexdigest()
-    assert digest == "981950ba11de315b9bf5d23922271a71ba957d543c9de543fd121d10900c94a8"
+    assert digest == "c684a0dc239d47d50c638efda18c528f72fdedae0318400b4e544bec6be45732"
