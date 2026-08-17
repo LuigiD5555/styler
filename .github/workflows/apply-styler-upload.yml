@@ -1,0 +1,70 @@
+name: Apply Styler 0.13 source upload
+
+on:
+  push:
+    branches:
+      - agent/styler-0.13.0-alpha.1
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/styler-0.13.0-alpha.1
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Download validated source archive
+        run: |
+          curl --fail --location --silent --show-error --retry 3 \
+            'https://filebin.net/styler013-2ed80b0747b2/styler-source-0.13.0-alpha.1.tar.xz' \
+            -o /tmp/styler-source.tar.xz
+          echo '2ed80b0747b2ba1cc7d8ecd06477d7ee2b4d19af03960c4dd3773b58e795de6b  /tmp/styler-source.tar.xz' | sha256sum -c -
+          mkdir -p /tmp/styler-source
+          tar -xJf /tmp/styler-source.tar.xz -C /tmp/styler-source
+
+      - name: Apply tracked source only
+        run: |
+          rsync -a --delete \
+            --exclude='.git/' \
+            --exclude='.styler-upload/' \
+            --exclude='.github/workflows/apply-styler-upload.yml' \
+            /tmp/styler-source/ ./
+          rm -rf .styler-upload
+          rm -f .github/workflows/apply-styler-upload.yml
+
+      - name: Verify gitignore boundary
+        run: |
+          test ! -e runtime/pipecraft/linux-x86_64/pipecraft
+          git add -A
+          if git ls-files --error-unmatch runtime/pipecraft/linux-x86_64/pipecraft >/dev/null 2>&1; then
+            echo 'ERROR: ignored PipeCraft runtime binary became tracked'
+            exit 1
+          fi
+          if git ls-files --error-unmatch runtime/pipecraft/linux-x86_64/pipecraft.sha256 >/dev/null 2>&1; then
+            echo 'ERROR: ignored PipeCraft checksum became tracked'
+            exit 1
+          fi
+
+      - name: Validate architecture boundary
+        run: |
+          python scripts/verify-runtime-boundary.py
+
+      - name: Run tests
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e '.[dev]'
+          python -m pytest -q
+
+      - name: Commit source update
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Update Styler to 0.13.0-alpha.1'
+          git push origin HEAD:agent/styler-0.13.0-alpha.1
