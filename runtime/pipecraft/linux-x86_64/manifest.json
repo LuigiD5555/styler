@@ -1,0 +1,13 @@
+{
+  "runtime": "pipecraft",
+  "version": "1.5.0-alpha.1",
+  "protocol": "pipecraft.ipc/v1",
+  "target": "linux-x86_64",
+  "sha256": "7f156e5bcf453ec4f211ebee3050bca1f53c3d03fbc6043cb520b541abe4fcd3",
+  "build": {
+    "host": "github-actions ubuntu-24.04 x86_64-unknown-linux-gnu",
+    "rustc": "1.97.1",
+    "source_version": "1.5.0-alpha.1",
+    "compile_fix": "pipecraft-core loader.rs keeps sid alive through barrier parsing (id: sid.clone())"
+  }
+}

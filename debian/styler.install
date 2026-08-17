@@ -1,2 +1,3 @@
 packaging/linux/styler.desktop usr/share/applications/
 packaging/linux/styler-package.xml usr/share/mime/packages/
+runtime/pipecraft/linux-x86_64/pipecraft usr/libexec/styler/

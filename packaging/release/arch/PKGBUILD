@@ -1,19 +1,20 @@
 pkgname=styler
-pkgver=0.10.0-alpha.1
+pkgver=0.11.0-alpha.1
 pkgrel=1
 pkgdesc="Integrate semantic, reproducible changes on Linux"
-arch=('any')
+arch=('x86_64')
 license=('Apache-2.0')
 depends=('python>=3.10')
 optdepends=('kdialog: native KDE file and directory selectors'
             'zenity: native GTK file and directory selectors'
             'python-atspi: semantic desktop waits and actions')
 install=styler.install
-source=('styler.pyz' 'styler.desktop' 'styler-package.xml' 'styler.1' 'LICENSE' 'NOTICE' 'README.md' 'STYLER.md')
-sha256sums=('SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP')
+source=('styler.pyz' 'pipecraft' 'styler.desktop' 'styler-package.xml' 'styler.1' 'LICENSE' 'NOTICE' 'README.md' 'STYLER.md')
+sha256sums=('SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP')
 
 package() {
   install -Dm755 styler.pyz "$pkgdir/usr/lib/styler/styler.pyz"
+  install -Dm755 pipecraft "$pkgdir/usr/libexec/styler/pipecraft"
   install -d "$pkgdir/usr/bin"
   cat > "$pkgdir/usr/bin/styler" <<'SH'
 #!/bin/sh

@@ -1,14 +1,14 @@
-# Styler 0.10.0-alpha.1
+# Styler 0.11.0-alpha.1
 
-## Cambio 0.10.0-alpha.1
+## Cambio 0.11.0-alpha.1
 
 Styler integra PipeCraft 1.5 como backend de ejecución preferente para los flujos productivos de Cambios y restauración. Styler conserva la semántica del dominio —catálogo, resolución, receipts, reconciliación, retiro y UI— y compila su `ExecutionPlan` ya expandido a un pipeline transitorio que PipeCraft ejecuta por IPC.
 
 - PipeCraft 1.5 corre como servicio Rust local y es dueño del scheduling del DAG, recursos, procesos, eventos, cancelación y persistencia de ejecución.
 - Los executors propios de Styler se invocan como plugins externos `pipecraft.plugin/v1`; el runtime Rust no conoce APT, Flatpak, overlays ni `.stylerpkg`.
 - Al aceptar un job, Styler persiste inmediatamente `pipecraft_run_id`. Si la conexión falla después de `submit`, Styler no repite el DAG con el runtime local porque el efecto remoto puede seguir en curso.
-- El runtime Python histórico permanece temporalmente como compatibilidad cuando PipeCraft no está disponible y para pruebas/extensiones internas. No es la ruta preferente cuando existe un binario PipeCraft 1.5 funcional.
-- El instalador puede compilar el PipeCraft vendorizado cuando existe `cargo`; también se admite un binario externo mediante `PIPECRAFT_BIN` o `PATH`.
+- El runtime Python histórico permanece temporalmente sólo como arnés explícito de tests/compatibilidad interna. Las operaciones productivas no caen a él cuando PipeCraft falta o falla.
+- Styler no vendoriza el source de PipeCraft. La distribución oficial 0.11 incluye un binario PipeCraft privado por arquitectura y `install.sh` lo copia al release aislado. `PIPECRAFT_BIN`, `PATH` y `PIPECRAFT_SOURCE_DIR` quedan como opciones de desarrollo.
 - Los estados semánticos adicionales de Styler se preservan en el resultado del plugin, mientras PipeCraft recibe estados canónicos para mantener correctos dependencias y resume.
 
 ## Cambio 0.9.11
@@ -279,3 +279,23 @@ La ruta local Python permanece durante esta alpha como compatibilidad deliberada
 ## Auditoría de los archivos del ZIP
 
 El paquete de release debe contener únicamente el código, pruebas, documentación vigente y archivos de distribución necesarios. La auditoría rechaza extensiones portables distintas de `.stylerpkg`, reportes históricos, logs, cachés, artefactos de compilación y formatos públicos retirados.
+
+### Cambio de arquitectura en 0.11.0-alpha.1
+
+- PipeCraft dejó de estar incluido como vendor dentro del repositorio de Styler. El runtime Rust se versiona y distribuye como proyecto independiente.
+- Los flujos productivos de integración/restauración fallan cerrado si PipeCraft no está disponible; `backend="auto"` ya no cae silenciosamente al scheduler Python.
+- El backend Python histórico permanece temporalmente sólo para pruebas unitarias y compatibilidad explícita mientras se retiran sus últimas dependencias de modelos/planificación.
+- `styler doctor` informa por separado binario, daemon, protocolo y compatibilidad de versión.
+- Esta separación hace que la barra de lenguajes de GitHub describa a **Styler** (UI y dominio, principalmente Python) y la del repositorio **PipeCraft** describa al runtime (Rust), en vez de mezclar dos proyectos en una sola estadística.
+
+### Sobre los porcentajes de lenguajes en GitHub
+
+Styler seguirá apareciendo mayoritariamente como Python porque su interfaz Textual,
+catálogo, dominio, receipts y reconciliación viven en este repositorio. El motor
+Rust de scheduling/multi-pipeline pertenece a PipeCraft y, desde alpha.2, ya no se
+copia dentro del repositorio de Styler. Por tanto la barra de lenguajes de Styler
+debe describir Styler, no la suma artificial Styler + PipeCraft.
+
+El objetivo arquitectónico no es maximizar el porcentaje Rust de este repositorio,
+sino evitar motores duplicados: un solo runtime Rust privado incluido en la distribución (PipeCraft) y un
+cliente/adaptador Python pequeño dentro de Styler.

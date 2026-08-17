@@ -1,9 +1,9 @@
 Name:           styler
-Version:        0.10.0-alpha.1
+Version:        0.11.0-alpha.1
 Release:        1%{?dist}
 Summary:        Integrate semantic, reproducible changes on Linux
 License:        Apache-2.0
-BuildArch:      noarch
+BuildArch:      x86_64
 Source0:        styler.pyz
 Source1:        styler.desktop
 Source2:        styler-package.xml
@@ -12,6 +12,7 @@ Source4:        LICENSE
 Source5:        NOTICE
 Source6:        README.md
 Source7:        STYLER.md
+Source8:        pipecraft
 Requires:       python3 >= 3.10
 Recommends:     kdialog
 Recommends:     zenity
@@ -30,6 +31,7 @@ its terminal interface.
 
 %install
 install -Dpm 0755 %{SOURCE0} %{buildroot}%{_prefix}/lib/styler/styler.pyz
+install -Dpm 0755 %{SOURCE8} %{buildroot}%{_prefix}/libexec/styler/pipecraft
 mkdir -p %{buildroot}%{_bindir}
 cat > %{buildroot}%{_bindir}/styler <<'SH'
 #!/bin/sh
@@ -52,6 +54,7 @@ command -v update-desktop-database >/dev/null 2>&1 && update-desktop-database %{
 %license %{SOURCE4} %{SOURCE5}
 %doc %{SOURCE6} %{SOURCE7}
 %{_bindir}/styler
+%{_prefix}/libexec/styler/pipecraft
 %{_prefix}/lib/styler/styler.pyz
 %{_datadir}/applications/styler.desktop
 %{_datadir}/mime/packages/styler-package.xml

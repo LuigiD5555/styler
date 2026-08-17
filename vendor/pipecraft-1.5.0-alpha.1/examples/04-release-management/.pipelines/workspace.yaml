@@ -1,5 +1,0 @@
-schema_version: pipecraft/v1
-workspace:
-  name: release
-defaults:
-  default_pipeline: release
