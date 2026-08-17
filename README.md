@@ -57,13 +57,7 @@ El cambio se registra en el catálogo y aparece en **Cambios**, donde se revisa 
 
 ## 1. Ejecutar Styler
 
-Desde el proyecto:
-
-```bash
-scripts/local/run-styler.sh
-```
-
-O, después de instalarlo:
+Después de instalarlo:
 
 ```bash
 styler
@@ -84,7 +78,7 @@ styler doctor
 El instalador del proyecto puede ejecutarse con:
 
 ```bash
-bash scripts/local/install.sh
+bash ./install.sh
 ```
 
 Después de instalar, el comando principal es:
@@ -459,8 +453,6 @@ ${XDG_BIN_HOME:-$HOME/.local/bin}
 al `PATH` del proceso de instalación y lo deja persistido en `~/.profile` y en el archivo del shell interactivo compatible, como `~/.bashrc` o `~/.zshrc`.
 
 No es necesario añadir manualmente una ruta específica para un nombre de usuario.
-
-Si `scripts/local/install-styler.sh` se ejecuta con `source`, también actualiza inmediatamente el `PATH` del shell actual.
 
 </details>
 

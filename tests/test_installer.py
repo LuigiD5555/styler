@@ -7,7 +7,7 @@ import textwrap
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-INSTALLER = ROOT / "scripts" / "local" / "install.sh"
+INSTALLER = ROOT / "install.sh"
 
 
 def _write_executable(path: Path, content: str) -> Path:
@@ -169,104 +169,12 @@ def test_failed_staged_install_preserves_previous_version(tmp_path):
     assert "permanece intacta" in result.stderr
     assert not list((tmp_path / "data").glob("styler-install.*"))
 
-SIMPLE_INSTALLER = ROOT / "scripts" / "local" / "install-styler.sh"
-RUNNER = ROOT / "scripts" / "local" / "run-styler.sh"
-UNINSTALLER = ROOT / "scripts" / "local" / "uninstall.sh"
+UNINSTALLER = ROOT / "uninstall.sh"
 
 
-def test_beginner_scripts_have_valid_bash_syntax_and_clear_help():
-    for script in (SIMPLE_INSTALLER, RUNNER, UNINSTALLER):
+def test_uninstaller_has_valid_bash_syntax():
+    for script in (UNINSTALLER,):
         subprocess.run(["bash", "-n", str(script)], check=True)
-
-    result = subprocess.run(
-        ["bash", str(SIMPLE_INSTALLER), "--help"],
-        check=True,
-        text=True,
-        capture_output=True,
-    )
-    assert "Miniconda" in result.stdout
-    assert "Python 3" in result.stdout
-    assert "--yes" in result.stdout
-
-
-def test_simple_installer_delegates_dependency_bootstrap(tmp_path):
-    source = tmp_path / "source"
-    source.mkdir()
-    wrapper = source / "install-styler.sh"
-    wrapper.write_text(SIMPLE_INSTALLER.read_text(encoding="utf-8"), encoding="utf-8")
-    wrapper.chmod(0o755)
-    target = _write_executable(
-        source / "install.sh",
-        """
-        #!/usr/bin/env bash
-        printf '%s\\n' "$@"
-        """,
-    )
-
-    result = subprocess.run(
-        [str(wrapper), "--yes"],
-        check=True,
-        text=True,
-        capture_output=True,
-    )
-    assert result.stdout.splitlines() == ["--install-dependencies", "--yes"]
-
-
-def test_runner_updates_an_older_installed_release_before_launch(tmp_path):
-    source = tmp_path / "source"
-    source.mkdir()
-    runner = source / "run-styler.sh"
-    runner.write_text(RUNNER.read_text(encoding="utf-8"), encoding="utf-8")
-    runner.chmod(0o755)
-    (source / "pyproject.toml").write_text(
-        '[project]\nname = "styler"\nversion = "0.11.0"\n', encoding="utf-8"
-    )
-
-    bin_home = tmp_path / "bin"
-    bin_home.mkdir()
-    styler = _write_executable(
-        bin_home / "styler",
-        """
-        #!/usr/bin/env bash
-        if [[ "${1:-}" == "--version" ]]; then
-          echo "Styler 0.11.0~previous"
-        else
-          echo "old-release"
-        fi
-        """,
-    )
-    marker = tmp_path / "updated"
-    installer = _write_executable(
-        source / "install-styler.sh",
-        f"""
-        #!/usr/bin/env bash
-        touch {marker!s}
-        cat > {styler!s} <<'SCRIPT'
-#!/usr/bin/env bash
-if [[ "${{1:-}}" == "--version" ]]; then
-  echo "Styler 0.11.0"
-else
-  echo "new-release"
-fi
-SCRIPT
-        chmod +x {styler!s}
-        """,
-    )
-
-    env = os.environ.copy()
-    env["HOME"] = str(tmp_path / "home")
-    env["XDG_BIN_HOME"] = str(bin_home)
-    result = subprocess.run(
-        [str(runner)],
-        check=True,
-        text=True,
-        capture_output=True,
-        env=env,
-    )
-
-    assert marker.exists()
-    assert "Actualizando Styler 0.11.0~previous → 0.11.0" in result.stdout
-    assert result.stdout.rstrip().endswith("new-release")
 
 
 def test_installer_persists_user_bin_in_profile_and_bashrc_without_duplicates(tmp_path):
@@ -300,58 +208,6 @@ def test_installer_process_itself_exports_user_bin_before_post_install_commands(
     export_pos = text.index('export PATH="$BIN_HOME:$PATH"')
     preflight_pos = text.index("venv_preflight()")
     assert export_pos < preflight_pos
-
-
-def test_sourcing_simple_installer_updates_current_shell_path(tmp_path):
-    source = tmp_path / "source"
-    source.mkdir()
-    wrapper = source / "install-styler.sh"
-    wrapper.write_text(SIMPLE_INSTALLER.read_text(encoding="utf-8"), encoding="utf-8")
-    wrapper.chmod(0o755)
-    _write_executable(
-        source / "install.sh",
-        """
-        #!/usr/bin/env bash
-        exit 0
-        """,
-    )
-    home = tmp_path / "home"
-    bin_home = home / ".local" / "bin"
-    env = os.environ.copy()
-    env.update({"HOME": str(home), "PATH": "/usr/bin:/bin", "SHELL": "/bin/bash"})
-    result = subprocess.run(
-        ["bash", "-c", 'source "$1" --yes; printf "%s" "$PATH"', "bash", str(wrapper)],
-        env=env,
-        check=True,
-        text=True,
-        capture_output=True,
-    )
-    assert result.stdout.split(":", 1)[0] == str(bin_home)
-
-
-def test_sourcing_simple_installer_does_not_enable_strict_shell_options(tmp_path):
-    source = tmp_path / "source"
-    source.mkdir()
-    wrapper = source / "install-styler.sh"
-    wrapper.write_text(SIMPLE_INSTALLER.read_text(encoding="utf-8"), encoding="utf-8")
-    wrapper.chmod(0o755)
-    _write_executable(source / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
-    home = tmp_path / "home"
-    env = os.environ.copy()
-    env.update({"HOME": str(home), "PATH": "/usr/bin:/bin", "SHELL": "/bin/bash"})
-    result = subprocess.run(
-        [
-            "bash", "-c",
-            'set +e +u; set +o pipefail; source "$1" --yes; '
-            '[[ $- != *e* && $- != *u* ]]; a=$?; '
-            'set -o | grep -q "^pipefail[[:space:]]*off$"; b=$?; exit $((a || b))',
-            "bash", str(wrapper),
-        ],
-        env=env,
-        text=True,
-        capture_output=True,
-    )
-    assert result.returncode == 0, result.stderr
 
 
 def test_installer_builds_from_sanitized_staging_copy_not_source_tree():
