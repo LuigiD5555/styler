@@ -165,7 +165,7 @@ class StylerScreen(Screen):
     help_screen = "home"
     help_targets: dict[str, str] = {}
 
-    # Styler Reinvented organiza la navegación por objetivos, no por subsistemas
+    # Styler organiza la navegación por objetivos, no por subsistemas
     # internos. Apps, archivos y escritorio siguen existiendo debajo, pero la
     # persona trabaja con cambios semánticos integrables.
     NAVIGATION = (

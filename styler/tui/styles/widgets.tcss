@@ -195,7 +195,7 @@ ModalScreen {
     color: $text-muted;
 }
 
-/* Filas semánticas de Styler Reinvented. */
+/* Filas semánticas de Styler. */
 .change-row {
     height: auto;
     min-height: 5;

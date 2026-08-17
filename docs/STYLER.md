@@ -117,7 +117,7 @@ Las filas del Constructor deshabilitan la selección arbitraria de texto. Esto e
 
 Una línea base personalizada puede exportarse sin cambiar su tipo o prepararse explícitamente como candidata oficial. Esta segunda operación no muta la copia local y solo debe confirmarse cuando el inventario fue capturado en una instalación limpia.
 
-**Manual único de Styler Reinvented.**
+**Manual único de Styler.**
 
 ## Propósito
 
