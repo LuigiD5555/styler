@@ -18,7 +18,7 @@ jobs:
           base64 -d /tmp/pipecraft.patch.gz.b64 > /tmp/pipecraft.patch.gz
           gzip -t /tmp/pipecraft.patch.gz
           gzip -dc /tmp/pipecraft.patch.gz > /tmp/pipecraft.patch
-          git apply /tmp/pipecraft.patch
+          git apply -p1 --directory=vendor /tmp/pipecraft.patch
       - name: Format source
         run: cargo fmt --manifest-path vendor/pipecraft-1.5.0-alpha.1/Cargo.toml --all
       - name: Check formatting
