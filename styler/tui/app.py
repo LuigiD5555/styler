@@ -375,7 +375,7 @@ class ChangesScreen(StylerScreen):
                         "archivos, respaldos y pasos internos sin obligarte a separarlos.",
                         classes="tagline",
                     )
-                yield Static(f"REINVENTED {__version__}", classes="version-badge")
+                yield Static("STYLER", classes="version-badge")
 
             with Horizontal(classes="changes-columns"):
                 with Vertical(classes="change-column"):
@@ -791,8 +791,8 @@ class ChangeProgressScreen(Screen):
         self._last_command = ""
 
     def compose(self) -> ComposeResult:
-        with Vertical(classes="page reinvented-progress-page"):
-            yield Static(f"STYLER · REINVENTED {__version__}", classes="progress-brand")
+        with Vertical(classes="page styler-progress-page"):
+            yield Static("STYLER", classes="progress-brand")
             yield Label(
                 f"{'Quitando' if self.plan.operation == 'remove' else 'Procesando'} {self.plan.name}",
                 classes="page-title",
@@ -956,7 +956,7 @@ class ChangeResultScreen(Screen):
 
     def compose(self) -> ComposeResult:
         with Vertical(classes="page change-result-page"):
-            yield Static(f"STYLER · REINVENTED {__version__}", classes="progress-brand")
+            yield Static("STYLER", classes="progress-brand")
             yield Label(
                 ("✓ " if self.result.ok else "✕ ") + self.result.title,
                 classes="page-title success" if self.result.ok else "page-title warning",
@@ -1108,8 +1108,8 @@ class ChangeBatchProgressScreen(Screen):
         self._last_console_message = ""
 
     def compose(self) -> ComposeResult:
-        with Vertical(classes="page reinvented-progress-page batch-progress-page"):
-            yield Static(f"STYLER · REINVENTED {__version__}", classes="progress-brand")
+        with Vertical(classes="page styler-progress-page batch-progress-page"):
+            yield Static("STYLER", classes="progress-brand")
             yield Label(f"Integrando {self.batch.count} cambios", classes="page-title")
             yield Static("Preparando el primer cambio…", id="batch-live-change", classes="live-phase")
             yield Static("0 % total", id="batch-overall-percent", classes="progress-percent")
@@ -1235,7 +1235,7 @@ class ChangeBatchResultScreen(Screen):
 
     def compose(self) -> ComposeResult:
         with Vertical(classes="page change-result-page batch-result-page"):
-            yield Static(f"STYLER · REINVENTED {__version__}", classes="progress-brand")
+            yield Static("STYLER", classes="progress-brand")
             yield Label(
                 ("✓ " if self.result.ok else "✕ ") + self.result.title,
                 classes="page-title success" if self.result.ok else "page-title warning",

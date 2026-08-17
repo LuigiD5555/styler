@@ -398,7 +398,7 @@ class BaselineDefinition:
         «no se sabe», no «no coincide»: es el mismo criterio que ya aplica
         ``provenance.baseline.compare()``, que ante una identidad incompleta
         advierte en vez de rechazar. Sin esta distinción, cualquier línea base
-        migrada de 0.6.5 sin identidad de sistema quedaría inexportable.
+        migrada sin identidad de sistema quedaría inexportable.
         """
         report = self.compatibility_report(system, scope=scope)
         if not report.conflicts:

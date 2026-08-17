@@ -47,7 +47,7 @@ def test_los_pasos_del_asistente_muestran_donde_estamos():
 
 
 def test_ninguna_pantalla_reemplaza_metodos_reservados_de_textual():
-    """0.8.3 definía `_render()` y Textual reventaba al dibujar."""
+    """La pantalla no debe definir `_render()` porque Textual falla al dibujar."""
     pytest.importorskip("textual")
     from textual.screen import Screen
 

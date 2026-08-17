@@ -1,7 +1,6 @@
 """Guardas de comportamiento del DAG.
 
-0.9.7 es la primera modificación aprobada del DAG canónico de PhotoGIMP desde
-0.8.2: elimina el timeout exterior rígido y añade esperas adaptativas. El hash
+La modificación aprobada del DAG canónico de PhotoGIMP elimina el timeout exterior rígido y añade esperas adaptativas. El hash
 nuevo se congela aquí para que cambios futuros vuelvan a requerir intención
 explícita.
 """
@@ -33,7 +32,7 @@ def test_photogimp_dag_matches_097_adaptive_wait_baseline(tmp_path):
 
 
 def test_change_progress_execution_block_remains_unchanged():
-    """La pantalla que entrega el plan a ChangeService sigue siendo la de 0.8.2."""
+    """La pantalla que entrega el plan a ChangeService sigue siendo la esperada."""
     source = Path("styler/tui/app.py").read_text(encoding="utf-8")
     start = source.index("class ChangeProgressScreen(Screen):")
     end = source.index("class ChangeResultScreen(Screen):")

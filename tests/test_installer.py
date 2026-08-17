@@ -87,7 +87,7 @@ def _fake_python_that_builds_venvs(path: Path, *, fail_install: bool = False) ->
     install_branch = "exit 31" if fail_install else r"""
         cat > "$(dirname "$0")/styler" <<'STYLER'
 #!/usr/bin/env bash
-if [[ "${1:-}" == "--version" ]]; then echo 'Styler 0.9.11'; exit 0; fi
+if [[ "${1:-}" == "--version" ]]; then echo 'Styler 0.11.0'; exit 0; fi
 exit 0
 STYLER
         chmod +x "$(dirname "$0")/styler"
@@ -142,7 +142,7 @@ def test_installer_activates_only_a_fully_verified_staged_installation(tmp_path)
         capture_output=True,
         env=env,
     )
-    assert "0.9.11" in installed.stdout
+    assert "0.11.0" in installed.stdout
     assert not list((tmp_path / "data").glob("styler-install.*"))
 
 
@@ -219,7 +219,7 @@ def test_runner_updates_an_older_installed_release_before_launch(tmp_path):
     runner.write_text(RUNNER.read_text(encoding="utf-8"), encoding="utf-8")
     runner.chmod(0o755)
     (source / "pyproject.toml").write_text(
-        '[project]\nname = "styler"\nversion = "0.5.2"\n', encoding="utf-8"
+        '[project]\nname = "styler"\nversion = "0.11.0"\n', encoding="utf-8"
     )
 
     bin_home = tmp_path / "bin"
@@ -229,7 +229,7 @@ def test_runner_updates_an_older_installed_release_before_launch(tmp_path):
         """
         #!/usr/bin/env bash
         if [[ "${1:-}" == "--version" ]]; then
-          echo "Styler 0.5.1"
+          echo "Styler 0.11.0~previous"
         else
           echo "old-release"
         fi
@@ -244,7 +244,7 @@ def test_runner_updates_an_older_installed_release_before_launch(tmp_path):
         cat > {styler!s} <<'SCRIPT'
 #!/usr/bin/env bash
 if [[ "${{1:-}}" == "--version" ]]; then
-  echo "Styler 0.5.2"
+  echo "Styler 0.11.0"
 else
   echo "new-release"
 fi
@@ -265,7 +265,7 @@ SCRIPT
     )
 
     assert marker.exists()
-    assert "Actualizando Styler 0.5.1 → 0.5.2" in result.stdout
+    assert "Actualizando Styler 0.11.0~previous → 0.11.0" in result.stdout
     assert result.stdout.rstrip().endswith("new-release")
 
 
@@ -360,7 +360,7 @@ def test_installer_builds_from_sanitized_staging_copy_not_source_tree():
     assert 'prepare_build_source "$BUILD_SOURCE_DIR"' in text
     assert 'pip install "${PIP_ARGS[@]}" "$BUILD_SOURCE_DIR"' in text
     assert 'pip install "${PIP_ARGS[@]}" "$SOURCE_DIR"' not in text
-    # Los residuos que provocaron el fallo de 0.9.2 deben excluirse de la copia.
+    # Los residuos que provocaron el fallo anterior deben excluirse de la copia.
     assert '"build"' in text
     assert 'name.endswith(".egg-info")' in text
     assert 'copy_function=shutil.copyfile' in text
@@ -409,7 +409,7 @@ def test_installer_creates_immediate_bridge_in_active_conda_path(tmp_path):
         capture_output=True,
     )
     assert resolved.stdout.splitlines()[0] == str(bridge)
-    assert "0.9.11" in resolved.stdout
+    assert "0.11.0" in resolved.stdout
 
 
 def test_uninstaller_removes_only_recorded_managed_bridge(tmp_path):
@@ -509,7 +509,7 @@ def test_installer_immediate_command_with_plain_python_and_system_path(tmp_path)
         capture_output=True,
     )
     assert resolved.stdout.splitlines()[0] == str(bridge)
-    assert "0.9.11" in resolved.stdout
+    assert "0.11.0" in resolved.stdout
 
 
 def test_installer_reuses_generic_user_bin_without_conda(tmp_path):
@@ -541,4 +541,4 @@ def test_installer_reuses_generic_user_bin_without_conda(tmp_path):
         capture_output=True,
     )
     assert resolved.stdout.splitlines()[0] == str(bridge)
-    assert "0.9.11" in resolved.stdout
+    assert "0.11.0" in resolved.stdout

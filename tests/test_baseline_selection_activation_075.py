@@ -1,4 +1,4 @@
-"""Regresión 0.7.5: seleccionar una baseline no debe activarla."""
+"""Regresión: seleccionar una baseline no debe activarla."""
 from __future__ import annotations
 
 import asyncio

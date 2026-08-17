@@ -166,7 +166,7 @@ def _download_release_asset(url: str, destination: Path) -> None:
     parsed = urlparse(url)
     if parsed.scheme != "https" or parsed.netloc.lower() not in {"github.com", "www.github.com"}:
         raise AdvancedRestoreError("Styler rechazó una URL de descarga que no pertenece a GitHub.")
-    request = Request(url, headers={"User-Agent": "Styler-Reinvented/0.1"})
+    request = Request(url, headers={"User-Agent": "Styler"})
     try:
         with urlopen(request, timeout=120) as response, destination.open("wb") as output:  # noqa: S310
             shutil.copyfileobj(response, output)

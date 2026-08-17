@@ -1,4 +1,4 @@
-.TH STYLER 1 "August 2026" "Styler 0.11.0" "User Commands"
+.TH STYLER 1 "August 2026" "Styler" "User Commands"
 .SH NAME
 styler \- build, apply and remove reproducible Linux changes
 .SH SYNOPSIS
@@ -42,7 +42,7 @@ returns 0 when every selected element was included. It returns 1 when a package 
 line with its reason.
 
 .SH BUILT-IN YAML CHANGES
-Styler 0.9.5 can load built-in declarative YAML changes and compile them to the same PipeCraft workflow used by the Changes interface. AppImageLauncher and Affinity for Linux are the first two built-in YAML changes. Affinity depends on AppImageLauncher; selecting Affinity composes both definitions automatically. The bundled provider is limited to Ubuntu/Debian-family x86_64 systems. Before downloading AppImageLauncher, Styler checks the YAML-declared ail-cli capability and reuses an existing installation when available.
+Styler can load built-in declarative YAML changes and compile them to the same PipeCraft workflow used by the Changes interface. AppImageLauncher and Affinity for Linux are the first two built-in YAML changes. Affinity depends on AppImageLauncher; selecting Affinity composes both definitions automatically. The bundled provider is limited to Ubuntu/Debian-family x86_64 systems. Before downloading AppImageLauncher, Styler checks the YAML-declared ail-cli capability and reuses an existing installation when available.
 
 .SH FILES
 .TP

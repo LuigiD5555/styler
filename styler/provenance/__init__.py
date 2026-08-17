@@ -1,7 +1,7 @@
 """
 styler.provenance
 =================
-Styler 0.8.2 — Procedencia de aplicaciones (solo lectura).
+Styler — Procedencia de aplicaciones (solo lectura).
 
 Responde, para cada aplicación instalada:
 

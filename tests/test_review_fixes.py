@@ -1,4 +1,4 @@
-"""Pruebas de los fallos señalados en la revisión de la 0.10.0.
+"""Pruebas de los fallos señalados en la revisión.
 
 Cada prueba lleva el número del fallo que cierra. Si alguna se pone en rojo,
 el fallo volvió.

@@ -628,7 +628,7 @@ class InitializeFlatpakAppExecutor(StepExecutor):
         sin ventanas de una ventana abierta que temporalmente perdió el foco.
         """
         # Primero se pregunta únicamente por ``application``. Esa columna está
-        # disponible en versiones antiguas de Flatpak. En 0.5.4 se hacía una
+        # disponible en versiones antiguas de Flatpak. Antes se hacía una
         # única consulta que incluía ``background``; cuando la versión local no
         # conocía esa columna, Styler concluía erróneamente que la aplicación no
         # estaba ejecutándose y ni siquiera podía cerrarla tras un timeout.
@@ -1703,9 +1703,9 @@ def _styler_user_agent() -> str:
     try:
         from styler import __version__
 
-        return f"Styler-Reinvented/{__version__}"
+        return f"Styler/{__version__}"
     except Exception:  # noqa: BLE001 - la descarga no depende de conocer la versión
-        return "Styler-Reinvented"
+        return "Styler"
 
 
 def _looks_like_linux_asset(name: str) -> bool:

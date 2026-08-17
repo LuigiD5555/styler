@@ -107,7 +107,7 @@ class PackageManifest:
     artifacts: tuple[ArtifactEntry, ...]
     description: str = ""
     author: str = ""
-    requires_styler: str = ">=0.7.0"
+    requires_styler: str = ">=0.11.0"
     requires_capabilities: tuple[str, ...] = ()
     metadata: Mapping[str, Any] = field(default_factory=dict)
     schema: str = PACKAGE_SCHEMA
@@ -190,7 +190,7 @@ class PackageManifest:
             version=str(data.get("version", "")),
             description=str(data.get("description", "")),
             author=str(data.get("author", "")),
-            requires_styler=str(data.get("requires_styler", ">=0.7.0")),
+            requires_styler=str(data.get("requires_styler", ">=0.11.0")),
             requires_capabilities=tuple(str(item) for item in raw_caps),
             metadata=dict(raw_metadata),
             artifacts=tuple(ArtifactEntry.from_dict(item) for item in raw_artifacts),

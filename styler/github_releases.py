@@ -47,7 +47,7 @@ def default_release_fetcher(repository: str) -> list[dict]:
         url,
         headers={
             "Accept": "application/vnd.github+json",
-            "User-Agent": "Styler-Reinvented/0.1",
+            "User-Agent": "Styler",
             "X-GitHub-Api-Version": "2022-11-28",
         },
     )

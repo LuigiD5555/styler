@@ -1,4 +1,4 @@
-"""Contrato 0.8.2: terminar un paquete abre un ciclo nuevo sin repetir lo ya empaquetado."""
+"""Contrato de terminar un paquete y abrir un ciclo nuevo sin repetir lo ya empaquetado."""
 from __future__ import annotations
 
 from pathlib import Path

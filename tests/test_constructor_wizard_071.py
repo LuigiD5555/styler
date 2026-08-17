@@ -1,4 +1,4 @@
-"""Contrato del constructor guiado 0.7.1."""
+"""Contrato del constructor guiado."""
 from __future__ import annotations
 
 import asyncio

@@ -1,4 +1,4 @@
-"""0.8.1: los defaults oficiales pertenecen a una identidad concreta, nunca son globales."""
+"""Los defaults oficiales pertenecen a una identidad concreta, nunca son globales."""
 from __future__ import annotations
 
 from dataclasses import replace
@@ -136,7 +136,7 @@ def test_missing_platform_fact_does_not_guess_a_default(tmp_path):
 
 
 def test_upgrade_prunes_a_retired_bundled_default_instead_of_leaving_two(tmp_path):
-    """0.8.0 no debe quedar viviendo como un segundo default al actualizar."""
+    """no debe quedar viviendo como un segundo default al actualizar."""
     root = tmp_path / "library"
     home = tmp_path / "home"
     home.mkdir()
@@ -149,7 +149,7 @@ def test_upgrade_prunes_a_retired_bundled_default_instead_of_leaving_two(tmp_pat
     sentinel = root / ".styler" / store.BASELINES_DIR / "bundled-catalog.json"
     sentinel.parent.mkdir(parents=True, exist_ok=True)
     sentinel.write_text(
-        '{"signature":"catalogo-0.8.0","baseline_ids":["linuxmint-22.3-xfce-x86_64"],"fingerprints":{}}',
+        '{"signature":"catalogo-anterior","baseline_ids":["linuxmint-22.3-xfce-x86_64"],"fingerprints":{}}',
         encoding="utf-8",
     )
 

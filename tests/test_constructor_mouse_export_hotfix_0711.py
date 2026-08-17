@@ -1,4 +1,4 @@
-"""Regresiones del hotfix 0.7.1.1: clic en filas y exportación de baselines."""
+"""Regresiones de clic en filas y exportación de baselines."""
 from __future__ import annotations
 
 import asyncio

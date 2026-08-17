@@ -1,6 +1,6 @@
 """Descubrimiento y supervisión ligera del servicio PipeCraft separado.
 
-Desde Styler 0.11.0 el source de PipeCraft no forma parte del repositorio
+Styler separa el source de PipeCraft no forma parte del repositorio
 de Styler y no existe fallback productivo a un scheduler Python. PipeCraft es una
 dependencia de runtime independiente y la única autoridad para ejecutar DAGs.
 """

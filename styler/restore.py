@@ -1273,8 +1273,7 @@ def _slug(value: str) -> str:
 
 # ------------------------------------------------------------------ #
 # Autorización, APT no interactivo y ejecución observable
-# (capa de la 0.10.1–0.10.8: la persona autoriza una vez, ve la salida en
-#  vivo y puede cancelar sin dejar dpkg bloqueado)
+# La persona autoriza una vez, ve la salida en vivo y puede cancelar sin dejar dpkg bloqueado.
 # ------------------------------------------------------------------ #
 
 

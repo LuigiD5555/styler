@@ -99,7 +99,7 @@ def test_photogimp_hereda_el_config_root_de_gimp_flatpak():
         "${HOME}/.config/GIMP"
     )
     # La aplicación propietaria también conserva la ruta de SU proveedor. Esta
-    # es la regresión que en 0.5.1 producía "Falta application_id o config_root".
+    # es la regresión que producía "Falta application_id o config_root".
     assert by_id["app.gimp.initialize"].config["config_root"] == (
         "${HOME}/.var/app/org.gimp.GIMP/config/GIMP"
     )

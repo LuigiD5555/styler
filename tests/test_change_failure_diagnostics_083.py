@@ -1,4 +1,4 @@
-"""Regresiones 0.8.3: autorización previa y errores de integración explicables."""
+"""Regresiones de autorización previa y errores de integración explicables."""
 from __future__ import annotations
 
 from pathlib import Path
