@@ -97,6 +97,8 @@ def test_clicking_constructor_row_does_not_start_text_selection(tmp_path):
             await pilot.click("#nav-tools")
             await pilot.pause()
             assert isinstance(app.screen, ChangeConstructorScreen)
+            await pilot.click("#constructor-back")
+            await pilot.pause()
             await pilot.click(".row-name")
             await pilot.pause()
             assert app.screen.focused_baseline is not None

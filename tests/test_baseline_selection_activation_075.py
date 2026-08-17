@@ -61,6 +61,8 @@ def test_selecting_baseline_row_does_not_change_active_baseline(tmp_path):
             await pilot.pause()
             screen = app.screen
             assert isinstance(screen, ChangeConstructorScreen)
+            await pilot.click("#constructor-back")
+            await pilot.pause()
             rows = list(screen.query(BaselineRow))
             target = next(row for row in rows if row.baseline_id == second.baseline_id)
             await pilot.click(f"#{target.id}")
