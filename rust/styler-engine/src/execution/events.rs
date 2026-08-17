@@ -56,7 +56,7 @@ impl<W: Write> EventEmitter<W> {
         self.sequence += 1;
         let payload = ExecutionEvent {
             event_protocol_version: EVENT_PROTOCOL_VERSION,
-            engine_version: ENGINE_VERSION,
+            engine_version: ENGINE_VERSION.to_string(),
             sequence: self.sequence,
             timestamp_ms: now_ms(),
             run_id: self.run_id.clone(),

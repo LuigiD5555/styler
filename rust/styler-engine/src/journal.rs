@@ -169,7 +169,7 @@ mod tests {
     fn event(sequence: u64, kind: &str, step_id: &str) -> ExecutionEvent {
         ExecutionEvent {
             event_protocol_version: EVENT_PROTOCOL_VERSION,
-            engine_version: ENGINE_VERSION,
+            engine_version: ENGINE_VERSION.to_string(),
             sequence,
             timestamp_ms: 0,
             run_id: "run-test".to_string(),
