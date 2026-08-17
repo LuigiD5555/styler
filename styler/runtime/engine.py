@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import threading
 import time
@@ -74,23 +75,20 @@ class WorkflowEngine:
         return results
 
     def run(self, workflow: WorkflowDefinition, ctx: ExecutionContext) -> WorkflowRun:
-        # 0.10: los flujos productivos pueden delegar el DAG completo al
-        # servicio Rust PipeCraft 1.5. El backend local se conserva como
-        # compatibilidad para tests, extensiones en proceso y recuperación.
-        if self.backend in {"auto", "pipecraft"} and not ctx.preview:
+        # 0.11: PipeCraft 1.5 es la única autoridad de ejecución
+        # productiva. `auto` ya NO significa "probar Rust y caer a Python".
+        # Un fallback mutador puede duplicar efectos cuando el estado IPC es
+        # incierto y además mantiene dos schedulers con semánticas divergentes.
+        # El backend `local` queda únicamente como arnés explícito de tests y
+        # compatibilidad interna durante la retirada del runtime histórico.
+        explicit_local = os.environ.get("STYLER_RUNTIME", "").strip().lower() in {"local", "local-test"}
+        if self.backend in {"auto", "pipecraft"} and not ctx.preview and not (explicit_local and self.backend == "auto"):
             from styler.pipecraft.engine import PipeCraftBackend
-            from styler.pipecraft.service import PipeCraftUnavailable, ensure_service
-            try:
-                # En auto sólo se permite fallback ANTES de enviar trabajo. Una
-                # desconexión posterior nunca vuelve a ejecutar localmente: eso
-                # podría duplicar efectos externos.
-                ensure_service(ctx.root)
-            except PipeCraftUnavailable:
-                if self.backend == "pipecraft":
-                    raise
-            else:
-                plan = self.compile(workflow)
-                return PipeCraftBackend(ctx.root).run(workflow, ctx, plan)
+            from styler.pipecraft.service import ensure_service
+
+            ensure_service(ctx.root)  # falla cerrado si PipeCraft no existe
+            plan = self.compile(workflow)
+            return PipeCraftBackend(ctx.root).run(workflow, ctx, plan)
 
         run_id = ctx.run_id or self._make_run_id(workflow.name)
         run_ctx = ctx.for_run(run_id)
@@ -347,33 +345,6 @@ class WorkflowEngine:
         last: StepResult | None = None
         for attempt in range(1, attempts + 1):
             began = time.monotonic()
-
-            # Entre intentos volvemos a observar el estado real. Esto es
-            # distinto de la reconciliación de una ejecución continuada: aquí
-            # sirve para que un intento que alcanzó a producir su efecto pero
-            # terminó con error no vuelva a producirlo. Por ejemplo, una
-            # descarga completa se reutiliza, un paquete ya instalado no se
-            # reinstala y un AppImage ya integrado no se integra otra vez.
-            if attempt > 1:
-                try:
-                    reconciled = executor.reconcile(step, ctx)
-                except Exception as exc:
-                    ctx.values.setdefault("reconciliation_warnings", []).append({
-                        "step_id": step.id,
-                        "step_type": step.step_type,
-                        "attempt": attempt,
-                        "error": str(exc),
-                    })
-                    reconciled = None
-                if reconciled is not None and reconciled.success:
-                    reconciled.status = Status.RECONCILED
-                    reconciled.data.setdefault("reconciled", True)
-                    reconciled.data.setdefault("retry_reconciled", True)
-                    reconciled.data.setdefault("attempt", attempt)
-                    reconciled.attempts = attempt
-                    last = reconciled
-                    break
-
             try:
                 result = executor.run(step, ctx)
             except Exception as exc:
