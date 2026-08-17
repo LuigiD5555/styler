@@ -5,14 +5,21 @@ from types import SimpleNamespace
 
 from styler.changes.service import ChangeService, ChangeStateWriteError
 from styler.runtime.models import Status, StepResult
+from styler.target import Target
 
 
 def _erofs(path):
     return ChangeStateWriteError(path, OSError(errno.EROFS, "Read-only file system"))
 
 
-def test_execute_refuses_to_start_when_change_record_storage_is_read_only(tmp_path, monkeypatch):
+def _ubuntu_service(tmp_path):
     service = ChangeService(root=tmp_path / "library", home=tmp_path / "home")
+    service._target = Target(family="ubuntu", distro_id="ubuntu", root=str(tmp_path))
+    return service
+
+
+def test_execute_refuses_to_start_when_change_record_storage_is_read_only(tmp_path, monkeypatch):
+    service = _ubuntu_service(tmp_path)
     plan = service.build_plan("affinity-linux")
     monkeypatch.setattr(service, "build_plan", lambda *_a, **_k: plan)
 
@@ -39,7 +46,7 @@ def test_execute_refuses_to_start_when_change_record_storage_is_read_only(tmp_pa
 
 
 def test_post_run_record_failure_does_not_claim_the_dag_itself_failed(tmp_path, monkeypatch):
-    service = ChangeService(root=tmp_path / "library", home=tmp_path / "home")
+    service = _ubuntu_service(tmp_path)
     plan = service.build_plan("affinity-linux")
     monkeypatch.setattr(service, "build_plan", lambda *_a, **_k: plan)
     monkeypatch.setattr(service, "plan_requires_admin", lambda _plan: False)

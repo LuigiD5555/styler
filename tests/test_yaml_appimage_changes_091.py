@@ -9,6 +9,7 @@ from styler.changes.service import ChangeService
 from styler.declarative_changes import load_declarative_changes
 from styler.receipts import ReceiptJournal, ReceiptKind
 from styler.runtime.models import ExecutionContext, StepDefinition
+from styler.target import Target
 
 
 APPIMAGELAUNCHER_ASSET = "appimagelauncher_3.0.0-beta-2-gha287.96cb937_amd64.deb"
@@ -17,6 +18,12 @@ AFFINITY_URL = (
     "https://github.com/ryzendew/Linux-Affinity-Installer/releases/download/"
     "Affinity-wine-10.10-Appimage/Affinity-3-x86_64.AppImage"
 )
+
+
+def _ubuntu_service(tmp_path: Path) -> ChangeService:
+    service = ChangeService(root=tmp_path / "library", home=tmp_path / "home")
+    service._target = Target(family="ubuntu", distro_id="ubuntu", root=str(tmp_path))
+    return service
 
 
 def test_builtin_yaml_catalog_contains_appimagelauncher_and_affinity():
@@ -37,8 +44,11 @@ def test_yaml_keeps_release_coordinates_outside_python():
     assert affinity["asset"] == AFFINITY_ASSET
 
 
-def test_affinity_plan_composes_appimagelauncher_before_affinity(tmp_path):
-    service = ChangeService(root=tmp_path / "library", home=tmp_path / "home")
+def test_affinity_plan_composes_appimagelauncher_before_affinity(tmp_path, monkeypatch):
+    import styler.changes.service as service_module
+
+    monkeypatch.setattr(service_module.shutil, "which", lambda _name: None)
+    service = _ubuntu_service(tmp_path)
     plan = service.build_plan("affinity-linux")
     ids = [step.id for step in plan.workflow.steps]
     launcher_verify = "yaml.appimagelauncher.op.verify"
@@ -54,14 +64,14 @@ def test_affinity_plan_composes_appimagelauncher_before_affinity(tmp_path):
 
 
 def test_appimagelauncher_standalone_is_reversible_package_install(tmp_path):
-    service = ChangeService(root=tmp_path / "library", home=tmp_path / "home")
+    service = _ubuntu_service(tmp_path)
     plan = service.build_plan("appimagelauncher")
     install = next(step for step in plan.workflow.steps if step.step_type == "install_package_artifact")
     assert "retain_on_rollback" not in install.config
 
 
 def test_yaml_changes_are_normal_changes_in_changes_service(tmp_path):
-    service = ChangeService(root=tmp_path / "library", home=tmp_path / "home")
+    service = _ubuntu_service(tmp_path)
     cards = {item.change_id: item for item in service.available_changes()}
     assert cards["appimagelauncher"].provider_id == "yaml"
     assert cards["affinity-linux"].provider_id == "yaml"
@@ -273,7 +283,7 @@ def test_affinity_does_not_request_admin_for_launcher_when_ail_already_exists(tm
     import styler.changes.service as service_module
 
     monkeypatch.setattr(service_module.shutil, "which", lambda name: "/usr/bin/ail-cli" if name == "ail-cli" else None)
-    service = ChangeService(root=tmp_path / "library", home=tmp_path / "home")
+    service = _ubuntu_service(tmp_path)
     plan = service.build_plan("affinity-linux")
     assert service._workflow_requires_admin(plan.workflow) is False
 
@@ -282,6 +292,6 @@ def test_affinity_still_requests_admin_when_appimagelauncher_is_missing(tmp_path
     import styler.changes.service as service_module
 
     monkeypatch.setattr(service_module.shutil, "which", lambda _name: None)
-    service = ChangeService(root=tmp_path / "library", home=tmp_path / "home")
+    service = _ubuntu_service(tmp_path)
     plan = service.build_plan("affinity-linux")
     assert service._workflow_requires_admin(plan.workflow) is True

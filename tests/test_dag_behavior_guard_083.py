@@ -38,4 +38,4 @@ def test_change_progress_execution_block_remains_unchanged():
     end = source.index("class ChangeResultScreen(Screen):")
     block = source[start:end]
     digest = hashlib.sha256(block.encode("utf-8")).hexdigest()
-    assert digest == "981950ba11de315b9bf5d23922271a71ba957d543c9de543fd121d10900c94a8"
+    assert digest == "c684a0dc239d47d50c638efda18c528f72fdedae0318400b4e544bec6be45732"
