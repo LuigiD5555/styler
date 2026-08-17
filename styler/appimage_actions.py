@@ -11,7 +11,6 @@ import re
 import os
 import shlex
 import shutil
-import tempfile
 import urllib.request
 from pathlib import Path
 from urllib.parse import urlparse
@@ -149,33 +148,6 @@ class ReleaseFetchExecutor(StepExecutor):
         filename = str(config.get("filename") or config.get("asset") or "")
         expected = str(config.get("sha256") or "").lower()
         try:
-            destination = artifact_path(ctx, artifact_id, filename)
-        except ValueError as exc:
-            return StepResult.failed(step, str(exc), "RELEASE_ARTIFACT_INVALID")
-
-        # La caché de descargas es un artefacto canónico, no un temporal de la
-        # ejecución. Incluso en una ejecución nueva resulta seguro reutilizarla
-        # cuando el archivo sigue presente (y, si se declaró, su SHA coincide).
-        # Esto hace que los retries de PipeCraft no vuelvan a transferir un
-        # AppImage/.deb que el intento anterior ya terminó de descargar.
-        if not ctx.dry_run and destination.is_file():
-            digest = _sha256(destination)
-            if not expected or digest == expected:
-                return StepResult(
-                    step.id,
-                    step.step_type,
-                    True,
-                    Status.RECONCILED,
-                    f"El artefacto {destination.name} ya está en la caché; se reutilizará sin descargarlo otra vez.",
-                    data={
-                        "path": str(destination),
-                        "sha256": digest,
-                        "reconciled": True,
-                        "download_skipped": True,
-                        "cache_hit": True,
-                    },
-                )
-        try:
             url = _resolve_release_url(config) if not ctx.dry_run else (
                 str(config.get("url") or "") or
                 f"github://{config.get('repository', '')}@{config.get('tag', '')}/{config.get('asset', '')}"
@@ -186,6 +158,10 @@ class ReleaseFetchExecutor(StepExecutor):
             parsed = urlparse(url)
             if parsed.scheme != "https" or not parsed.netloc:
                 return StepResult.failed(step, "La descarga necesita una URL HTTPS válida.", "RELEASE_URL_INVALID")
+        try:
+            destination = artifact_path(ctx, artifact_id, filename)
+        except ValueError as exc:
+            return StepResult.failed(step, str(exc), "RELEASE_ARTIFACT_INVALID")
         if ctx.dry_run:
             return StepResult(
                 step.id, step.step_type, True, Status.DRY_RUN,
@@ -194,38 +170,20 @@ class ReleaseFetchExecutor(StepExecutor):
             )
         destination.parent.mkdir(parents=True, exist_ok=True)
         temp = destination.with_suffix(destination.suffix + ".part")
-        resume_from = temp.stat().st_size if temp.is_file() else 0
-        headers = {"User-Agent": "Styler/0.9.11"}
-        if resume_from > 0:
-            headers["Range"] = f"bytes={resume_from}-"
-        request = urllib.request.Request(url, headers=headers)
+        request = urllib.request.Request(url, headers={"User-Agent": "Styler/0.9.11"})
         emit_step_progress(ctx, step, 0.05, f"Descargando {filename}…")
         try:
-            with urllib.request.urlopen(request, timeout=int(step.timeout or 300)) as response:
-                status = int(getattr(response, "status", 0) or getattr(response, "getcode", lambda: 200)() or 200)
-                resumed = resume_from > 0 and status == 206
-                # Si el servidor ignora Range y devuelve 200, reiniciamos el
-                # .part de forma explícita para no concatenar dos archivos.
-                downloaded = resume_from if resumed else 0
-                response_size = int(response.headers.get("Content-Length") or 0)
-                total = downloaded + response_size if resumed and response_size else response_size
-                mode = "ab" if resumed else "wb"
-                with temp.open(mode) as handle:
-                    if resumed:
-                        emit_step_progress(
-                            ctx,
-                            step,
-                            min(0.95, downloaded / total) if total else None,
-                            f"Reanudando {filename} desde {downloaded / 1048576:.1f} MB…",
-                        )
-                    while True:
-                        chunk = response.read(1024 * 1024)
-                        if not chunk:
-                            break
-                        handle.write(chunk)
-                        downloaded += len(chunk)
-                        progress = min(0.95, downloaded / total) if total else None
-                        emit_step_progress(ctx, step, progress, f"Descargando {filename}…")
+            with urllib.request.urlopen(request, timeout=int(step.timeout or 300)) as response, temp.open("wb") as handle:
+                total = int(response.headers.get("Content-Length") or 0)
+                downloaded = 0
+                while True:
+                    chunk = response.read(1024 * 1024)
+                    if not chunk:
+                        break
+                    handle.write(chunk)
+                    downloaded += len(chunk)
+                    progress = min(0.95, downloaded / total) if total else None
+                    emit_step_progress(ctx, step, progress, f"Descargando {filename}…")
             digest = _sha256(temp)
             if expected and digest != expected:
                 temp.unlink(missing_ok=True)
@@ -236,14 +194,8 @@ class ReleaseFetchExecutor(StepExecutor):
                 )
             os.replace(temp, destination)
         except Exception as exc:  # noqa: BLE001 - frontera de red
-            result = StepResult.failed(step, f"No se pudo descargar {url}: {exc}", "RELEASE_DOWNLOAD_FAILED")
-            if temp.is_file():
-                result.data.update({
-                    "partial_path": str(temp),
-                    "partial_bytes": temp.stat().st_size,
-                    "resume_available": temp.stat().st_size > 0,
-                })
-            return result
+            temp.unlink(missing_ok=True)
+            return StepResult.failed(step, f"No se pudo descargar {url}: {exc}", "RELEASE_DOWNLOAD_FAILED")
         emit_step_progress(ctx, step, 1.0, f"Descarga terminada: {destination.name}.")
         return StepResult(
             step.id, step.step_type, True, Status.OK,
@@ -476,14 +428,6 @@ class AppImageIntegrateExecutor(StepExecutor):
             return StepResult.failed(step, str(exc), "APPIMAGE_REFERENCE_INVALID")
         if not source.is_file():
             return StepResult.failed(step, f"No existe el AppImage descargado: {source}", "APPIMAGE_NOT_FOUND")
-
-        # Un retry puede llegar después de que AppImageLauncher haya hecho el
-        # trabajo pero su proceso haya terminado con un estado ambiguo. Si la
-        # integración ya es observable, repetir ail-cli sólo añade riesgo.
-        existing = self.reconcile(step, ctx)
-        if existing is not None:
-            existing.data.setdefault("retry_safe_reuse", True)
-            return existing
         if ctx.dry_run:
             return StepResult(
                 step.id, step.step_type, True, Status.DRY_RUN,
@@ -497,17 +441,10 @@ class AppImageIntegrateExecutor(StepExecutor):
         source.chmod(source.stat().st_mode | 0o111)
         home = _home(ctx)
         before = _snapshot_integration(home)
-        # AppImageLauncher puede mover el archivo que recibe. Nunca le damos la
-        # copia canónica de ~/.styler/downloads: integramos una copia temporal
-        # para conservar el artefacto y poder reintentar sin volver a bajarlo.
-        with tempfile.TemporaryDirectory(prefix="styler-appimage-", dir=str(source.parent)) as temp_dir:
-            integration_source = Path(temp_dir) / source.name
-            shutil.copy2(source, integration_source)
-            integration_source.chmod(integration_source.stat().st_mode | 0o111)
-            command = run_step_command(
-                ctx, step, [ail, "integrate", str(integration_source)], timeout=step.timeout,
-                label=f"Integrando {hint} con AppImageLauncher",
-            )
+        command = run_step_command(
+            ctx, step, [ail, "integrate", str(source)], timeout=step.timeout,
+            label=f"Integrando {hint} con AppImageLauncher",
+        )
         if command.returncode != 0:
             result = StepResult.failed(
                 step,
