@@ -14,7 +14,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - name: Apply PipeCraft 1.6 source patch
         run: |
-          cat .ci/pipecraft16/patch.chunk1 .ci/pipecraft16/patch.chunk2 .ci/pipecraft16/patch.chunk3 .ci/pipecraft16/patch.chunk4 > /tmp/pipecraft.patch.gz
+          cat .ci/pipecraft16/patch.chunk1 .ci/pipecraft16/patch.chunk2 .ci/pipecraft16/patch.chunk3 > /tmp/pipecraft.patch.gz
           gzip -t /tmp/pipecraft.patch.gz
           gzip -dc /tmp/pipecraft.patch.gz > /tmp/pipecraft.patch
           git apply /tmp/pipecraft.patch
