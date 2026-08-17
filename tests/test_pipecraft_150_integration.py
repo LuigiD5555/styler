@@ -10,6 +10,7 @@ import yaml
 from styler.pipecraft.compiler import compile_pipeline
 from styler.pipecraft.engine import PipeCraftBackend
 from styler.pipecraft.plugin_host import _runtime_status
+from styler.pipecraft.service import PipeCraftUnavailable
 from styler.runtime.engine import WorkflowEngine
 from styler.runtime.models import ExecutionContext, StepDefinition, WorkflowDefinition
 from styler.runtime.selection import select_plan_nodes
@@ -73,10 +74,21 @@ def test_plugin_host_executes_styler_executor_without_polluting_stdout(tmp_path:
     assert result["data"]["styler_step_type"] == "note"
 
 
-def test_auto_backend_stays_local_when_pipecraft_is_not_available(monkeypatch, tmp_path: Path) -> None:
-    monkeypatch.setenv("STYLER_RUNTIME", "local")
+def test_auto_backend_fails_closed_when_pipecraft_is_not_available(monkeypatch, tmp_path: Path) -> None:
+    import styler.pipecraft.service as service
+
+    monkeypatch.delenv("STYLER_RUNTIME", raising=False)
+    monkeypatch.setattr(service, "locate_binary", lambda: None)
+    monkeypatch.setattr(service.PipeCraftClient, "ping", lambda self: (_ for _ in ()).throw(service.PipeCraftIpcError("offline")))
     workflow = WorkflowDefinition(name="demo", steps=[StepDefinition("a", "note", config={"message": "ok"})])
-    run = WorkflowEngine(backend="auto").run(workflow, ExecutionContext(root=tmp_path, dry_run=False, approve=True))
+    import pytest
+    with pytest.raises(PipeCraftUnavailable):
+        WorkflowEngine(backend="auto").run(workflow, ExecutionContext(root=tmp_path, dry_run=False, approve=True))
+
+
+def test_explicit_local_backend_remains_available_for_tests(tmp_path: Path) -> None:
+    workflow = WorkflowDefinition(name="demo", steps=[StepDefinition("a", "note", config={"message": "ok"})])
+    run = WorkflowEngine(backend="local").run(workflow, ExecutionContext(root=tmp_path, dry_run=False, approve=True))
     assert run.success is True
     assert run.results[0].message == "ok"
 
@@ -104,3 +116,23 @@ def test_report_restores_styler_status_from_plugin_data() -> None:
     results = PipeCraftBackend._results(report, plan)
     assert results[0].status == "reconciled"
     assert results[0].success is True
+
+
+def test_plugin_host_argv_uses_installed_styler_entrypoint(monkeypatch, tmp_path: Path) -> None:
+    import os
+    import styler.pipecraft.compiler as compiler
+
+    entry = tmp_path / "styler"
+    entry.write_text("#!/bin/sh\n", encoding="utf-8")
+    entry.chmod(0o755)
+    monkeypatch.setattr(sys, "argv", [str(entry)])
+    assert compiler._plugin_host_argv() == [str(entry.resolve()), "__pipecraft_plugin_host"]
+
+
+def test_plugin_host_argv_uses_zipapp_entrypoint(monkeypatch, tmp_path: Path) -> None:
+    import styler.pipecraft.compiler as compiler
+
+    archive = tmp_path / "styler.pyz"
+    archive.write_bytes(b"placeholder")
+    monkeypatch.setattr(sys, "argv", [str(archive)])
+    assert compiler._plugin_host_argv() == [sys.executable, str(archive.resolve()), "__pipecraft_plugin_host"]

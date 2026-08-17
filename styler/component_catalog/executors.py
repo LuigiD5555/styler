@@ -3036,7 +3036,7 @@ class ManualHandoffExecutor(StepExecutor):
             else:
                 effects.created_paths.append(str(instructions))
             instructions.write_text(
-                f"""PhotoGIMP preparado por Styler Reinvented 0.6.7.2
+                f"""PhotoGIMP preparado por Styler
 
 GIMP fue instalado mediante: {provider_label}
 Archivo descargado: {archive}

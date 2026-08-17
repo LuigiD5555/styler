@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import math
+import os
 import re
 import sys
 import uuid
@@ -35,6 +36,26 @@ def _name(value: str) -> str:
     return safe[:80]
 
 
+def _plugin_host_argv() -> list[str]:
+    """Return a plugin-host command that survives wheel and zipapp packaging.
+
+    Installed Styler exposes a `styler` console entry point. Portable release
+    packages run the `.pyz` directly. Both forms understand the private
+    `__pipecraft_plugin_host` command, so PipeCraft never depends on PYTHONPATH.
+    Source/test execution falls back to the normal module invocation.
+    """
+    try:
+        entry = Path(sys.argv[0]).expanduser()
+    except (TypeError, ValueError):
+        entry = Path()
+    if entry.is_file():
+        if entry.suffix == ".pyz":
+            return [sys.executable, str(entry.resolve()), "__pipecraft_plugin_host"]
+        if entry.name == "styler" and os.access(entry, os.X_OK):
+            return [str(entry.resolve()), "__pipecraft_plugin_host"]
+    return [sys.executable, "-m", "styler.pipecraft.plugin_host"]
+
+
 def compile_pipeline(
     workflow: WorkflowDefinition,
     plan: ExecutionPlan,
@@ -59,7 +80,7 @@ def compile_pipeline(
         policy, _source = workflow.on_error.resolve(node, "failed")
         policy_steps[node.id] = policy
         with_values: dict[str, Any] = {
-            "argv": [sys.executable, "-m", "styler.pipecraft.plugin_host"],
+            "argv": _plugin_host_argv(),
             "styler_step": _safe(asdict(step)),
             "styler_node": {
                 "id": node.id,

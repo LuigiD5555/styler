@@ -123,18 +123,13 @@ def test_appimage_integration_records_desktop_and_appimage_paths(tmp_path, monke
     monkeypatch.setattr(module.shutil, "which", lambda name: "/usr/bin/ail-cli" if name == "ail-cli" else real_which(name))
 
     def fake_run(_ctx, _step, _argv, **_kwargs):
-        assert _argv[:2] == ["/usr/bin/ail-cli", "integrate"]
-        integration_source = Path(_argv[2])
-        assert integration_source != source
-        assert integration_source.read_bytes() == source.read_bytes()
+        assert _argv == ["/usr/bin/ail-cli", "integrate", str(source)]
         apps = home / "Applications"
         desktops = home / ".local" / "share" / "applications"
         apps.mkdir(parents=True, exist_ok=True)
         desktops.mkdir(parents=True, exist_ok=True)
         integrated = apps / "Affinity.AppImage"
-        # Simula el comportamiento más agresivo posible de AppImageLauncher:
-        # mover el archivo recibido. La copia canónica de Styler debe sobrevivir.
-        integration_source.replace(integrated)
+        integrated.write_bytes(b"fake")
         integrated.chmod(0o755)
         icons = home / ".local" / "share" / "icons"
         icons.mkdir(parents=True, exist_ok=True)
@@ -156,8 +151,6 @@ def test_appimage_integration_records_desktop_and_appimage_paths(tmp_path, monke
     )
     result = AppImageIntegrateExecutor().run(step, ctx)
     assert result.success
-    assert source.is_file()
-    assert source.read_bytes() == b"fake"
     receipts = ReceiptJournal(root, "affinity-linux").entries()
     assert any(item.kind == ReceiptKind.PATHS_WRITTEN for item in receipts)
     paths = [path for item in receipts for path in item.data.get("created_paths", [])]

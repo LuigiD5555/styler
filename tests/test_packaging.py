@@ -125,7 +125,7 @@ def test_project_has_one_current_human_manual():
     manual = ROOT / "docs/STYLER.md"
     assert manual.is_file()
     text = manual.read_text(encoding="utf-8")
-    assert "Manual único de Styler Reinvented" in text
+    assert "Manual único de Styler" in text
     assert "Pipeline actual de PhotoGIMP" in text
     assert "PipeCraft dentro de Styler" in text
     assert "Auditoría de los archivos del ZIP" in text

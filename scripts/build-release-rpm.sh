@@ -10,6 +10,8 @@ command -v rpmbuild >/dev/null 2>&1 || { echo "Falta rpmbuild." >&2; exit 2; }
 [[ -f "$RUNTIME" ]] || RUNTIME="$($ROOT/scripts/build-portable-runtime.sh)"
 mkdir -p "$TOP"/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
 cp "$RUNTIME" "$TOP/SOURCES/styler.pyz"
+cp "$ROOT/runtime/pipecraft/linux-x86_64/pipecraft" "$TOP/SOURCES/pipecraft"
+chmod 0755 "$TOP/SOURCES/pipecraft"
 cp "$ROOT/packaging/linux/styler.desktop" "$TOP/SOURCES/"
 cp "$ROOT/packaging/linux/styler-package.xml" "$TOP/SOURCES/"
 cp "$ROOT/docs/styler.1" "$ROOT/LICENSE" "$ROOT/NOTICE" "$ROOT/README.md" "$TOP/SOURCES/"

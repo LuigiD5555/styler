@@ -12,6 +12,8 @@ command -v makepkg >/dev/null 2>&1 || { echo "Falta makepkg." >&2; exit 2; }
 cp "$ROOT/packaging/release/arch/PKGBUILD" "$WORK/PKGBUILD"
 cp "$ROOT/packaging/release/arch/styler.install" "$WORK/styler.install"
 cp "$RUNTIME" "$WORK/styler.pyz"
+cp "$ROOT/runtime/pipecraft/linux-x86_64/pipecraft" "$WORK/pipecraft"
+chmod 0755 "$WORK/pipecraft"
 cp "$ROOT/packaging/linux/styler.desktop" "$WORK/"
 cp "$ROOT/packaging/linux/styler-package.xml" "$WORK/"
 cp "$ROOT/docs/styler.1" "$ROOT/LICENSE" "$ROOT/NOTICE" "$ROOT/README.md" "$WORK/"

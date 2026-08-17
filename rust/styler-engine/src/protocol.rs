@@ -278,7 +278,7 @@ fn default_elevation() -> String {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExecutionEvent {
     pub event_protocol_version: u32,
-    pub engine_version: &'static str,
+    pub engine_version: String,
     pub sequence: u64,
     pub timestamp_ms: u128,
     pub run_id: String,

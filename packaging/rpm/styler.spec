@@ -1,10 +1,10 @@
 Name:           styler
-Version:        0.10.0-alpha.1
+Version:        0.11.0
 Release:        1%{?dist}
 Summary:        Integrate semantic, reproducible changes on Linux
 License:        Apache-2.0
 Source0:        %{name}-%{version}.tar.gz
-BuildArch:      noarch
+BuildArch:      x86_64
 
 BuildRequires:  python3-devel
 BuildRequires:  python3-setuptools
@@ -41,6 +41,8 @@ install -Dpm 0644 packaging/linux/styler-package.xml \
   %{buildroot}%{_datadir}/mime/packages/styler-package.xml
 install -Dpm 0644 docs/styler.1 \
   %{buildroot}%{_mandir}/man1/styler.1
+install -Dpm 0755 runtime/pipecraft/linux-x86_64/pipecraft \
+  %{buildroot}%{_prefix}/libexec/styler/pipecraft
 
 %check
 PYTHONPATH=. python3 -m pytest -q
@@ -51,6 +53,7 @@ PYTHONPATH=. python3 -m pytest -q
 %license LICENSE NOTICE
 %doc README.md docs/STYLER.md
 %{_bindir}/styler
+%{_prefix}/libexec/styler/pipecraft
 %{python3_sitelib}/styler/
 %{python3_sitelib}/styler_linux-*.dist-info/
 %{_datadir}/applications/styler.desktop

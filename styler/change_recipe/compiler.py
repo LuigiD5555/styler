@@ -36,8 +36,6 @@ def compile_recipe(recipe: ChangeRecipe) -> WorkflowDefinition:
         needs = [operation_steps[item] for item in operation.needs]
         if not needs:
             needs = ["change.checkpoint"]
-        retries = 0
-        retry_delay = 0.0
         if operation.kind == "package.install":
             manager = str(operation.config.get("manager", ""))
             name = str(operation.config.get("name", ""))
@@ -46,12 +44,6 @@ def compile_recipe(recipe: ChangeRecipe) -> WorkflowDefinition:
             config = {"package": dict(operation.config)}
             verification_items.append({"kind": "package", "manager": manager, "name": name})
             step_type = "install_package"
-            # Toda instalación de software puede reintentarse una vez. El
-            # ejecutor comprueba primero el estado real, así que si el primer
-            # intento sí alcanzó a instalar el paquete pero falló al final, el
-            # segundo intento lo reconcilia en vez de instalarlo otra vez.
-            retries = 1
-            retry_delay = 2.0
         elif operation.kind == "asset.overlay":
             source = str(operation.config.get("source", ""))
             target = str(operation.config.get("target", ""))
@@ -101,8 +93,6 @@ def compile_recipe(recipe: ChangeRecipe) -> WorkflowDefinition:
                 raise RecipeError(f"{operation.operation_id} necesita artifact_id y filename/asset.")
             config["filename"] = filename
             step_type = "fetch_release_artifact"
-            retries = 1
-            retry_delay = 2.0
         elif operation.kind == "package.install_artifact":
             config = dict(operation.config)
             if str(config.get("manager") or "") != "apt":
@@ -111,29 +101,21 @@ def compile_recipe(recipe: ChangeRecipe) -> WorkflowDefinition:
             if not str(config.get("artifact_id") or "") or not str(config.get("filename") or ""):
                 raise RecipeError(f"{operation.operation_id} necesita artifact_id y filename.")
             step_type = "install_package_artifact"
-            retries = 1
-            retry_delay = 2.0
         elif operation.kind == "executable.verify":
             config = dict(operation.config)
             if not str(config.get("executable") or ""):
                 raise RecipeError(f"{operation.operation_id} necesita executable.")
             step_type = "verify_executable"
-            retries = 1
-            retry_delay = 1.0
         elif operation.kind == "appimage.integrate":
             config = dict(operation.config)
             if not str(config.get("artifact_id") or "") or not str(config.get("filename") or ""):
                 raise RecipeError(f"{operation.operation_id} necesita artifact_id y filename.")
             step_type = "integrate_appimage"
-            retries = 1
-            retry_delay = 2.0
         elif operation.kind == "appimage.verify":
             config = dict(operation.config)
             if not str(config.get("name_hint") or ""):
                 raise RecipeError(f"{operation.operation_id} necesita name_hint.")
             step_type = "verify_appimage_integration"
-            retries = 1
-            retry_delay = 1.0
         else:
             raise RecipeError(f"Operación no soportada: {operation.kind}")
         steps.append(
@@ -148,8 +130,6 @@ def compile_recipe(recipe: ChangeRecipe) -> WorkflowDefinition:
                 requires=list(operation.requires),
                 required=True,
                 exclusive_resources=[f"recipe:{operation.operation_id}"],
-                retries=retries,
-                retry_delay=retry_delay,
             )
         )
     operation_step_ids = set(operation_steps.values())

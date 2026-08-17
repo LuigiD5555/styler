@@ -363,7 +363,7 @@ ProgressBar {
     max-height: 2;
 }
 
-/* ================================================= Styler Reinvented 0.1 */
+/* ================================================= Styler */
 
 .changes-page {
     height: 1fr;

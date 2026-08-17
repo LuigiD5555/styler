@@ -31,17 +31,17 @@ def _doctor(root: str) -> int:
     print(f"  Sesión: {environment.session}")
     print(f"  Selector gráfico: {'disponible' if native_dialog_available() else 'no disponible'}")
     try:
-        from styler.pipecraft.service import locate_binary, workspace_for
-        from styler.pipecraft.client import PipeCraftClient
-        binary = locate_binary()
-        print(f"  PipeCraft 1.5: {'disponible' if binary else 'no compilado/no encontrado'}")
-        if binary:
-            print(f"  PipeCraft binario: {binary}")
-        try:
-            info = PipeCraftClient(workspace_for(Path(root))).ping()
-            print(f"  PipeCraft service: activo ({info.get('version', '?')}, {info.get('protocol', '?')})")
-        except Exception:
-            print("  PipeCraft service: detenido (se inicia bajo demanda)")
+        from styler.pipecraft.service import diagnose
+        info = diagnose(Path(root))
+        print(f"  PipeCraft requerido: >= {info['required_version']} ({info['required_protocol']})")
+        print(f"  PipeCraft binario: {info['binary'] if info['binary_available'] else 'no encontrado'}")
+        if info['service_active']:
+            state = 'compatible' if info['compatible'] else 'INCOMPATIBLE'
+            print(f"  PipeCraft service: activo ({info['service_version']}, {info['service_protocol']}) [{state}]")
+        else:
+            print("  PipeCraft service: detenido (se inicia bajo demanda cuando existe el binario)")
+        if info.get('message') and info['service_active'] and not info['compatible']:
+            print(f"  PipeCraft detalle: {info['message']}")
     except Exception as exc:
         print(f"  PipeCraft: diagnóstico no disponible ({exc})")
     return 0
@@ -50,6 +50,12 @@ def _doctor(root: str) -> int:
 def main(argv: list[str] | None = None) -> int:
     drop_sudo_root_to_invoking_user()
     argv = list(sys.argv[1:] if argv is None else argv)
+    # Private process boundary used by PipeCraft plugins. Keeping this behind
+    # the normal Styler executable makes wheel and portable .pyz distributions
+    # behave identically without relying on PYTHONPATH.
+    if argv and argv[0] == "__pipecraft_plugin_host":
+        from styler.pipecraft.plugin_host import main as plugin_main
+        return plugin_main()
     if argv and argv[0] in {"change", "baseline", "constructor", "package"}:
         from styler.cli import main as cli_main
         return cli_main(argv)

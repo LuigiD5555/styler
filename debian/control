@@ -17,7 +17,7 @@ Standards-Version: 4.7.2
 Rules-Requires-Root: no
 
 Package: styler
-Architecture: all
+Architecture: amd64
 Depends:
  ${misc:Depends},
  ${python3:Depends},

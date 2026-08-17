@@ -1,4 +1,4 @@
-# Styler Reinvented 0.10.0-alpha.1
+# Styler
 
 > **Convierte cambios hechos en Linux en paquetes que puedes revisar, reproducir, compartir y retirar.**
 
@@ -60,7 +60,7 @@ El cambio se registra en el catálogo y aparece en **Cambios**, donde se revisa 
 Desde el proyecto:
 
 ```bash
-./run-styler.sh
+scripts/local/run-styler.sh
 ```
 
 O, después de instalarlo:
@@ -84,7 +84,7 @@ styler doctor
 El instalador del proyecto puede ejecutarse con:
 
 ```bash
-bash ./install.sh
+bash scripts/local/install.sh
 ```
 
 Después de instalar, el comando principal es:
@@ -460,7 +460,7 @@ al `PATH` del proceso de instalación y lo deja persistido en `~/.profile` y en 
 
 No es necesario añadir manualmente una ruta específica para un nombre de usuario.
 
-Si `install-styler.sh` se ejecuta con `source`, también actualiza inmediatamente el `PATH` del shell actual.
+Si `scripts/local/install-styler.sh` se ejecuta con `source`, también actualiza inmediatamente el `PATH` del shell actual.
 
 </details>
 
@@ -471,15 +471,15 @@ Si `install-styler.sh` se ejecuta con `source`, también actualiza inmediatament
 El README prioriza ahora el uso del programa. Los detalles históricos quedan plegados para no interrumpir la explicación principal.
 
 <details>
-<summary><strong>▶ 0.10.0-alpha.1</strong></summary>
+<summary><strong>▶ 0.11.0</strong></summary>
 
 <br>
 
 - PipeCraft **1.5** pasa a ser el runtime de producción preferido mediante IPC local.
 - Styler compila su `ExecutionPlan` a un pipeline transitorio de PipeCraft; el DAG, recursos, concurrencia, cancelación, eventos y persistencia pertenecen al motor Rust.
 - Los executors Linux de Styler se ejecutan como plugins externos `pipecraft.plugin/v1`; PipeCraft sigue sin conocer APT, Flatpak, receipts ni `.stylerpkg`.
-- El instalador compila un binario privado de PipeCraft cuando `cargo` está disponible; también se admite `PIPECRAFT_BIN` o un `pipecraft` existente en `PATH`.
-- Si el binario Rust no existe, el backend Python anterior permanece como compatibilidad temporal. Nunca se hace fallback local después de haber enviado un job a PipeCraft, evitando duplicar efectos.
+- PipeCraft sigue siendo un proyecto Rust separado y Styler no vendoriza su source, pero la distribución oficial 0.11 incluye un binario PipeCraft privado por arquitectura. `PIPECRAFT_BIN`, `PATH` y `PIPECRAFT_SOURCE_DIR` quedan sólo como rutas de desarrollo/override.
+- Si PipeCraft no está disponible, las operaciones productivas con efectos fallan cerrado. El backend Python anterior sólo puede activarse de forma explícita para tests/compatibilidad; no existe fallback mutador silencioso.
 - `styler doctor` muestra el estado del binario y del servicio PipeCraft.
 - El servicio usa un workspace privado en `.styler/pipecraft/` y arranca bajo demanda.
 
@@ -531,7 +531,7 @@ PhotoGIMP dejó de depender de timeouts totales rígidos durante operaciones lar
 
 <br>
 
-`bash ./install.sh` pasó a publicar el comando `styler` inmediatamente sin depender de Conda y con estrategias alternativas para encontrar una ubicación segura disponible en el `PATH`.
+`bash scripts/local/install.sh` pasó a publicar el comando `styler` inmediatamente sin depender de Conda y con estrategias alternativas para encontrar una ubicación segura disponible en el `PATH`.
 
 </details>
 

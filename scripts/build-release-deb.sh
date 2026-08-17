@@ -13,12 +13,13 @@ command -v dpkg-deb >/dev/null 2>&1 || {
   exit 2
 }
 [[ -f "$RUNTIME" ]] || RUNTIME="$($ROOT/scripts/build-portable-runtime.sh)"
-PKG="$WORK/styler_${VERSION}-1_all"
+PKG="$WORK/styler_${VERSION}-1_amd64"
 mkdir -p "$PKG/DEBIAN" "$PKG/usr/bin" "$PKG/usr/lib/styler" \
   "$PKG/usr/share/applications" "$PKG/usr/share/mime/packages" \
   "$PKG/usr/share/man/man1" "$PKG/usr/share/doc/styler" \
-  "$PKG/usr/share/licenses/styler"
+  "$PKG/usr/share/licenses/styler" "$PKG/usr/libexec/styler"
 install -m 0755 "$RUNTIME" "$PKG/usr/lib/styler/styler.pyz"
+install -m 0755 "$ROOT/runtime/pipecraft/linux-x86_64/pipecraft" "$PKG/usr/libexec/styler/pipecraft"
 cat > "$PKG/usr/bin/styler" <<'SH'
 #!/bin/sh
 exec python3 /usr/lib/styler/styler.pyz "$@"
@@ -34,7 +35,7 @@ Package: styler
 Version: ${VERSION}-1
 Section: utils
 Priority: optional
-Architecture: all
+Architecture: amd64
 Maintainer: Styler contributors <noreply@example.invalid>
 Depends: python3 (>= 3.10)
 Recommends: kdialog | zenity
@@ -60,7 +61,7 @@ exit 0
 SH
 chmod 0755 "$PKG/DEBIAN/postinst" "$PKG/DEBIAN/postrm"
 mkdir -p "$OUT"
-dpkg-deb --root-owner-group --build "$PKG" "$OUT/styler_${VERSION}-1_all.deb"
-dpkg-deb --info "$OUT/styler_${VERSION}-1_all.deb" >/dev/null
-sha256sum "$OUT/styler_${VERSION}-1_all.deb" > "$OUT/styler_${VERSION}-1_all.deb.sha256"
-printf 'Paquete DEB de release: %s\n' "$OUT/styler_${VERSION}-1_all.deb"
+dpkg-deb --root-owner-group --build "$PKG" "$OUT/styler_${VERSION}-1_amd64.deb"
+dpkg-deb --info "$OUT/styler_${VERSION}-1_amd64.deb" >/dev/null
+sha256sum "$OUT/styler_${VERSION}-1_amd64.deb" > "$OUT/styler_${VERSION}-1_amd64.deb.sha256"
+printf 'Paquete DEB de release: %s\n' "$OUT/styler_${VERSION}-1_amd64.deb"

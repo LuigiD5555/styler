@@ -1,9 +1,0 @@
-schema_version: pipecraft/v1
-routes:
-  - id: lite-release
-    description: Publishing the community/Lite edition.
-    when:
-      labels:
-        any: [lite, community, publish]
-        exclude: [pro]
-    pipeline: lite-boundary

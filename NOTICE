@@ -1,18 +1,19 @@
 Styler
 
-Styler 0.10 integrates PipeCraft 1.5 as its preferred production execution
-runtime through the versioned local IPC protocol `pipecraft.ipc/v1`.
+Styler 0.11 integrates PipeCraft 1.5 as its production execution runtime through
+the versioned local IPC protocol `pipecraft.ipc/v1`.
 
 PipeCraft
 Copyright 2026 Luis
 Licensed under the Apache License, Version 2.0.
 
-The source distribution vendors PipeCraft 1.5.0-alpha.1 so the Styler installer
-can build a private Rust binary when Cargo is available. PipeCraft owns DAG
-scheduling, global resource coordination, process supervision, cancellation,
-events and durable job/resume state. Styler owns Linux/domain semantics,
-receipts, backups, reconciliation, Apply/Undo meaning and the user interface.
+PipeCraft is an independent runtime dependency. Its source is not vendored in
+the Styler repository; architecture-specific Styler release bundles may include a
+compiled private PipeCraft binary together with this license notice. PipeCraft owns DAG scheduling, global resource
+coordination, process supervision, cancellation, events and durable job/resume
+state. Styler owns Linux/domain semantics, receipts, backups, reconciliation,
+Apply/Undo meaning and the user interface.
 
-A local Python runtime remains temporarily as a compatibility backend for tests,
-extensions that require in-process Python objects, and installations where the
-Rust binary is not yet available. It is not the target production architecture.
+The historical local Python runtime remains temporarily only as an explicit test
+and compatibility harness while remaining in-process model dependencies are
+removed. Production mutation flows fail closed when PipeCraft is unavailable.

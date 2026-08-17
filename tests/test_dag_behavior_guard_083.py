@@ -1,9 +1,8 @@
 """Guardas de comportamiento del DAG.
 
-0.10.0 añade un reintento seguro al nodo de instalación de paquetes. El
-ejecutor comprueba primero el estado real del paquete, de modo que GIMP no se
-vuelve a descargar/reinstalar si el intento anterior ya lo dejó instalado. El
-hash se congela aquí para que cambios futuros vuelvan a requerir intención
+0.9.7 es la primera modificación aprobada del DAG canónico de PhotoGIMP desde
+0.8.2: elimina el timeout exterior rígido y añade esperas adaptativas. El hash
+nuevo se congela aquí para que cambios futuros vuelvan a requerir intención
 explícita.
 """
 from __future__ import annotations
@@ -17,10 +16,10 @@ from styler.portable.workflow import workflow_to_portable_dict
 from styler.target import Target
 
 
-EXPECTED_PHOTOGIMP_DAG_SHA256 = "dfaec09e12dae739f7b04fbf25e7ddb30fed157311c010d684690cee7973dfdc"
+EXPECTED_PHOTOGIMP_DAG_SHA256 = "8c654ceb568262f2414940d1c115d4e6fec93c9daf170e74d126a53cfaba6395"
 
 
-def test_photogimp_dag_matches_0100_retry_safe_baseline(tmp_path):
+def test_photogimp_dag_matches_097_adaptive_wait_baseline(tmp_path):
     service = ChangeService(tmp_path / "library", tmp_path / "home")
     service._target = Target(family="ubuntu", distro_id="ubuntu", root=str(tmp_path))
     plan = service.build_plan("photogimp", "flatpak")

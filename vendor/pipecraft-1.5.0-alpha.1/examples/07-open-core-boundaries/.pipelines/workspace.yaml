@@ -1,5 +1,0 @@
-schema_version: pipecraft/v1
-workspace:
-  name: open-core
-defaults:
-  default_pipeline: lite-boundary

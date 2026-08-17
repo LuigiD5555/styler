@@ -61,9 +61,13 @@ class FakeScreen:
         self.available = FakeListView()
         self.integrated = FakeListView()
         self.app = SimpleNamespace(changes=FakeChangeService())
+        self.batch_selected_ids: list[str] = []
 
     def query_one(self, selector, _widget_type):
         return self.available if selector == "#available-changes" else self.integrated
+
+    def _render_batch_selection(self) -> None:
+        pass
 
 
 def test_changes_refresh_waits_for_removal_before_mounting_same_ids_again():

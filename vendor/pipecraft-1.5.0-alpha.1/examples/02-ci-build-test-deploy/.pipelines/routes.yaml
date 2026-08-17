@@ -1,7 +1,0 @@
-schema_version: pipecraft/v1
-routes:
-  - id: ci
-    when:
-      labels:
-        any: [ci, build, deploy]
-    pipeline: build-test-deploy

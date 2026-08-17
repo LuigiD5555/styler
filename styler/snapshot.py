@@ -229,4 +229,4 @@ def restore_snapshot(
         approve=approve,
         run_id=run_id or "",
     )
-    return WorkflowEngine().run(workflow, context)
+    return WorkflowEngine(backend="auto").run(workflow, context)

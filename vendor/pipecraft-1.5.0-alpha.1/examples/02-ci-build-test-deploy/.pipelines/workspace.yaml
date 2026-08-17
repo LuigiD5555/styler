@@ -1,5 +1,0 @@
-schema_version: pipecraft/v1
-workspace:
-  name: ci
-defaults:
-  default_pipeline: build-test-deploy

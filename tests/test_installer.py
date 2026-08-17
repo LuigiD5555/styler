@@ -7,7 +7,7 @@ import textwrap
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-INSTALLER = ROOT / "install.sh"
+INSTALLER = ROOT / "scripts" / "local" / "install.sh"
 
 
 def _write_executable(path: Path, content: str) -> Path:
@@ -169,9 +169,9 @@ def test_failed_staged_install_preserves_previous_version(tmp_path):
     assert "permanece intacta" in result.stderr
     assert not list((tmp_path / "data").glob("styler-install.*"))
 
-SIMPLE_INSTALLER = ROOT / "install-styler.sh"
-RUNNER = ROOT / "run-styler.sh"
-UNINSTALLER = ROOT / "uninstall.sh"
+SIMPLE_INSTALLER = ROOT / "scripts" / "local" / "install-styler.sh"
+RUNNER = ROOT / "scripts" / "local" / "run-styler.sh"
+UNINSTALLER = ROOT / "scripts" / "local" / "uninstall.sh"
 
 
 def test_beginner_scripts_have_valid_bash_syntax_and_clear_help():

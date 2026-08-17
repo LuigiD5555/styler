@@ -1,9 +1,0 @@
-schema_version: pipecraft/v1
-workspace:
-  name: maintenance-scraper-example
-paths:
-  pipeline_dir: .pipelines/pipelines
-  route_file: .pipelines/routes.yaml
-  runs_dir: .pipelines/runs
-defaults:
-  default_pipeline: scraper-maintenance
