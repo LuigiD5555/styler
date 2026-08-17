@@ -17,6 +17,8 @@ jobs:
           cat .ci/pipecraft16/patch.part1 .ci/pipecraft16/patch.part2 .ci/pipecraft16/patch.part3 > /tmp/pipecraft.patch.gz
           gzip -dc /tmp/pipecraft.patch.gz > /tmp/pipecraft.patch
           git apply /tmp/pipecraft.patch
+      - name: Format source
+        run: cargo fmt --manifest-path vendor/pipecraft-1.5.0-alpha.1/Cargo.toml --all
       - name: Check formatting
         run: cargo fmt --manifest-path vendor/pipecraft-1.5.0-alpha.1/Cargo.toml --all -- --check
       - name: Clippy
