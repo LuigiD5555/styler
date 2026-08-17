@@ -4,7 +4,7 @@ styler.applications
 El plano de **aplicaciones** de Styler: qué programas forman parte de una
 configuración y cómo se vuelven a instalar en otra máquina.
 
-Hasta 0.9.5 Styler observaba aplicaciones (`styler.provenance`) y sabía
+Styler observa aplicaciones (`styler.provenance`) y sabía
 ejecutar una instalación (`styler.runtime.executors`), pero nada conectaba
 ambos planos: aplicar una configuración solo escribía archivos. Este módulo es
 esa conexión, y es la única capa autorizada a instalar programas.
@@ -402,7 +402,7 @@ def privilege_available(runner: Runner, mode: str = "auto", is_root: bool | None
 
 
 # --------------------------------------------------------------------------- #
-# APT no interactivo (de la 0.10.4/0.10.6): sin diálogos invisibles y esperando
+# APT no interactivo: sin diálogos invisibles y esperando
 # el bloqueo de dpkg en vez de romperlo.
 # --------------------------------------------------------------------------- #
 

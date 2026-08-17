@@ -1,4 +1,4 @@
-"""Retiro explícito de cambios integrados en Styler 0.6.1."""
+"""Retiro explícito de cambios integrados en Styler."""
 from __future__ import annotations
 
 from pathlib import Path

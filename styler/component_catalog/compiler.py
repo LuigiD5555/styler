@@ -83,7 +83,7 @@ def _target_root_for(
 
     # 2. Ruta del proveedor elegido del propio componente (applications).
     #
-    # Antes de 0.5.2 esta rama no existía. Como consecuencia, app.gimp se
+    # Esta rama evita que app.gimp se
     # compilaba con target_root="" aun cuando el proveedor Flatpak sí declaraba
     # ``config_root``. El paso ``initialize_flatpak_app`` heredaba ese valor
     # vacío y fallaba después de instalar GIMP con:

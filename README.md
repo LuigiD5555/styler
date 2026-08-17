@@ -2,7 +2,7 @@
 
 > **Convierte cambios hechos en Linux en paquetes que puedes revisar, reproducir, compartir y retirar.**
 
-Styler busca que una personalización de Linux deje de ser una colección de pasos difíciles de recordar.  
+Styler busca que una personalización de Linux deje de ser una colección de pasos difíciles de recordar.
 Los cambios se presentan en una sola interfaz, se revisan antes de integrarlos y pueden conservarse como paquetes `.stylerpkg`.
 
 <!--
@@ -28,7 +28,7 @@ y descomenta este bloque:
 | **Herramientas** | Abrir el **Constructor de cambios** para detectar y empaquetar personalizaciones. |
 | **`.stylerpkg`** | Importar, inspeccionar, exportar o eliminar paquetes portables de Styler. |
 
-No necesitas conocer la estructura interna de un DAG para usar la interfaz principal.  
+No necesitas conocer la estructura interna de un DAG para usar la interfaz principal.
 La parte técnica sigue disponible más abajo para quien quiera profundizar.
 
 ---
@@ -46,7 +46,7 @@ flowchart LR
 
 Styler mantiene **un solo flujo de aplicación**.
 
-Importar o crear un `.stylerpkg` de tipo `change` **no ejecuta el cambio inmediatamente**.  
+Importar o crear un `.stylerpkg` de tipo `change` **no ejecuta el cambio inmediatamente**.
 El cambio se registra en el catálogo y aparece en **Cambios**, donde se revisa y se integra igual que los cambios incorporados.
 
 `Paquetes guardados` se usa para administrar el artefacto: **importar, inspeccionar, exportar o eliminar**. La aplicación del cambio ocurre desde **Cambios**.
@@ -103,7 +103,7 @@ El instalador publica el comando sin depender de Conda y administra la ubicació
 
 Entra en **Cambios** y haz clic sobre cualquier parte de la fila del cambio que quieras integrar.
 
-En Styler 0.9.11 ya no hace falta acertar sobre una casilla pequeña: **la fila completa funciona como selector**.
+En Styler ya no hace falta acertar sobre una casilla pequeña: **la fila completa funciona como selector**.
 
 - Si seleccionas **un cambio**, el botón inferior mantiene el flujo individual.
 - Si seleccionas **varios cambios**, el mismo botón cambia a **`Integrar lote (N)`**.
@@ -154,7 +154,7 @@ Integrar lote (N)
 4. Revisa el conjunto antes de comenzar.
 5. Styler ejecuta los cambios de manera secuencial.
 
-Antes de ejecutar cada cambio, Styler reconstruye su plan con el estado actualizado del sistema.  
+Antes de ejecutar cada cambio, Styler reconstruye su plan con el estado actualizado del sistema.
 Si uno falla, el lote se detiene antes de iniciar los siguientes y la pantalla final distingue lo completado, lo fallido y lo pendiente.
 
 </details>
@@ -208,7 +208,7 @@ Elegir únicamente los elementos que quieres incluir en el paquete.
 
 Generar el plan, revisar su desglose cuando sea necesario y crear el `.stylerpkg`.
 
-Las acciones menos frecuentes están agrupadas bajo **Más**.  
+Las acciones menos frecuentes están agrupadas bajo **Más**.
 El informe del plan distingue lo incluido de lo omitido y explica el motivo.
 
 <!--
@@ -274,7 +274,7 @@ flowchart TD
 
 Importarlo **no aplica automáticamente la modificación**.
 
-Styler registra sus DAG en el catálogo y el cambio aparece en **Cambios**.  
+Styler registra sus DAG en el catálogo y el cambio aparece en **Cambios**.
 Desde allí se selecciona, se revisa y se integra mediante el flujo normal.
 
 </details>
@@ -297,7 +297,7 @@ stable
 x86_64
 ```
 
-Solo se recomienda y adopta automáticamente cuando esa identidad coincide.  
+Solo se recomienda y adopta automáticamente cuando esa identidad coincide.
 Otra distribución, versión, escritorio, sesión, modelo de release o arquitectura necesita su propia baseline oficial.
 
 <details>
@@ -329,7 +329,7 @@ El catálogo oficial acepta únicamente paquetes `.stylerpkg` de tipo `baseline`
 
 Styler también conserva información de diagnóstico cuando una integración falla, en lugar de reducir el problema a un simple código genérico.
 
-En 0.9.11 se reforzó además la protección del registro de cambios:
+Styler refuerza además la protección del registro de cambios:
 
 - Si `change-records.json` no puede escribirse, el DAG no arranca.
 - Si el sistema de archivos se vuelve de solo lectura durante una ejecución, Styler distingue el fallo de persistencia del resultado real del DAG.
@@ -362,7 +362,7 @@ PhotoGIMP aparece como un cambio incorporado y utiliza el mismo flujo de **Cambi
 
 Las operaciones largas ya no dependen de timeouts totales rígidos.
 
-Mientras `apt` o `flatpak` continúen produciendo salida, Styler renueva la espera.  
+Mientras `apt` o `flatpak` continúen produciendo salida, Styler renueva la espera.
 La inicialización de GIMP tampoco depende del antiguo límite exterior fijo de 150 segundos: la espera puede continuar mientras el árbol de archivos siga cambiando, con un techo amplio de seguridad para evitar bloqueos infinitos.
 
 </details>
@@ -466,19 +466,19 @@ Si `scripts/local/install-styler.sh` se ejecuta con `source`, también actualiza
 
 ---
 
-# Historial resumido
+# Cambios recientes
 
-El README prioriza ahora el uso del programa. Los detalles históricos quedan plegados para no interrumpir la explicación principal.
+El README prioriza ahora el uso del programa. Los detalles técnicos quedan plegados para no interrumpir la explicación principal.
 
 <details>
-<summary><strong>▶ 0.11.0</strong></summary>
+<summary><strong>▶ Runtime de ejecución</strong></summary>
 
 <br>
 
-- PipeCraft **1.5** pasa a ser el runtime de producción preferido mediante IPC local.
+- PipeCraft pasa a ser el runtime de producción preferido mediante IPC local.
 - Styler compila su `ExecutionPlan` a un pipeline transitorio de PipeCraft; el DAG, recursos, concurrencia, cancelación, eventos y persistencia pertenecen al motor Rust.
 - Los executors Linux de Styler se ejecutan como plugins externos `pipecraft.plugin/v1`; PipeCraft sigue sin conocer APT, Flatpak, receipts ni `.stylerpkg`.
-- PipeCraft sigue siendo un proyecto Rust separado y Styler no vendoriza su source, pero la distribución oficial 0.11 incluye un binario PipeCraft privado por arquitectura. `PIPECRAFT_BIN`, `PATH` y `PIPECRAFT_SOURCE_DIR` quedan sólo como rutas de desarrollo/override.
+- PipeCraft sigue siendo un proyecto Rust separado y Styler no vendoriza su source, pero la distribución oficial incluye un binario PipeCraft privado por arquitectura. `PIPECRAFT_BIN`, `PATH` y `PIPECRAFT_SOURCE_DIR` quedan sólo como rutas de desarrollo/override.
 - Si PipeCraft no está disponible, las operaciones productivas con efectos fallan cerrado. El backend Python anterior sólo puede activarse de forma explícita para tests/compatibilidad; no existe fallback mutador silencioso.
 - `styler doctor` muestra el estado del binario y del servicio PipeCraft.
 - El servicio usa un workspace privado en `.styler/pipecraft/` y arranca bajo demanda.
@@ -486,7 +486,7 @@ El README prioriza ahora el uso del programa. Los detalles históricos quedan pl
 </details>
 
 <details>
-<summary><strong>▶ 0.9.11</strong></summary>
+<summary><strong>▶ Selección y actividad</strong></summary>
 
 <br>
 
@@ -496,79 +496,5 @@ El README prioriza ahora el uso del programa. Los detalles históricos quedan pl
 - Se protege `change-records.json` frente a fallos de almacenamiento.
 - Un fallo de persistencia puede distinguirse del resultado real del DAG.
 - Los lotes se detienen ante ese tipo de problema y Styler conserva un diagnóstico de emergencia.
-
-</details>
-
-<details>
-<summary><strong>▶ 0.9.8</strong></summary>
-
-<br>
-
-La selección múltiple de **Cambios** quedó reflejada directamente en cada fila mediante borde y estado visual. La selección utiliza una única fuente de estado para evitar desincronización entre la interfaz y el lote interno.
-
-</details>
-
-<details>
-<summary><strong>▶ 0.9.7</strong></summary>
-
-<br>
-
-PhotoGIMP dejó de depender de timeouts totales rígidos durante operaciones largas. Las instalaciones se vigilan por actividad observable y las esperas de inicialización de GIMP pueden prolongarse mientras el sistema siga mostrando cambios, con un límite amplio de seguridad.
-
-</details>
-
-<details>
-<summary><strong>▶ 0.9.6</strong></summary>
-
-<br>
-
-**Cambios** incorporó selección múltiple y ejecución secuencial por lotes. Styler reconstruye el siguiente plan justo antes de ejecutarlo y detiene el lote si un cambio falla.
-
-</details>
-
-<details>
-<summary><strong>▶ 0.9.5</strong></summary>
-
-<br>
-
-`bash scripts/local/install.sh` pasó a publicar el comando `styler` inmediatamente sin depender de Conda y con estrategias alternativas para encontrar una ubicación segura disponible en el `PATH`.
-
-</details>
-
-<details>
-<summary><strong>▶ 0.9.3</strong></summary>
-
-<br>
-
-El instalador pasó a construir Styler desde una copia temporal limpia del código, excluyendo residuos de compilaciones anteriores como `build/`, `dist/`, `*.egg-info` y cachés de Python.
-
-</details>
-
-<details>
-<summary><strong>▶ 0.8.3</strong></summary>
-
-<br>
-
-- Los cambios que necesitan permisos administrativos solicitan autorización antes de iniciar el DAG.
-- Los errores conservan la causa real, el comando, el código técnico y el log durable.
-- Al terminar un paquete, el Constructor vuelve a **Detección** conservando la línea base.
-
-</details>
-
-<details>
-<summary><strong>▶ 0.8.1</strong></summary>
-
-<br>
-
-Las líneas base oficiales pasaron a estar asociadas a una identidad concreta del sistema. La baseline incluida corresponde exclusivamente a **Linux Mint 22.3 · XFCE · X11 · stable · x86_64**.
-
-</details>
-
-<details>
-<summary><strong>▶ 0.7.6</strong></summary>
-
-<br>
-
-Los DAG importados desde `.stylerpkg` pasaron a integrarse desde **Cambios** mediante el mismo flujo de revisión y PipeCraft que los demás cambios.
 
 </details>

@@ -91,7 +91,7 @@ def _resolve_release_url(config: dict[str, object]) -> str:
         api_url,
         headers={
             "Accept": "application/vnd.github+json",
-            "User-Agent": "Styler/0.9.11",
+            "User-Agent": "Styler",
             "X-GitHub-Api-Version": "2022-11-28",
         },
     )
@@ -170,7 +170,7 @@ class ReleaseFetchExecutor(StepExecutor):
             )
         destination.parent.mkdir(parents=True, exist_ok=True)
         temp = destination.with_suffix(destination.suffix + ".part")
-        request = urllib.request.Request(url, headers={"User-Agent": "Styler/0.9.11"})
+        request = urllib.request.Request(url, headers={"User-Agent": "Styler"})
         emit_step_progress(ctx, step, 0.05, f"Descargando {filename}…")
         try:
             with urllib.request.urlopen(request, timeout=int(step.timeout or 300)) as response, temp.open("wb") as handle:

@@ -1,4 +1,4 @@
-"""0.7.6: un cambio portable se integra y se elimina desde Cambios, sin ocultarlo."""
+"""Un cambio portable se integra y se elimina desde Cambios, sin ocultarlo."""
 from __future__ import annotations
 
 from pathlib import Path

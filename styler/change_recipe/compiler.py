@@ -96,7 +96,7 @@ def compile_recipe(recipe: ChangeRecipe) -> WorkflowDefinition:
         elif operation.kind == "package.install_artifact":
             config = dict(operation.config)
             if str(config.get("manager") or "") != "apt":
-                raise RecipeError(f"{operation.operation_id} solo admite manager=apt en 0.9.11.")
+                raise RecipeError(f"{operation.operation_id} solo admite manager=apt.")
             _validate_satisfied_by(config, operation.operation_id)
             if not str(config.get("artifact_id") or "") or not str(config.get("filename") or ""):
                 raise RecipeError(f"{operation.operation_id} necesita artifact_id y filename.")

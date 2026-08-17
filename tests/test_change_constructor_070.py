@@ -1,4 +1,4 @@
-"""Contrato del Constructor de cambios y del formato único de Styler 0.7.0."""
+"""Contrato del Constructor de cambios y del formato único de Styler."""
 from __future__ import annotations
 
 import hashlib

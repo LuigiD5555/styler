@@ -155,7 +155,7 @@ class ChangeService:
         self.root = Path(root)
         self.home = Path(home).expanduser() if home else Path.home()
         self.root.mkdir(parents=True, exist_ok=True)
-        self._state_dir = self.root / "reinvented"
+        self._state_dir = self.root / "styler"
         self._state_dir.mkdir(parents=True, exist_ok=True)
         self._preferences_path = self._state_dir / "preferences.json"
         self._records_path = self._state_dir / "change-records.json"

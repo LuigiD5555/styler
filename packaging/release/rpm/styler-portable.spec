@@ -61,34 +61,5 @@ command -v update-desktop-database >/dev/null 2>&1 && update-desktop-database %{
 %{_mandir}/man1/styler.1*
 
 %changelog
-* Mon Aug 10 2026 Styler contributors <noreply@example.invalid> - 0.9.11-1
-- Refleja visualmente la selección múltiple de Cambios.
-
-* Mon Aug 10 2026 Styler contributors <noreply@example.invalid> - 0.9.7-1
-- Build from a sanitized temporary source tree and ship readable baseline package data.
-
-* Mon Aug 10 2026 Styler contributors <noreply@example.invalid> - 0.9.0-1
-- YAML declarative AppImageLauncher/Affinity changes and generic AppImage primitives.
-* Sun Aug 09 2026 Styler contributors <noreply@example.invalid> - 0.8.3-1
-- Baselines oficiales seleccionadas por identidad exacta de distro/plataforma; sin fallback global.
-- Linux Mint 22.3 XFCE X11 stable x86_64 usa su baseline propia.
-
-* Sun Aug 09 2026 Styler contributors <noreply@example.invalid> - 0.8.0-1
-- Bundle Linux Mint 22.3 XFCE x86_64 baseline as the default compatible baseline.
-* Sat Aug 08 2026 Styler contributors <noreply@example.invalid> - 0.7.6-1
-- Surface imported .stylerpkg DAGs in the unified Changes catalog.
-- Keep PhotoGIMP DAG execution behavior unchanged.
-- Remove the separate package plan/run application path.
-* Sat Aug 08 2026 Styler contributors <noreply@example.invalid> - 0.7.3-1
-- Normalize human package names to safe internal identifiers during authoring.
-- Keep imported .stylerpkg identifier validation strict.
-* Thu Aug 06 2026 Styler contributors <noreply@example.invalid> - 0.7.2-1
-- Fix mouse selection crash in Constructor rows.
-- Add explicit official baseline catalog candidate export.
-* Thu Aug 06 2026 Styler contributors <noreply@example.invalid> - 0.7.1-1
-- Guided four-step Change Constructor and honest omission reporting.
-
-* Thu Aug 06 2026 Styler contributors <noreply@example.invalid> - 0.7.0-1
-- Unify Herramientas in the Change Constructor.
-- Use .stylerpkg as the only portable format.
-- Generate a semantic recipe and deterministic DAG from detected changes.
+* Mon Aug 10 2026 Styler contributors <noreply@example.invalid> - 0.11.0-1
+- Actualiza Styler y separa el runtime PipeCraft.

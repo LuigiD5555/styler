@@ -1,4 +1,4 @@
-"""Contrato 0.9.1: cambios AppImage incorporados como YAML declarativo."""
+"""Contrato de cambios AppImage incorporados como YAML declarativo."""
 from __future__ import annotations
 
 from pathlib import Path

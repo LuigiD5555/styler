@@ -69,7 +69,7 @@ def resolve_condition(step: StepDefinition, ctx: ExecutionContext) -> Condition:
             raise ConditionResolutionError(f"No existe la condición registrada {key!r}.")
         return condition
 
-    # Compatibilidad con grafos anteriores a 0.5.1. Los paquetes nuevos deben
+    # Compatibilidad con grafos antiguos. Los paquetes nuevos deben
     # preferir config.condition con el mismo formato declarativo de las recetas declarativas.
     kind = str(step.config.get("condition_type") or "")
     if kind == "file_exists":

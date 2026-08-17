@@ -73,7 +73,7 @@ class OriginKind(str, Enum):
     RPM = "rpm"
     APPIMAGE = "appimage"
     MANUAL = "manual"
-    # Añadidos en 0.6.5 para el monitor de cambios contra línea base.
+    # Usados por el monitor de cambios contra línea base.
     AUR = "aur"
     ZYPPER = "zypper"
     NIX = "nix"
@@ -91,7 +91,7 @@ class AppCategory(str, Enum):
 
     No es lo mismo una aplicación de escritorio que un contenedor: la forma de
     reproducirlos en otra máquina es distinta y la política de exportación
-    también. Los detectores anteriores a 0.6.5 no rellenan este campo; para
+    también. Algunos detectores no rellenan este campo; para
     ellos queda ``UNKNOWN`` y la clasificación se infiere después.
     """
 

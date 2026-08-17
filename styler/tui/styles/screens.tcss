@@ -541,7 +541,7 @@ ProgressBar {
     text-align: right;
 }
 
-.reinvented-progress-page {
+.styler-progress-page {
     height: 1fr;
     padding: 1 4;
 }
@@ -667,7 +667,7 @@ ProgressBar {
 }
 
 /* ================================================================= *
- * Constructor de cambios (pestaña Herramientas) — 0.7.1             *
+ * Constructor de cambios (pestaña Herramientas)                      *
  * Todo va anclado a .constructor-page para no afectar Cambios ni    *
  * Actividad, que dependen de las reglas genéricas de arriba.        *
  * ================================================================= */
@@ -783,7 +783,7 @@ ProgressBar {
     margin: 1 0 0 0;
 }
 
-/* 0.9.7 · selección múltiple y ejecución secuencial de cambios. */
+/* Selección múltiple y ejecución secuencial de cambios. */
 .change-batch-bar {
     height: 3;
     min-height: 3;

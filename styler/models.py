@@ -203,7 +203,7 @@ class Component:
     source: Optional[dict[str, Any]] = None
     decision: Decision = Decision.UNDECIDED
     human_summary: str = ""
-    # Modelo semántico 0.8.2. `depends_on` conserva el grafo resuelto por ID;
+    # Modelo semántico. `depends_on` conserva el grafo resuelto por ID;
     # estas listas describen relaciones estables entre capacidades.
     component_type: str = "generic"
     provides: list[str] = field(default_factory=list)
