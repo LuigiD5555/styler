@@ -20,7 +20,9 @@ dependencies = [
 dev = [
     "pytest",
     "pytest-asyncio",
+    "setuptools>=68",
     "textual-dev",
+    "wheel",
 ]
 
 [project.scripts]
