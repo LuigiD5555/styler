@@ -11,7 +11,7 @@ from tests.test_change_constructor_070 import _inventory
 
 
 def test_source_separates_baseline_selection_from_activation():
-    source = Path("styler/tui/app.py").read_text(encoding="utf-8")
+    source = Path("styler/tui/screens/constructor.py").read_text(encoding="utf-8")
     start = source.index("async def on_list_view_selected", source.index("class ChangeConstructorScreen"))
     end = source.index("async def _activate_baseline", start)
     block = source[start:end]
@@ -23,7 +23,7 @@ def test_source_separates_baseline_selection_from_activation():
 
 
 def test_constructor_has_explicit_use_baseline_action():
-    source = Path("styler/tui/app.py").read_text(encoding="utf-8")
+    source = Path("styler/tui/screens/constructor.py").read_text(encoding="utf-8")
     assert 'action_label("Usar esta", "apply")' in source
     assert 'id="constructor-baseline-use"' in source
     assert "Seleccionada:" in source

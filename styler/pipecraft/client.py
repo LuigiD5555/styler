@@ -1,6 +1,7 @@
-"""Cliente IPC mínimo para PipeCraft 1.5.
+"""Cliente IPC del servicio PipeCraft.
 
-No implementa scheduling ni procesos. Toda la ejecución pertenece al servicio Rust.
+No implementa scheduling, DAGs ni procesos. Sólo transporta solicitudes y
+respuestas estructuradas al runtime Rust.
 """
 from __future__ import annotations
 
@@ -8,7 +9,7 @@ import json
 import os
 import socket
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterator
 
@@ -44,6 +45,7 @@ class PipeCraftClient:
     def __init__(self, workspace: Path, endpoint: str | None = None) -> None:
         self.workspace = Path(workspace)
         self.endpoint = endpoint or os.environ.get("PIPECRAFT_ENDPOINT") or self._default_endpoint()
+        self._info: dict[str, Any] | None = None
 
     def _default_endpoint(self) -> str:
         if os.name == "nt":
@@ -81,15 +83,38 @@ class PipeCraftClient:
         if not value.get("ok", False):
             detail = value.get("error") or {}
             if isinstance(detail, dict):
-                raise PipeCraftIpcError(f"{detail.get('code', 'PIPECRAFT_ERROR')}: {detail.get('message', 'falló la solicitud')}")
+                raise PipeCraftIpcError(
+                    f"{detail.get('code', 'PIPECRAFT_ERROR')}: {detail.get('message', 'falló la solicitud')}"
+                )
             raise PipeCraftIpcError(str(detail))
         data = value.get("data", {})
         return data if isinstance(data, dict) else {"value": data}
 
-    def ping(self) -> dict[str, Any]:
-        return self.request({"op": "ping"})
+    def ping(self, *, refresh: bool = False) -> dict[str, Any]:
+        if self._info is None or refresh:
+            self._info = self.request({"op": "ping"})
+        return dict(self._info)
 
-    def submit(self, pipeline: str, *, execute: bool, approve: bool, labels: list[str], max_workers: int, only: list[str] | None = None) -> str:
+    def capabilities(self, *, refresh: bool = False) -> frozenset[str]:
+        raw = self.ping(refresh=refresh).get("capabilities", [])
+        if not isinstance(raw, list):
+            return frozenset()
+        return frozenset(str(item) for item in raw if isinstance(item, str) and item)
+
+    def supports(self, capability: str) -> bool:
+        return capability in self.capabilities()
+
+    def submit(
+        self,
+        pipeline: str,
+        *,
+        execute: bool,
+        approve: bool,
+        labels: list[str],
+        max_workers: int,
+        only: list[str] | None = None,
+        from_step: str | None = None,
+    ) -> str:
         data = self.request({
             "op": "submit",
             "pipeline": pipeline,
@@ -97,10 +122,50 @@ class PipeCraftClient:
             "approve": approve,
             "labels": labels,
             "max_workers": max(1, int(max_workers)),
-            "from_step": None,
+            "from_step": from_step,
             "only": list(only or []),
         })
         return str(data["run_id"])
+
+    def submit_spec(
+        self,
+        spec: dict[str, Any],
+        *,
+        execute: bool,
+        approve: bool,
+        labels: list[str],
+        max_workers: int,
+        only: list[str] | None = None,
+        from_step: str | None = None,
+    ) -> str:
+        data = self.request({
+            "op": "submit_spec",
+            "spec": spec,
+            "execute": execute,
+            "approve": approve,
+            "labels": labels,
+            "max_workers": max(1, int(max_workers)),
+            "from_step": from_step,
+            "only": list(only or []),
+        })
+        return str(data["run_id"])
+
+    def validate_spec(self, spec: dict[str, Any]) -> dict[str, Any]:
+        return self.request({"op": "validate_spec", "spec": spec})
+
+    def plan_spec(
+        self,
+        spec: dict[str, Any],
+        *,
+        only: list[str] | None = None,
+        from_step: str | None = None,
+    ) -> dict[str, Any]:
+        return self.request({
+            "op": "plan_spec",
+            "spec": spec,
+            "from_step": from_step,
+            "only": list(only or []),
+        })
 
     def status(self, run_id: str) -> Job:
         return Job.from_dict(self.request({"op": "status", "run_id": run_id}))
@@ -142,7 +207,6 @@ class PipeCraftClient:
             cursor = int(page.get("next", cursor) or cursor)
             job = self.status(run_id)
             if job.terminal:
-                # drena eventos que pudieron escribirse entre el último poll y el estado terminal
                 page = self.events_page(run_id, after=cursor)
                 for event in page.get("events", []):
                     if isinstance(event, dict) and callable(progress):

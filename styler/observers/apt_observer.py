@@ -11,7 +11,7 @@ import shutil
 
 from styler.models import Package
 from styler.observers.base import BaseObserver
-from styler.runtime.commands import PipeCraftRunner
+from styler.execution.processes import ProcessRunner
 
 
 class AptObserver(BaseObserver):
@@ -23,7 +23,7 @@ class AptObserver(BaseObserver):
     def _read_dpkg(self) -> list[Package]:
         if not shutil.which("dpkg-query"):
             return []
-        result = PipeCraftRunner(timeout=30).run(
+        result = ProcessRunner(timeout=30).run(
             ["dpkg-query", "-W", "-f=${Package}\t${Version}\t${Architecture}\t${Status}\n"],
             timeout=30,
         )

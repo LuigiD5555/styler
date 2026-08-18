@@ -26,10 +26,9 @@ def _custom_baseline(tmp_path: Path) -> tuple[BaselineService, BaselineDefinitio
 
 
 def test_constructor_rows_disable_text_selection_that_crashed_mouse_down():
-    app_source = Path("styler/tui/app.py").read_text(encoding="utf-8")
+    app_source = Path("styler/tui/screens/constructor.py").read_text(encoding="utf-8")
     start = app_source.index("class ChangeConstructorScreen")
-    end = app_source.index("class HistoryScreen")
-    assert "ALLOW_SELECT = False" in app_source[start:end]
+    assert "ALLOW_SELECT = False" in app_source[start:]
 
     widget_source = Path("styler/tui/constructor_widgets.py").read_text(encoding="utf-8")
     assert "class ConstructorStatic(Static):" in widget_source

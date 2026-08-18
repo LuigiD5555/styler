@@ -1,4 +1,4 @@
-from styler.applications import apt_install_argv, apt_update_argv
+from styler.package_commands import apt_install_argv, apt_update_argv
 
 
 def test_apt_install_waits_for_dpkg_lock():

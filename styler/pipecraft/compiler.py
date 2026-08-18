@@ -1,4 +1,10 @@
-"""Compila un ExecutionPlan de Styler a un pipeline PipeCraft 1.5 transitorio."""
+"""Compilador puro Styler -> PipeCraft.
+
+Este módulo no escribe archivos ni conoce el transporte IPC. Su única tarea es
+traducir el significado de un :class:`ExecutionPlan` de Styler a una spec
+``pipecraft/v1`` serializable. PipeCraft decide cómo validarla, planificarla y
+ejecutarla.
+"""
 from __future__ import annotations
 
 import math
@@ -10,9 +16,7 @@ from dataclasses import asdict, is_dataclass
 from pathlib import Path
 from typing import Any
 
-import yaml
-
-from styler.runtime.models import ExecutionContext, ExecutionPlan, WorkflowDefinition
+from styler.planning.models import ExecutionContext, ExecutionPlan, WorkflowDefinition
 
 
 def _safe(value: Any) -> Any:
@@ -26,8 +30,8 @@ def _safe(value: Any) -> Any:
         return [_safe(v) for v in value if not callable(v)]
     if is_dataclass(value):
         return _safe(asdict(value))
-    # Los objetos Python no serializables (drivers, callbacks, runners) son de
-    # proceso y no deben cruzar la frontera IPC.
+    # Drivers, callbacks y runners son objetos del proceso de Styler y nunca
+    # deben cruzar la frontera con PipeCraft.
     return None
 
 
@@ -37,13 +41,7 @@ def _name(value: str) -> str:
 
 
 def _plugin_host_argv() -> list[str]:
-    """Return a plugin-host command that survives wheel and zipapp packaging.
-
-    Installed Styler exposes a `styler` console entry point. Portable release
-    packages run the `.pyz` directly. Both forms understand the private
-    `__pipecraft_plugin_host` command, so PipeCraft never depends on PYTHONPATH.
-    Source/test execution falls back to the normal module invocation.
-    """
+    """Devuelve un plugin-host válido en wheel, zipapp y ejecución desde source."""
     try:
         entry = Path(sys.argv[0]).expanduser()
     except (TypeError, ValueError):
@@ -53,17 +51,94 @@ def _plugin_host_argv() -> list[str]:
             return [sys.executable, str(entry.resolve()), "__pipecraft_plugin_host"]
         if entry.name == "styler" and os.access(entry, os.X_OK):
             return [str(entry.resolve()), "__pipecraft_plugin_host"]
-    return [sys.executable, "-m", "styler.pipecraft.plugin_host"]
+    return [sys.executable, "-m", "styler.execution.plugin_host"]
 
 
-def compile_pipeline(
+def _runtime_controls(step) -> dict[str, Any]:
+    controls: dict[str, Any] = {}
+    if step.timeout is not None:
+        controls["timeout"] = max(1, int(math.ceil(float(step.timeout))))
+    if step.retries:
+        controls["retries"] = max(0, int(step.retries))
+    if step.retry_delay:
+        controls["retry_delay"] = max(0, int(math.ceil(float(step.retry_delay))))
+    idle = step.config.get("inactivity_timeout", step.config.get("idle_timeout"))
+    if idle:
+        try:
+            controls["inactivity_timeout"] = max(1, int(math.ceil(float(idle))))
+        except (TypeError, ValueError):
+            pass
+    return controls
+
+
+def _common_step(node, selected: set[str]) -> dict[str, Any]:
+    step = node.step
+    return {
+        "id": node.id,
+        "description": step.description,
+        "risk": step.risk,
+        "required": step.required,
+        "requires_approval": step.requires_approval,
+        "needs": [dep for dep in node.needs if dep in selected],
+        "run_if": node.run_if,
+        "requires": list(step.requires),
+        "provides": list(step.provides),
+        "exclusive_resources": list(step.exclusive_resources),
+        "shared_resources": list(step.shared_resources),
+        "barrier": bool(step.barrier),
+    }
+
+
+def _command_with(step) -> dict[str, Any]:
+    """Compila un nodo explícitamente ``command`` al executor Rust nativo.
+
+    Un comando directo sólo es válido cuando el autor del workflow lo declaró
+    así. No intentamos adivinar que un executor semántico de Styler "en realidad"
+    es un comando porque eso perdería receipts, reconciliación o política.
+    """
+    argv = step.config.get("argv")
+    if not isinstance(argv, (list, tuple)) or not argv or not all(isinstance(v, str) and v for v in argv):
+        raise ValueError(f"El step command {step.id!r} requiere config.argv como lista no vacía de strings")
+
+    values: dict[str, Any] = {"argv": list(argv)}
+    env = step.config.get("env")
+    if isinstance(env, dict) and env:
+        values["env"] = {str(k): str(v) for k, v in env.items()}
+    cwd = step.config.get("cwd")
+    if cwd:
+        values["cwd"] = str(cwd)
+    values.update(_runtime_controls(step))
+    return values
+
+
+def _plugin_with(step, node, context_values: dict[str, Any]) -> dict[str, Any]:
+    values: dict[str, Any] = {
+        "argv": _plugin_host_argv(),
+        "styler_step": _safe(asdict(step)),
+        "styler_node": {
+            "id": node.id,
+            "source_id": node.source_id,
+            "kind": node.kind,
+            "phase": node.phase,
+            "block": node.block,
+            "generated": node.generated,
+        },
+        "styler_context": context_values,
+    }
+    values.update(_runtime_controls(step))
+    return values
+
+
+def compile_spec(
     workflow: WorkflowDefinition,
     plan: ExecutionPlan,
     context: ExecutionContext,
     selected: set[str],
-    pipeline_path: Path,
-) -> str:
-    pipeline_name = _name(f"styler-{workflow.name}-{context.values.get('change_id', '')}-{uuid.uuid4().hex[:10]}")
+) -> tuple[str, dict[str, Any]]:
+    """Devuelve ``(pipeline_name, spec)`` sin tocar el filesystem."""
+    pipeline_name = _name(
+        f"styler-{workflow.name}-{context.values.get('change_id', '')}-{uuid.uuid4().hex[:10]}"
+    )
     context_values = _safe(context.values)
     if not isinstance(context_values, dict):
         context_values = {}
@@ -75,56 +150,24 @@ def compile_pipeline(
     selected_nodes = [node for node in plan.nodes if node.id in selected]
     steps: list[dict[str, Any]] = []
     policy_steps: dict[str, str] = {}
+
     for node in selected_nodes:
         step = node.step
         policy, _source = workflow.on_error.resolve(node, "failed")
         policy_steps[node.id] = policy
-        with_values: dict[str, Any] = {
-            "argv": _plugin_host_argv(),
-            "styler_step": _safe(asdict(step)),
-            "styler_node": {
-                "id": node.id,
-                "source_id": node.source_id,
-                "kind": node.kind,
-                "phase": node.phase,
-                "block": node.block,
-                "generated": node.generated,
-            },
-            "styler_context": context_values,
-        }
-        if step.timeout is not None:
-            with_values["timeout"] = max(1, int(math.ceil(float(step.timeout))))
-        if step.retries:
-            with_values["retries"] = max(0, int(step.retries))
-        if step.retry_delay:
-            with_values["retry_delay"] = max(0, int(math.ceil(float(step.retry_delay))))
-        idle = step.config.get("inactivity_timeout", step.config.get("idle_timeout"))
-        if idle:
-            try:
-                with_values["inactivity_timeout"] = max(1, int(math.ceil(float(idle))))
-            except (TypeError, ValueError):
-                pass
-        steps.append({
-            "id": node.id,
-            "type": "plugin",
-            "description": step.description,
-            "risk": step.risk,
-            "required": step.required,
-            "requires_approval": step.requires_approval,
-            "needs": [dep for dep in node.needs if dep in selected],
-            "run_if": node.run_if,
-            "requires": list(step.requires),
-            "provides": list(step.provides),
-            "exclusive_resources": list(step.exclusive_resources),
-            "shared_resources": list(step.shared_resources),
-            "barrier": bool(step.barrier),
-            "with": with_values,
-        })
+        compiled = _common_step(node, selected)
+        if step.step_type == "command":
+            compiled["type"] = "command"
+            compiled["with"] = _command_with(step)
+        else:
+            compiled["type"] = "plugin"
+            compiled["with"] = _plugin_with(step, node, context_values)
+        steps.append(compiled)
 
-    document = {
+    document: dict[str, Any] = {
         "schema_version": "pipecraft/v1",
         "name": pipeline_name,
-        "description": f"Pipeline transitorio compilado por Styler para {workflow.name}",
+        "description": f"Pipeline compilado por Styler para {workflow.name}",
         "context": {"styler": True, "operation": workflow.operation},
         "steps": steps,
         "on_error": {
@@ -132,8 +175,4 @@ def compile_pipeline(
             "steps": policy_steps,
         },
     }
-    pipeline_path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = pipeline_path.with_suffix(pipeline_path.suffix + ".tmp")
-    tmp.write_text(yaml.safe_dump(document, allow_unicode=True, sort_keys=False), encoding="utf-8")
-    tmp.replace(pipeline_path)
-    return pipeline_name
+    return pipeline_name, document

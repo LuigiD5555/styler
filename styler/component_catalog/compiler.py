@@ -1,8 +1,8 @@
 """Compilador hacia el DAG runtime (Fase 3).
 
 Traduce componentes ya resueltos (``resolver.py``) a ``StepDefinition`` /
-``WorkflowDefinition`` — los mismos modelos que ``styler.runtime.scheduler``
-ya sabe ejecutar. No se crea un motor nuevo: el scheduler existente no
+``WorkflowDefinition`` — el mismo contrato semántico que Styler compila para
+PipeCraft. No se crea un motor nuevo: PipeCraft es la única autoridad de ejecución y no
 necesita saber qué es GIMP o KDE, solo ve pasos con ``needs`` (orden),
 ``requires``/``provides`` (capacidades) y recursos exclusivos/compartidos.
 
@@ -24,7 +24,7 @@ from dataclasses import dataclass, field
 from styler.component_catalog.models import ComponentDefinition, ProviderDefinition
 from styler.component_catalog.registry import ComponentRegistry
 from styler.component_catalog.resolver import ResolutionResult
-from styler.runtime.models import ErrorPolicy, NodeKind, PhaseDefinition, StepDefinition, WorkflowDefinition
+from styler.planning.models import ErrorPolicy, NodeKind, PhaseDefinition, StepDefinition, WorkflowDefinition
 
 STEP_TYPE_BY_KIND = {
     "application": "install_package",
@@ -39,7 +39,7 @@ def _install_config(step_type: str, provider: ProviderDefinition | None) -> dict
     """Config que cada ejecutor real necesita, según el tipo de paso.
 
     ``install_package`` reutiliza el ejecutor ya existente en
-    ``styler.runtime.executors`` (espera ``config['package']``).
+    ``styler.execution.executors`` (espera ``config['package']``).
     ``install_overlay``/``apply_config`` usan los ejecutores nuevos de
     ``styler.component_catalog.executors``.
     """

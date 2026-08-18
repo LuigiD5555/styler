@@ -8,7 +8,7 @@ from styler.appimage_actions import AppImageIntegrateExecutor, AppImageVerifyExe
 from styler.changes.service import ChangeService
 from styler.declarative_changes import load_declarative_changes
 from styler.receipts import ReceiptJournal, ReceiptKind
-from styler.runtime.models import ExecutionContext, StepDefinition
+from styler.planning.models import ExecutionContext, StepDefinition
 from styler.target import Target
 
 

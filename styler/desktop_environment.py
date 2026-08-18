@@ -12,7 +12,7 @@ import shutil
 from typing import Iterable
 
 from styler.models import DesktopEnvironmentRecord, Package
-from styler.runtime.commands import PipeCraftRunner
+from styler.execution.processes import ProcessRunner
 
 KDE_PROJECT_URL = "https://kde.org/plasma-desktop/"
 KDE_INSTALL_URL = "https://kde.org/distributions/"
@@ -67,7 +67,7 @@ def _plasma_version() -> str:
     executable = shutil.which("plasmashell")
     if not executable:
         return ""
-    result = PipeCraftRunner(timeout=10).run([executable, "--version"], timeout=10)
+    result = ProcessRunner(timeout=10).run([executable, "--version"], timeout=10)
     text = (result.stdout or result.stderr).strip()
     match = re.search(r"(\d+(?:\.\d+){1,3})", text)
     return match.group(1) if match else ""

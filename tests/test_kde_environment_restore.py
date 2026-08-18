@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from styler import advanced_restore, environment_restore
+from styler import advanced_restore
 from styler.advanced_restore import AdvancedRestoreSettings, CommandOutput, RestoreCandidate
 from styler.component_graph import components_from_layers, resolve_component_graph
 from styler.desktop_environment import KDE_INSTALL_URL, KDE_PROJECT_URL, detect_desktop_environments
@@ -135,80 +135,6 @@ def test_kde_candidates_are_marked_as_official_and_unverified_ones_are_rejected(
         )
 
 
-def test_automatic_preparation_only_targets_the_desktop_environment(monkeypatch):
-    layer = Layer(
-        "paneles-1",
-        "paneles",
-        "Paneles",
-        packages=[
-            Package("apt", "kde-plasma-desktop"),
-            Package("apt", "some-optional-theme"),
-        ],
-    )
-    monkeypatch.setattr(environment_restore, "is_installed", lambda _package: False)
-
-    missing = environment_restore.missing_packages([layer])
-    assert [(item.manager, item.name) for item in missing] == [
-        ("apt", "kde-plasma-desktop")
-    ]
-
-
-
-def test_environment_plan_skips_unverified_exact_candidate_for_verified_official_one(monkeypatch, tmp_path):
-    layer = Layer(
-        "paneles-1",
-        "paneles",
-        "Paneles",
-        packages=[Package("apt", "kde-plasma-desktop")],
-    )
-    monkeypatch.setattr(environment_restore, "is_installed", lambda _package: False)
-    monkeypatch.setattr(
-        advanced_restore,
-        "load_settings",
-        lambda _root: AdvancedRestoreSettings(
-            enabled=True,
-            allow_repository_lookup=True,
-            allow_installation=True,
-        ),
-    )
-    unsafe_exact = RestoreCandidate(
-        candidate_id="unsafe-exact",
-        capability="desktop.kde-plasma",
-        manager="apt",
-        name="kde-plasma-desktop",
-        source_type="repository",
-        source="third-party.example",
-        relation="available",
-        source_verified=False,
-    )
-    safe_provider = RestoreCandidate(
-        candidate_id="safe-provider",
-        capability="desktop.kde-plasma",
-        manager="apt",
-        name="plasma-desktop",
-        source_type="repository",
-        source="archive.ubuntu.com",
-        relation="available",
-        source_verified=True,
-        official_project_url=KDE_PROJECT_URL,
-        official_install_url=KDE_INSTALL_URL,
-    )
-    monkeypatch.setattr(
-        advanced_restore,
-        "candidates_for_capability",
-        lambda *_args, **_kwargs: advanced_restore.CandidateSearchResult(
-            "desktop.kde-plasma", "", [unsafe_exact, safe_provider]
-        ),
-    )
-
-    steps = environment_restore.plan_environment_installation([layer], root=tmp_path)
-
-    assert len(steps) == 1
-    assert steps[0].candidate.candidate_id == "safe-provider"
-    assert steps[0].candidate.source_verified is True
-
-
-
 def test_apt_official_source_check_rejects_spoofed_domains():
     assert advanced_restore._official_repository_source(
         "apt", "https://archive.ubuntu.com/ubuntu noble/universe amd64 Packages"
@@ -222,16 +148,6 @@ def test_apt_official_source_check_rejects_spoofed_domains():
     assert not advanced_restore._official_repository_source(
         "apt", "https://evilubuntu.com/repository noble/main"
     )
-
-
-def test_plasma_is_prepared_even_when_already_installed(monkeypatch):
-    layer = Layer(
-        "paneles-1", "paneles", "Paneles",
-        packages=[Package("apt", "kde-plasma-desktop", "6.3.5")],
-    )
-    monkeypatch.setattr(environment_restore, "is_installed", lambda _package: True)
-    prepared = environment_restore.packages_to_prepare([layer])
-    assert [(item.manager, item.name) for item in prepared] == [("apt", "kde-plasma-desktop")]
 
 
 def test_kde_install_refreshes_repository_and_does_not_pin_old_version():

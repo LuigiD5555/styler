@@ -19,6 +19,7 @@ from styler.models import State
 from styler.observers.apt_observer import AptObserver
 from styler.observers.flatpak_observer import FlatpakObserver
 from styler.observers.files_observer import FilesObserver
+from styler.system_info import detect_distro
 
 STYLER_DIR = ".styler"
 STATES_DIR = os.path.join(STYLER_DIR, "states")
@@ -28,21 +29,6 @@ def _default_observers(scope: str = "plasma") -> list:
     return [AptObserver(), FlatpakObserver(), FilesObserver(scope=scope)]
 
 
-def detect_distro() -> tuple[str, str]:
-    """Lee /etc/os-release cuando existe; si no, usa platform como
-    respaldo (esto corre en cualquier host, no solo en Mint 22.3)."""
-    info = {}
-    try:
-        with open("/etc/os-release") as fh:
-            for line in fh:
-                if "=" in line:
-                    k, v = line.strip().split("=", 1)
-                    info[k] = v.strip('"')
-    except FileNotFoundError:
-        pass
-    distro = info.get("PRETTY_NAME", platform.platform())
-    base = info.get("ID_LIKE", info.get("ID", ""))
-    return distro, base
 
 
 def capture_applications(root: str = ".") -> list[AppSpec]:

@@ -18,7 +18,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Optional, Protocol
 
-from styler.applications import CommandResult, Runner
+from styler.execution.processes import CommandResult, Runner
 
 
 @dataclass(frozen=True)
@@ -106,18 +106,18 @@ class AptResolver(_Base):
     def install_argv(self, package: str, prefix: list[str]) -> list[str]:
         # Política no interactiva + espera del bloqueo de dpkg: «-y» solo responde
         # a APT, no a las preguntas de debconf (p. ej. elegir el display manager).
-        from styler.applications import apt_install_argv
+        from styler.package_commands import apt_install_argv
 
         return apt_install_argv(prefix, package)
 
     def upgrade_argv(self, package: str, prefix: list[str]) -> list[str]:
-        from styler.applications import apt_install_argv
+        from styler.package_commands import apt_install_argv
 
         argv = apt_install_argv(prefix, package)
         return [*argv[:-1], "--only-upgrade", argv[-1]]
 
     def refresh_argv(self, prefix: list[str]) -> list[str] | None:
-        from styler.applications import apt_update_argv
+        from styler.package_commands import apt_update_argv
 
         return apt_update_argv(prefix)
 

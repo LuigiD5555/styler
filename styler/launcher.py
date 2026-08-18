@@ -54,7 +54,7 @@ def main(argv: list[str] | None = None) -> int:
     # the normal Styler executable makes wheel and portable .pyz distributions
     # behave identically without relying on PYTHONPATH.
     if argv and argv[0] == "__pipecraft_plugin_host":
-        from styler.pipecraft.plugin_host import main as plugin_main
+        from styler.execution.plugin_host import main as plugin_main
         return plugin_main()
     if argv and argv[0] in {"change", "baseline", "constructor", "package"}:
         from styler.cli import main as cli_main

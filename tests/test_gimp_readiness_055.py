@@ -3,8 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
-from styler.component_catalog import executors as component_executors
-from styler.runtime.models import ExecutionContext, StepDefinition
+from styler.component_catalog import gimp_runtime as component_executors
+from styler.planning.models import ExecutionContext, StepDefinition
 
 
 class FakeProcess:
@@ -105,7 +105,7 @@ def test_gimp_configuration_may_be_created_only_during_shutdown(
         return True, "quit enviado"
 
     monkeypatch.setattr(component_executors.shutil, "which", lambda name: f"/usr/bin/{name}")
-    monkeypatch.setattr(component_executors.PipeCraftRunner, "spawn", lambda self, *args, **kwargs: popen(*args, **kwargs))
+    monkeypatch.setattr(component_executors.ProcessRunner, "spawn", lambda self, *args, **kwargs: popen(*args, **kwargs))
     monkeypatch.setattr(
         component_executors.InitializeFlatpakAppExecutor,
         "_flatpak_state",

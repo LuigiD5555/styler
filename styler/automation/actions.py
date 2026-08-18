@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Mapping, Protocol, Sequence
 
-from styler.runtime.commands import PipeCraftRunner
+from styler.execution.processes import ProcessRunner
 
 from .desktop import DesktopDriver, ElementLocator
 from .conditions import (
@@ -61,8 +61,6 @@ class SleepAction:
             f"Pausa fija completada: {self.seconds:g} s.",
             {"seconds": self.seconds, "dry_run": context.dry_run},
         )
-
-
 class WaitAction:
     """Espera basada en condición; deliberadamente distinta de `SleepAction`."""
 
@@ -181,7 +179,7 @@ class LaunchProcessAction:
         if context.dry_run:
             return ActionResult(True, "Dry-run: el proceso no se inició.", {"argv": self.argv})
         try:
-            process = PipeCraftRunner().spawn_detached(
+            process = ProcessRunner().spawn_detached(
                 list(self.argv),
                 cwd=str(context.workdir) if context.workdir else None,
                 env=self.env,
@@ -479,50 +477,3 @@ class StopProcessAction:
             "Proceso detenido por la fuerza." if forced else "Proceso detenido.",
             {"stopped": True, "forced": forced},
         )
-
-
-class WithApplicationAction:
-    """Abrir → esperar a que esté lista → cuerpo → cerrar siempre.
-
-    Reúne en un solo bloque reutilizable las tres responsabilidades que el
-    controlador mantiene separadas, sin fundirlas: por dentro sigue llamando a
-    `launch_wait_and_settle` y a `StopProcessAction`.
-    """
-
-    def __init__(
-        self,
-        name: str,
-        launch: Action,
-        profile: Any,
-        body: Action,
-        *,
-        controller: Any = None,
-        stop: Action | None = None,
-    ) -> None:
-        self.name = name
-        self.launch = launch
-        self.profile = profile
-        self.body = body
-        self.stop = stop or StopProcessAction()
-        self._controller = controller
-
-    def _make_controller(self) -> Any:
-        if self._controller is not None:
-            return self._controller
-        from .controller import ApplicationController
-
-        return ApplicationController(source=getattr(self.profile, "id", self.name))
-
-    def execute(self, context: ActionContext) -> ActionResult:
-        controller = self._make_controller()
-        report = controller.launch_wait_and_settle(self.launch, self.profile, context)
-        if not report.success:
-            self.stop.execute(context)
-            readiness = report.readiness
-            message = readiness.message if readiness else report.launch.message
-            return ActionResult(
-                False,
-                f"{self.name}: la aplicación no quedó lista: {message}",
-                {"readiness": dict(readiness.data) if readiness else {}},
-            )
-        return TryFinallyAction(self.name, self.body, self.stop).execute(context)

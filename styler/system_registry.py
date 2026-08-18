@@ -35,7 +35,7 @@ from urllib.parse import urlsplit, urlunsplit
 
 from styler.provenance import inventory as provenance_inventory
 from styler.provenance.models import ApplicationRecord, Inventory
-from styler.runtime.commands import PipeCraftRunner
+from styler.execution.processes import ProcessRunner
 
 REGISTRY_SCHEMA = "styler.system-registry/1"
 EVENT_SCHEMA = "styler.system-registry-event/1"
@@ -527,7 +527,7 @@ def _system_configuration_items() -> list[RegistryItem]:
 def _run(argv: Sequence[str], *, timeout: int = 20) -> tuple[str, str]:
     if not argv or not shutil.which(argv[0]):
         return "", ""
-    completed = PipeCraftRunner(timeout=timeout).run(
+    completed = ProcessRunner(timeout=timeout).run(
         list(argv), timeout=timeout, env={**os.environ, "LC_ALL": "C"}
     )
     if completed.returncode != 0 and not completed.stdout:

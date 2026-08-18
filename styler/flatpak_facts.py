@@ -15,7 +15,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Callable, Sequence
 
-from styler.runtime.commands import PipeCraftRunner
+from styler.execution.processes import ProcessRunner
 
 
 Runner = Callable[[Sequence[str]], Any]
@@ -82,7 +82,7 @@ def config_schema_from_version(version: str) -> str:
 def _default_runner(argv: Sequence[str]):
     env = os.environ.copy()
     env["LC_ALL"] = "C"
-    return PipeCraftRunner(timeout=10).run(list(argv), timeout=10, env=env)
+    return ProcessRunner(timeout=10).run(list(argv), timeout=10, env=env)
 
 
 def _fields(line: str) -> list[str]:

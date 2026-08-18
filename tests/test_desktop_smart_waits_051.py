@@ -1,4 +1,5 @@
 from __future__ import annotations
+from styler.execution.registry import default_registry
 
 from dataclasses import dataclass
 
@@ -152,9 +153,9 @@ def test_desktop_click_is_declarative_and_dry_run_does_not_click():
 
 
 def test_runtime_graph_reuses_semantic_waits_and_desktop_click(tmp_path):
-    from styler.runtime.engine import WorkflowEngine
-    from styler.runtime.executors import ExecutorRegistry
-    from styler.runtime.models import ExecutionContext, StepDefinition, WorkflowDefinition
+    from tests.support.local_engine import WorkflowEngine
+    from styler.execution.base import ExecutorRegistry
+    from styler.planning.models import ExecutionContext, StepDefinition, WorkflowDefinition
 
     driver = FakeDriver((clickable_snapshot(),))
     workflow = WorkflowDefinition(
@@ -186,7 +187,7 @@ def test_runtime_graph_reuses_semantic_waits_and_desktop_click(tmp_path):
             ),
         ],
     )
-    run = WorkflowEngine(ExecutorRegistry.default()).run(
+    run = WorkflowEngine(default_registry()).run(
         workflow,
         ExecutionContext(
             root=tmp_path,
@@ -201,9 +202,9 @@ def test_runtime_graph_reuses_semantic_waits_and_desktop_click(tmp_path):
 
 
 def test_runtime_graph_preview_never_clicks(tmp_path):
-    from styler.runtime.engine import WorkflowEngine
-    from styler.runtime.executors import ExecutorRegistry
-    from styler.runtime.models import ExecutionContext, StepDefinition, WorkflowDefinition
+    from tests.support.local_engine import WorkflowEngine
+    from styler.execution.base import ExecutorRegistry
+    from styler.planning.models import ExecutionContext, StepDefinition, WorkflowDefinition
 
     driver = FakeDriver((clickable_snapshot(),))
     workflow = WorkflowDefinition(
@@ -216,7 +217,7 @@ def test_runtime_graph_preview_never_clicks(tmp_path):
             )
         ],
     )
-    run = WorkflowEngine(ExecutorRegistry.default()).run(
+    run = WorkflowEngine(default_registry()).run(
         workflow,
         ExecutionContext(
             root=tmp_path,

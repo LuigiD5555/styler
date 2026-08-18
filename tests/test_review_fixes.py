@@ -15,7 +15,7 @@ import pytest
 
 from styler import base as base_mod
 from styler import catalogs
-from styler import orchestrator
+from styler import restore as orchestrator
 from styler import resolution as resolution_mod
 from styler import target as target_mod
 from styler import verification as verify_mod
@@ -25,7 +25,7 @@ from styler.models import DesktopEnvironmentRecord, FileEntry
 from styler.objectstore import ObjectStore
 from styler.profiles import create_profile, save_profile
 from styler.restore import ItemStatus
-from styler.runtime.commands import FakeRunner
+from tests.support.fake_runner import FakeRunner
 from styler.target import Target
 
 UBUNTU = Target(distro_id="linuxmint", family="ubuntu", pretty_name="Linux Mint 22.3")

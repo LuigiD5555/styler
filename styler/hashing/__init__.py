@@ -2,18 +2,16 @@
 
 Orden de backends:
 1. extensión PyO3 ``styler_rust``;
-2. binario compañero ``styler-engine``;
-3. implementación Python.
+2. implementación Python.
 
-Los tres deben producir BLAKE2b-128, equivalente a
-``hashlib.blake2b(digest_size=16)``. Esto es parte del formato persistente de
-Styler: cambiar el algoritmo sin migración rompería el object store.
+Ambos producen BLAKE2b-128, equivalente a ``hashlib.blake2b(digest_size=16)``.
+El algoritmo forma parte del formato persistente del object store y no debe
+cambiar sin migración explícita.
 """
 from __future__ import annotations
 
 import hashlib
 import os
-from functools import lru_cache
 from typing import Iterable
 
 from styler.models import FileEntry
@@ -23,34 +21,12 @@ try:
 except ImportError:
     _rust = None
 else:
-    # No aceptar una extensión antigua que todavía genere BLAKE3. El checksum
-    # forma parte del formato persistente del object store.
     if getattr(_rust, "HASH_ALGORITHM", "") != "blake2b-128":
         _rust = None
 
 
-@lru_cache(maxsize=1)
-def _engine_client():
-    try:
-        from styler.engine_client import EngineClient
-
-        client = EngineClient(timeout=600.0)
-        if not client.available:
-            return None
-        status = client.status()
-        if not status.available or status.hash_algorithm != "blake2b-128":
-            return None
-        return client
-    except (ImportError, OSError):
-        return None
-
-
 def active_backend() -> str:
-    if _rust is not None:
-        return "rust-extension"
-    if _engine_client() is not None:
-        return "rust-engine"
-    return "python"
+    return "rust-extension" if _rust is not None else "python"
 
 
 def _hash_file_python(path: str, chunk_size: int = 1 << 20) -> tuple[str, int]:
@@ -93,38 +69,13 @@ def hash_file(path: str) -> tuple[str, int]:
         if result is not None:
             checksum, size = result
             return str(checksum), int(size)
-
-    client = _engine_client()
-    if client is not None:
-        try:
-            result = client.hash_file(path)
-            return str(result["checksum"]), int(result.get("size", 0) or 0)
-        except (RuntimeError, OSError, ValueError, KeyError, TypeError):
-            pass
     return _hash_file_python(path)
 
 
 def hash_tree(paths: Iterable[str]) -> list[FileEntry]:
-    """Calcula checksums de archivos y directorios sin seguir symlinks."""
+    """Calcula checksums de archivos/directorios sin seguir symlinks."""
     normalized = [os.fspath(path) for path in paths]
     if _rust is not None:
         raw = _rust.hash_tree(normalized)
         return [FileEntry(path=p, checksum=c, size=s) for p, c, s in raw]
-
-    client = _engine_client()
-    if client is not None:
-        try:
-            result = client.scan(normalized)
-            return [
-                FileEntry(
-                    path=str(entry["path"]),
-                    checksum=str(entry["checksum"]),
-                    size=int(entry.get("size", 0) or 0),
-                )
-                for entry in result.get("entries", [])
-            ]
-        except (RuntimeError, OSError, ValueError, KeyError, TypeError):
-            # El motor es una optimización opcional durante la transición. Un
-            # fallo suyo no debe impedir una captura que Python sí puede hacer.
-            pass
     return _hash_tree_python(normalized)

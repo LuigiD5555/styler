@@ -1,5 +1,6 @@
 """Recibos de ejecución y DAG de reversión compilado desde ellos."""
 from __future__ import annotations
+from styler.execution.registry import default_registry
 
 from pathlib import Path
 
@@ -12,9 +13,9 @@ from styler.receipts import (
     compile_rollback_workflow,
     emit_receipt,
 )
-from styler.runtime.executors import ExecutorRegistry
-from styler.runtime.graph import drop_step, topological_order
-from styler.runtime.models import ExecutionContext, StepDefinition, WorkflowDefinition
+from styler.execution.base import ExecutorRegistry
+from styler.planning.graph import drop_step, topological_order
+from styler.planning.models import ExecutionContext, StepDefinition, WorkflowDefinition
 
 
 def _journal(tmp_path: Path) -> ReceiptJournal:
@@ -111,7 +112,7 @@ def test_package_installed_by_apply_becomes_an_uninstall_node():
 
 
 def test_undo_step_types_are_registered():
-    known = ExecutorRegistry.default().known_types()
+    known = default_registry().known_types()
     assert {"undo_restore_backup", "undo_remove_paths", "uninstall_package", "undo_note"} <= known
 
 

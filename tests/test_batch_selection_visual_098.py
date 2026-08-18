@@ -2,7 +2,10 @@ from pathlib import Path
 
 
 def test_batch_rows_have_explicit_selected_visual_state():
-    source = Path("styler/tui/app.py").read_text(encoding="utf-8")
+    source = (
+        Path("styler/tui/common.py").read_text(encoding="utf-8")
+        + Path("styler/tui/screens/changes.py").read_text(encoding="utf-8")
+    )
     css = Path("styler/tui/styles/widgets.tcss").read_text(encoding="utf-8")
 
     assert 'classes += " batch-selected"' in source
@@ -17,7 +20,7 @@ def test_batch_rows_have_explicit_selected_visual_state():
 
 
 def test_batch_counter_and_rows_share_same_selection_source():
-    source = Path("styler/tui/app.py").read_text(encoding="utf-8")
+    source = Path("styler/tui/screens/changes.py").read_text(encoding="utf-8")
     start = source.index("    def _render_batch_selection(self) -> None:")
     end = source.index("    def on_list_view_selected", start)
     block = source[start:end]
@@ -30,7 +33,7 @@ def test_batch_counter_and_rows_share_same_selection_source():
 
 
 def test_clicking_available_row_toggles_integration_selection():
-    source = Path("styler/tui/app.py").read_text(encoding="utf-8")
+    source = Path("styler/tui/screens/changes.py").read_text(encoding="utf-8")
     start = source.index("    def on_list_view_selected(self, event: ListView.Selected) -> None:")
     end = source.index("    def _render_selected", start)
     block = source[start:end]

@@ -8,12 +8,9 @@ from types import SimpleNamespace
 
 import pytest
 
-from styler.component_catalog.executors import (
-    BackupConfigExecutor,
-    InitializeFlatpakAppExecutor,
-    OverlayInstallExecutor,
-    ResolveFlatpakAppFactsExecutor,
-    VerifyExecutor,
+from styler.component_catalog.executors import BackupConfigExecutor, OverlayInstallExecutor, VerifyExecutor
+from styler.component_catalog.gimp_runtime import (
+    InitializeFlatpakAppExecutor, ResolveFlatpakAppFactsExecutor,
     _select_photogimp_source_version,
 )
 from styler.flatpak_facts import (
@@ -21,7 +18,7 @@ from styler.flatpak_facts import (
     config_schema_from_version,
     save_flatpak_facts,
 )
-from styler.runtime.models import ExecutionContext, StepDefinition
+from styler.planning.models import ExecutionContext, StepDefinition
 
 
 SOURCE = "https://github.com/Diolinux/PhotoGIMP/releases/download/3.0/PhotoGIMP-linux.zip"
@@ -93,7 +90,7 @@ def test_stored_3_2_facts_do_not_hide_an_upgrade_to_gimp_4(
         config_path=str(config_root / "3.2"),
     )
     monkeypatch.setattr(
-        "styler.component_catalog.executors.inspect_flatpak_application",
+        "styler.component_catalog.gimp_runtime.inspect_flatpak_application",
         lambda app_id: FlatpakApplicationFacts(
             application_id=app_id,
             installed=True,
@@ -149,11 +146,11 @@ def test_photogimp_3_template_is_overlaid_on_gimp_4_after_full_backup(
     )
 
     monkeypatch.setattr(
-        "styler.component_catalog.executors.shutil.which",
+        "styler.component_catalog.photogimp_overlay.shutil.which",
         lambda name: f"/usr/bin/{name}" if name == "flatpak" else None,
     )
     monkeypatch.setattr(
-        "styler.component_catalog.executors.run_step_command",
+        "styler.component_catalog.photogimp_overlay.run_step_command",
         lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout="", stderr=""),
     )
     monkeypatch.setattr(
@@ -163,7 +160,7 @@ def test_photogimp_3_template_is_overlaid_on_gimp_4_after_full_backup(
     )
     archive_bytes = _response_with_photogimp_3()
     monkeypatch.setattr(
-        "styler.component_catalog.executors.urlopen",
+        "styler.component_catalog.photogimp_overlay.urlopen",
         lambda request, timeout=45: Response(archive_bytes),
     )
 

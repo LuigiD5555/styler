@@ -463,15 +463,32 @@ No es necesario añadir manualmente una ruta específica para un nombre de usuar
 El README prioriza ahora el uso del programa. Los detalles técnicos quedan plegados para no interrumpir la explicación principal.
 
 <details>
+<summary><strong>▶ 0.12 — menos wrappers, una sola ruta productiva</strong></summary>
+
+<br>
+
+- Se eliminan el scheduler/event loop Python productivo y el antiguo `styler-engine` Rust.
+- `styler.workflow` es la única entrada productiva hacia PipeCraft 1.5; los helpers locales quedan sólo en tests.
+- Restauración deja de atravesar `pipelines.py → orchestrator.py → restore.py`: ahora usa directamente `styler.restore`.
+- Se retiran adaptadores sin consumidores (`environment_restore`, `component_catalog.bridge` y el antiguo `restore_bridge`) en vez de mantener APIs paralelas sólo porque existieron en versiones anteriores.
+- Se retiran también prototipos históricos sin ruta productiva (`diff`, `interpreter`, `review`, `demo`, `restoration_plan`, `session_profile`); las pruebas construyen directamente el modelo actual de componentes.
+- Los procesos de dominio se llaman `ProcessRunner`; PipeCraft es únicamente el runtime Rust por IPC.
+- Persistencia, GIMP/Flatpak y overlay PhotoGIMP quedan en módulos con responsabilidades explícitas, en vez de crecer dentro de dos archivos gigantes.
+- Se eliminan ciclos de imports productivos y CI puede bloquear su reaparición mediante `verify-runtime-boundary.py`.
+- El pipeline YAML de submit es temporal: después de que PipeCraft crea su snapshot durable, Styler elimina la copia de catálogo.
+
+</details>
+
+<details>
 <summary><strong>▶ Runtime de ejecución</strong></summary>
 
 <br>
 
-- PipeCraft pasa a ser el runtime de producción preferido mediante IPC local.
+- PipeCraft es el único runtime de producción mediante IPC local.
 - Styler compila su `ExecutionPlan` a un pipeline transitorio de PipeCraft; el DAG, recursos, concurrencia, cancelación, eventos y persistencia pertenecen al motor Rust.
 - Los executors Linux de Styler se ejecutan como plugins externos `pipecraft.plugin/v1`; PipeCraft sigue sin conocer APT, Flatpak, receipts ni `.stylerpkg`.
 - PipeCraft sigue siendo un proyecto Rust separado y Styler no vendoriza su source, pero la distribución oficial incluye un binario PipeCraft privado por arquitectura. `PIPECRAFT_BIN`, `PATH` y `PIPECRAFT_SOURCE_DIR` quedan sólo como rutas de desarrollo/override.
-- Si PipeCraft no está disponible, las operaciones productivas con efectos fallan cerrado. El backend Python anterior sólo puede activarse de forma explícita para tests/compatibilidad; no existe fallback mutador silencioso.
+- Si PipeCraft no está disponible, las operaciones productivas con efectos fallan cerrado. El scheduler local ya no forma parte del paquete instalado; sólo existe un arnés equivalente bajo `tests/support`.
 - `styler doctor` muestra el estado del binario y del servicio PipeCraft.
 - El servicio usa un workspace privado en `.styler/pipecraft/` y arranca bajo demanda.
 

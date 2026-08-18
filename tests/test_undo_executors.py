@@ -1,8 +1,8 @@
 """Los ejecutores de reversión: conservadores, idempotentes y confinados al HOME."""
 from __future__ import annotations
 
-from styler.runtime.models import ExecutionContext, Status, StepDefinition
-from styler.runtime.undo_executors import (
+from styler.planning.models import ExecutionContext, Status, StepDefinition
+from styler.execution.undo import (
     RemovePathsExecutor,
     RestoreBackupExecutor,
     UndoNoteExecutor,

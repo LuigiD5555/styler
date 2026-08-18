@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+import pytest
+
+pytestmark = pytest.mark.usefixtures("local_execution_backend")
+
 import errno
 from pathlib import Path
 
 from styler.changes import ChangeService
-from styler.changes.service import ChangeStateWriteError
+from styler.changes.storage import ChangeStateWriteError, probe_directory_writable
 from styler.target import Target
 
 
@@ -23,7 +27,7 @@ def test_runtime_erofs_after_progress_becomes_failed_current_change_not_unstarte
     service = _service(tmp_path)
     monkeypatch.setattr(service, "plan_requires_admin", lambda _plan: False)
 
-    def erofs_after_progress(_engine, _workflow, context):
+    def erofs_after_progress(_workflow, context, _registry=None):
         callback = context.values["progress_callback"]
         callback({
             "step_id": "appimagelauncher-download",
@@ -38,7 +42,7 @@ def test_runtime_erofs_after_progress_becomes_failed_current_change_not_unstarte
         path = service.root / ".styler" / "runs" / "demo" / "state.json.tmp"
         raise OSError(errno.EROFS, "Read-only file system", str(path))
 
-    monkeypatch.setattr("styler.changes.service.WorkflowEngine.run", erofs_after_progress)
+    monkeypatch.setattr("styler.changes.execution.workflow_runtime.execute", erofs_after_progress)
 
     result = service.execute_batch(["appimagelauncher", "affinity-linux"])
 
@@ -57,7 +61,7 @@ def test_preflight_checks_pipecraft_runs_before_starting_dag(tmp_path, monkeypat
     service = _service(tmp_path)
     engine_called = False
 
-    original_probe = service._probe_directory_writable
+    original_probe = probe_directory_writable
 
     def fail_runs(path: Path):
         if path == service.root / ".styler" / "runs":
@@ -71,8 +75,8 @@ def test_preflight_checks_pipecraft_runs_before_starting_dag(tmp_path, monkeypat
         engine_called = True
         raise AssertionError("PipeCraft no debe arrancar con runs/ en solo lectura")
 
-    monkeypatch.setattr(service, "_probe_directory_writable", fail_runs)
-    monkeypatch.setattr("styler.changes.service.WorkflowEngine.run", should_not_run)
+    monkeypatch.setattr("styler.changes.service.probe_directory_writable", fail_runs)
+    monkeypatch.setattr("styler.changes.execution.workflow_runtime.execute", should_not_run)
 
     result = service.execute("appimagelauncher")
 

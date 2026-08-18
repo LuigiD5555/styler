@@ -1,5 +1,5 @@
 Name:           styler
-Version:        0.11.0
+Version:        0.13.1
 Release:        1%{?dist}
 Summary:        Integrate semantic, reproducible changes on Linux
 License:        Apache-2.0
@@ -61,5 +61,5 @@ PYTHONPATH=. python3 -m pytest -q
 %{_mandir}/man1/styler.1*
 
 %changelog
-* Mon Aug 10 2026 Styler contributors <noreply@example.invalid> - 0.11.0-1
+* Mon Aug 10 2026 Styler contributors <noreply@example.invalid> - 0.13.1-1
 - Actualiza Styler y separa el runtime PipeCraft.

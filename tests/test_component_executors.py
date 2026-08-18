@@ -18,15 +18,11 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from styler.component_catalog.executors import (
-    ApplyConfigExecutor,
-    BackupConfigExecutor,
-    OverlayInstallExecutor,
-    VerifyExecutor,
-    _backup_existing_file,
-    _copy_tree_contents,
+    ApplyConfigExecutor, BackupConfigExecutor, OverlayInstallExecutor, VerifyExecutor,
     extended_registry,
 )
-from styler.runtime.models import ExecutionContext, StepDefinition
+from styler.component_catalog.photogimp_overlay import _backup_existing_file, _copy_tree_contents
+from styler.planning.models import ExecutionContext, StepDefinition
 
 
 def _ctx(root: Path, dry_run: bool, home: Path | None = None) -> ExecutionContext:
@@ -193,12 +189,12 @@ def test_photogimp_remoto_descarga_y_extrae_en_home(monkeypatch):
             self.close()
 
     monkeypatch.setattr(
-        "styler.component_catalog.executors.urlopen",
+        "styler.component_catalog.photogimp_overlay.urlopen",
         lambda request, timeout=45: Response(archive_bytes),
     )
-    monkeypatch.setattr("styler.component_catalog.executors.shutil.which", lambda name: "/usr/bin/flatpak")
+    monkeypatch.setattr("styler.component_catalog.photogimp_overlay.shutil.which", lambda name: "/usr/bin/flatpak")
     monkeypatch.setattr(
-        "styler.component_catalog.executors.run_step_command",
+        "styler.component_catalog.photogimp_overlay.run_step_command",
         lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout="", stderr=""),
     )
 
@@ -237,12 +233,12 @@ def test_photogimp_remoto_rechaza_zip_con_escape(monkeypatch):
             self.close()
 
     monkeypatch.setattr(
-        "styler.component_catalog.executors.urlopen",
+        "styler.component_catalog.photogimp_overlay.urlopen",
         lambda request, timeout=45: Response(archive_bytes),
     )
-    monkeypatch.setattr("styler.component_catalog.executors.shutil.which", lambda name: "/usr/bin/flatpak")
+    monkeypatch.setattr("styler.component_catalog.photogimp_overlay.shutil.which", lambda name: "/usr/bin/flatpak")
     monkeypatch.setattr(
-        "styler.component_catalog.executors.run_step_command",
+        "styler.component_catalog.photogimp_overlay.run_step_command",
         lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout="", stderr=""),
     )
 
@@ -321,12 +317,12 @@ def _photogimp_response(
             self.close()
 
     monkeypatch.setattr(
-        "styler.component_catalog.executors.urlopen",
+        "styler.component_catalog.photogimp_overlay.urlopen",
         lambda request, timeout=45: Response(archive_bytes),
     )
-    monkeypatch.setattr("styler.component_catalog.executors.shutil.which", lambda name: "/usr/bin/flatpak")
+    monkeypatch.setattr("styler.component_catalog.photogimp_overlay.shutil.which", lambda name: "/usr/bin/flatpak")
     monkeypatch.setattr(
-        "styler.component_catalog.executors.run_step_command",
+        "styler.component_catalog.photogimp_overlay.run_step_command",
         lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout="", stderr=""),
     )
 

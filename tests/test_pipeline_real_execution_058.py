@@ -10,6 +10,7 @@ Las tres reglas que estas pruebas congelan:
    las consultas de solo lectura, y se descarta cuando GIMP cambia de versión.
 """
 from __future__ import annotations
+from styler.execution.registry import default_registry
 
 from pathlib import Path
 
@@ -23,9 +24,9 @@ from styler.flatpak_facts import (
     load_flatpak_facts,
     save_flatpak_facts,
 )
-from styler.runtime.engine import WorkflowEngine
-from styler.runtime.executors import ExecutorRegistry, StepExecutor
-from styler.runtime.models import (
+from tests.support.local_engine import WorkflowEngine
+from styler.execution.base import ExecutorRegistry, StepExecutor
+from styler.planning.models import (
     ExecutionContext,
     Status,
     StepDefinition,
@@ -80,7 +81,7 @@ def test_failed_overlay_is_reported_as_failure_not_as_warning(tmp_path: Path):
         required=True,
         config={},
     )
-    registry = ExecutorRegistry.default()
+    registry = default_registry()
     registry.register(AlwaysFails())
     run = WorkflowEngine(registry).run(
         WorkflowDefinition("overlay", [step]),
@@ -110,7 +111,7 @@ def test_fresh_run_executes_every_step_without_reconciling(tmp_path: Path):
             return StepResult(step.id, step.step_type, True, Status.OK, "Ejecutado de verdad.")
 
     step = StepDefinition("app.gimp.install", "install_package", required=True)
-    registry = ExecutorRegistry.default()
+    registry = default_registry()
     registry.register(Recording())
 
     run = WorkflowEngine(registry).run(
@@ -139,7 +140,7 @@ def test_continuation_run_may_still_reuse_completed_steps(tmp_path: Path):
             return StepResult(step.id, step.step_type, True, Status.OK, "Ejecutado.")
 
     step = StepDefinition("app.gimp.install", "install_package", required=True)
-    registry = ExecutorRegistry.default()
+    registry = default_registry()
     registry.register(Recording())
 
     run = WorkflowEngine(registry).run(

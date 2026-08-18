@@ -8,6 +8,8 @@
     "host": "github-actions ubuntu-24.04 x86_64-unknown-linux-gnu",
     "rustc": "1.97.1",
     "source_version": "1.5.0-alpha.1",
-    "compile_fix": "pipecraft-core loader.rs keeps sid alive through barrier parsing (id: sid.clone())"
-  }
+    "compile_fix": "pipecraft-core loader.rs keeps sid alive through barrier parsing (id: sid.clone())",
+    "artifact": "GitHub Actions build-pipecraft rerun 2026-08-18"
+  },
+  "bundled_by": "styler 0.13.1"
 }

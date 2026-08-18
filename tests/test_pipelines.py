@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import pytest
 
-from styler import pipelines
+from styler import restore as pipelines
 from styler import privileges
 from styler.applications import AppSpec
 from styler.layers import Layer, save_layer
@@ -26,7 +26,7 @@ from styler.models import DesktopEnvironmentRecord, FileEntry
 from styler.objectstore import ObjectStore
 from styler.profiles import create_profile, save_profile
 from styler.restore import ItemStatus
-from styler.runtime.commands import FakeRunner
+from tests.support.fake_runner import FakeRunner
 from styler.target import Target
 
 MINT = Target(distro_id="linuxmint", family="ubuntu", pretty_name="Linux Mint 22.3")
@@ -107,7 +107,7 @@ def test_one_approval_installs_the_whole_desktop_without_asking_again(tmp_path: 
     profile_id = _profile(root)
     runner = _mint()
 
-    report = pipelines.run(
+    report = pipelines.run_pipeline(
         pipelines.ALL, "profile", profile_id,
         root=str(root), home=home, execute=True, approve=True,
         runner=runner, target=MINT, is_root=False,
@@ -137,7 +137,7 @@ def test_the_environment_pipeline_never_touches_the_home(tmp_path: Path):
     profile_id = _profile(root)
     runner = _mint()
 
-    report = pipelines.run(
+    report = pipelines.run_pipeline(
         pipelines.ENVIRONMENT, "profile", profile_id,
         root=str(root), home=home, execute=True, approve=True,
         runner=runner, target=MINT, is_root=True,
@@ -161,7 +161,7 @@ def test_the_personalization_pipeline_refuses_to_run_without_a_verified_environm
     profile_id = _profile(root)
     runner = _mint()                      # Plasma NO está instalado
 
-    report = pipelines.run(
+    report = pipelines.run_pipeline(
         pipelines.PERSONALIZATION, "profile", profile_id,
         root=str(root), home=home, execute=True, approve=True,
         runner=runner, target=MINT, is_root=True,
@@ -184,7 +184,7 @@ def test_the_two_pipelines_chain_when_run_one_after_the_other(tmp_path: Path):
     profile_id = _profile(root)
     runner = _mint()
 
-    first = pipelines.run(
+    first = pipelines.run_pipeline(
         pipelines.ENVIRONMENT, "profile", profile_id,
         root=str(root), home=home, execute=True, approve=True,
         runner=runner, target=MINT, is_root=True,
@@ -193,7 +193,7 @@ def test_the_two_pipelines_chain_when_run_one_after_the_other(tmp_path: Path):
     assert list(home.rglob("*")) == []
 
     mark = len(runner.calls)
-    second = pipelines.run(
+    second = pipelines.run_pipeline(
         pipelines.PERSONALIZATION, "profile", profile_id,
         root=str(root), home=home, execute=True, approve=True,
         runner=runner, target=MINT, is_root=True,
@@ -216,13 +216,13 @@ def test_the_environment_pipeline_is_idempotent(tmp_path: Path):
     profile_id = _profile(root)
     runner = _mint()
 
-    pipelines.run(
+    pipelines.run_pipeline(
         pipelines.ENVIRONMENT, "profile", profile_id, root=str(root), home=home,
         execute=True, approve=True, runner=runner, target=MINT, is_root=True,
     )
     mark = len(runner.calls)
 
-    second = pipelines.run(
+    second = pipelines.run_pipeline(
         pipelines.ENVIRONMENT, "profile", profile_id, root=str(root), home=home,
         execute=True, approve=True, runner=runner, target=MINT, is_root=True,
     )
@@ -251,7 +251,7 @@ def test_the_authorization_is_renewed_before_every_privileged_command(tmp_path: 
     profile_id = _profile(root)
     runner = _mint()
 
-    pipelines.run(
+    pipelines.run_pipeline(
         pipelines.ENVIRONMENT, "profile", profile_id, root=str(root), home=home,
         execute=True, approve=True, runner=runner, target=MINT, is_root=False,
     )

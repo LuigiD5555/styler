@@ -15,9 +15,9 @@ from pathlib import Path
 from styler.capture import capture_state
 from styler.models import Changeset, Component, Decision, FileEntry, State
 from styler.objectstore import ObjectStore, ObjectStoreError
-from styler.runtime.builder import workflow_from_changeset
-from styler.runtime.engine import WorkflowEngine
-from styler.runtime.models import ExecutionContext, WorkflowRun
+from styler.planning.builder import workflow_from_changeset
+from styler import workflow as workflow_runtime
+from styler.planning.models import ExecutionContext, WorkflowRun
 from styler.validation import (
     ValidationError,
     safe_record_path,
@@ -229,4 +229,4 @@ def restore_snapshot(
         approve=approve,
         run_id=run_id or "",
     )
-    return WorkflowEngine(backend="auto").run(workflow, context)
+    return workflow_runtime.execute(workflow, context)

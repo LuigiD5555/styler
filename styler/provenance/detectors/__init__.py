@@ -3,7 +3,7 @@ from pathlib import Path
 
 from styler.provenance.detectors.appimage import AppImageDetector
 from styler.provenance.detectors.apt import AptDetector
-from styler.provenance.detectors.base import CommandError, CommandRunner, Detector, FakeRunner, Runner
+from styler.provenance.detectors.base import CommandError, CommandRunner, Detector, Runner
 from styler.provenance.detectors.brew import BrewDetector
 from styler.provenance.detectors.containers import ContainerDetector
 from styler.provenance.detectors.flatpak import FlatpakDetector
@@ -55,7 +55,7 @@ def all_detectors(runner: Runner | None = None, *, home: str | Path | None = Non
 
 __all__ = [
     "AppImageDetector", "AptDetector", "BrewDetector", "ContainerDetector",
-    "CommandError", "CommandRunner", "Detector", "FakeRunner", "FlatpakDetector",
+    "CommandError", "CommandRunner", "Detector", "FlatpakDetector",
     "LanguageToolDetector", "ManualBinaryDetector", "NixDetector", "PacmanDetector",
     "RpmDetector", "Runner", "SnapDetector", "ZypperDetector", "all_detectors",
 ]

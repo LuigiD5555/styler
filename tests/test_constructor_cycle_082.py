@@ -107,10 +107,9 @@ def test_removing_the_local_package_makes_the_change_pending_again(tmp_path):
 
 
 def test_tui_export_success_resets_to_detection_instead_of_leaving_step_four():
-    source = Path("styler/tui/app.py").read_text(encoding="utf-8")
+    source = Path("styler/tui/screens/constructor.py").read_text(encoding="utf-8")
     start = source.index("class ChangeConstructorScreen")
-    end = source.index("class HistoryScreen")
-    block = source[start:end]
+    block = source[start:]
 
     assert "await self._reset_after_export()" in block
     assert "self.summary = self.app.constructor.begin_next_cycle()" in block

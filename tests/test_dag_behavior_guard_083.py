@@ -33,7 +33,7 @@ def test_photogimp_dag_matches_097_adaptive_wait_baseline(tmp_path):
 
 def test_change_progress_execution_block_remains_unchanged():
     """La pantalla que entrega el plan a ChangeService sigue siendo la esperada."""
-    source = Path("styler/tui/app.py").read_text(encoding="utf-8")
+    source = Path("styler/tui/screens/changes.py").read_text(encoding="utf-8")
     start = source.index("class ChangeProgressScreen(Screen):")
     end = source.index("class ChangeResultScreen(Screen):")
     block = source[start:end]

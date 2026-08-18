@@ -5,6 +5,8 @@ from pathlib import Path
 
 import pytest
 
+pytestmark = pytest.mark.usefixtures("local_execution_backend")
+
 from styler.changes import ChangeService, ChangeStatus
 from styler.portable import PortableLibrary
 from tests.test_imported_packages_as_changes_074 import _portable_change
@@ -67,7 +69,7 @@ def test_deleting_package_after_apply_keeps_receipts_for_real_removal(tmp_path):
 
 
 def test_changes_screen_does_not_tie_integrate_to_configure_for_stylerpkg():
-    source = Path("styler/tui/app.py").read_text(encoding="utf-8")
+    source = Path("styler/tui/screens/changes.py").read_text(encoding="utf-8")
     start = source.index("class ChangesScreen(StylerScreen):")
     end = source.index("class ChangeReviewScreen(StylerScreen):")
     block = source[start:end]

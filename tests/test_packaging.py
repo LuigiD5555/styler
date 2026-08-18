@@ -86,18 +86,21 @@ def test_package_build_scripts_have_valid_bash_syntax():
         subprocess.run(["bash", "-n", str(script)], check=True)
 
 
-def test_workflow_builds_one_runtime_and_three_package_formats():
+def test_release_workflow_has_one_canonical_package_build_path():
     workflow_path = ROOT / ".github/workflows/packages.yml"
     workflow = workflow_path.read_text()
     assert yaml.safe_load(workflow)
-    for job in ("runtime:", "deb:", "arch:", "rpm:", "release:"):
-        assert job in workflow
-    for version in ("0.89.1", "4.0.0", "7.2.0", "8.2.8"):
-        assert f'"{version}"' in workflow
-    assert "build-portable-runtime.sh" in workflow
-    assert "build-release-deb.sh" in workflow
-    assert "build-release-arch.sh" in workflow
-    assert "build-release-rpm.sh" in workflow
+    assert "release:" in workflow
+    # GitHub Actions no vuelve a reimplementar los builders: el mismo script
+    # usado localmente crea runtime portable + DEB + Arch + RPM en contenedores.
+    assert "STYLER_TEXTUAL_VERSION" not in workflow
+    assert "build-release-in-containers.sh all" in workflow
+    assert "make-source-archive.sh" in workflow
+    assert "actions/upload-artifact@v4" in workflow
+    assert "runtime:" not in workflow
+    assert "deb:" not in workflow
+    assert "arch:" not in workflow
+    assert "rpm:" not in workflow
 
 
 def test_source_archive_contains_both_packaging_channels_without_outputs(tmp_path):

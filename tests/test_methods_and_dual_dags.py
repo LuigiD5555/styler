@@ -1,4 +1,5 @@
 from __future__ import annotations
+from styler.execution.registry import default_registry
 
 import json
 import time
@@ -14,10 +15,10 @@ from styler.methods import (
     default_method_registry,
 )
 from styler.receipts import ReceiptKind, StepReceipt, compile_rollback_workflow
-from styler.runtime.engine import WorkflowEngine
-from styler.runtime.models import ExecutionContext, StepDefinition, WorkflowDefinition
-from styler.runtime.executors import ExecutorRegistry, StepExecutor
-from styler.runtime.models import Status, StepResult
+from tests.support.local_engine import WorkflowEngine
+from styler.planning.models import ExecutionContext, StepDefinition, WorkflowDefinition
+from styler.execution.base import ExecutorRegistry, StepExecutor
+from styler.planning.models import Status, StepResult
 
 
 def _receipt(step_id: str, kind: str, created_at: float, **data) -> StepReceipt:
@@ -176,7 +177,7 @@ class _DelayExecutor(StepExecutor):
 
 
 def test_semantic_trace_keeps_planned_and_actual_parallel_order(tmp_path: Path):
-    registry = ExecutorRegistry.default()
+    registry = default_registry()
     registry.register(_DelayExecutor())
     workflow = WorkflowDefinition(
         name="parallel-trace",

@@ -5,8 +5,8 @@ from dataclasses import asdict, fields
 from typing import Any, Mapping, Sequence
 
 from styler.component_catalog.executors import extended_registry
-from styler.runtime.engine import WorkflowEngine
-from styler.runtime.models import (
+from styler import workflow as workflow_runtime
+from styler.planning.models import (
     CheckAttachment,
     CheckReference,
     DependencyMode,
@@ -21,7 +21,7 @@ from styler.runtime.models import (
     WorkflowOperation,
 )
 
-from .models import PortablePackageError
+from .errors import PortablePackageError
 
 # Ningún executor actual interpreta estas claves como shell, pero se bloquean
 # para que el formato no adquiera esa superficie accidentalmente en el futuro.
@@ -174,7 +174,7 @@ def workflow_from_portable_dict(data: Mapping[str, Any]) -> WorkflowDefinition:
                 f"El nodo '{step.id}' declara run_if desconocido: '{step.run_if}'."
             )
     try:
-        WorkflowEngine(extended_registry()).compile(workflow)
+        workflow_runtime.WorkflowPlanner(extended_registry()).compile(workflow)
     except ValueError as exc:
         raise PortablePackageError(f"El grafo no compila:\n{exc}") from exc
     return workflow

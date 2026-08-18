@@ -4,8 +4,8 @@ from styler.component_catalog import loader as loader_mod
 from styler.component_catalog import resolver as resolver_mod
 from styler.component_catalog import compiler as compiler_mod
 from styler.component_catalog.registry import ComponentRegistry
-from styler.runtime.plan import compile_workflow as compile_runtime_plan
-from styler.runtime.scheduler import ResourceTable
+from styler.planning.plan import compile_workflow as compile_runtime_plan
+from tests.support.local_scheduler import ResourceTable
 
 
 def _registry() -> ComponentRegistry:

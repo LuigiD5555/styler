@@ -4,11 +4,8 @@ import subprocess
 from pathlib import Path
 
 from styler.component_catalog.compiler import compile_workflow
-from styler.component_catalog.executors import (
-    BackupConfigExecutor,
-    InitializeFlatpakAppExecutor,
-    ResolveFlatpakAppFactsExecutor,
-)
+from styler.component_catalog.executors import BackupConfigExecutor
+from styler.component_catalog.gimp_runtime import InitializeFlatpakAppExecutor, ResolveFlatpakAppFactsExecutor
 from styler.component_catalog.loader import load
 from styler.component_catalog.registry import ComponentRegistry
 from styler.component_catalog.resolver import resolve
@@ -19,7 +16,7 @@ from styler.flatpak_facts import (
     load_flatpak_facts,
     save_flatpak_facts,
 )
-from styler.runtime.models import ExecutionContext, Status, StepDefinition
+from styler.planning.models import ExecutionContext, Status, StepDefinition
 
 
 def test_config_schema_is_derived_from_installed_version() -> None:
@@ -95,7 +92,7 @@ def test_resolve_facts_executor_persists_exact_config_path(tmp_path: Path, monke
         observed_at=1.0,
     )
     monkeypatch.setattr(
-        "styler.component_catalog.executors.inspect_flatpak_application",
+        "styler.component_catalog.gimp_runtime.inspect_flatpak_application",
         lambda app_id: facts,
     )
     step = StepDefinition(

@@ -13,7 +13,7 @@ from styler.change_recipe import compile_recipe, synthesize_recipe
 from styler.component_catalog.executors import extended_registry
 from styler.portable import PackageType, PortableLibrary, inspect_package
 from styler.provenance.artifacts import checksum_path, scan_visual_artifacts
-from styler.provenance.detectors import FakeRunner
+from tests.support.fake_provenance import FakeRunner
 from styler.provenance.detectors.appimage import AppImageDetector
 from styler.provenance.models import (
     AppCategory,
@@ -303,7 +303,7 @@ def test_local_apt_without_repository_is_detected_but_not_falsely_exportable(tmp
 
 
 def test_tools_route_is_only_the_long_change_constructor():
-    source = Path("styler/tui/app.py").read_text(encoding="utf-8")
+    source = (Path("styler/tui/app.py").read_text(encoding="utf-8") + "\n" + Path("styler/tui/screens/constructor.py").read_text(encoding="utf-8"))
     assert '"tools": ChangeConstructorScreen' in source
     assert "class ChangeConstructorScreen" in source
     assert "Constructor de cambios" in source

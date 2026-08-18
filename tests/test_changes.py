@@ -11,8 +11,8 @@ from styler.component_catalog.executors import ManualHandoffExecutor, extended_r
 from styler.component_catalog.loader import load
 from styler.component_catalog.registry import ComponentRegistry
 from styler.component_catalog.resolver import resolve
-from styler.runtime.engine import WorkflowEngine
-from styler.runtime.models import ExecutionContext, StepDefinition, WorkflowDefinition
+from tests.support.local_engine import WorkflowEngine
+from styler.planning.models import ExecutionContext, StepDefinition, WorkflowDefinition
 from styler.target import Target
 
 

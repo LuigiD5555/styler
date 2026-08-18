@@ -1,15 +1,18 @@
-"""Backend PipeCraft 1.5 para WorkflowDefinition de Styler."""
+"""Backend PipeCraft para WorkflowDefinition de Styler.
+
+Styler conserva semántica de dominio y receipts. La validación estructural,
+planificación y ejecución productivas pertenecen a PipeCraft. PipeCraft 1.6
+recibe la spec directamente por IPC; 1.5 se soporta sólo mediante un adaptador
+YAML aislado mientras el binario bundled se actualiza.
+"""
 from __future__ import annotations
 
 import json
-import os
-import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from styler.runtime.graph import topological_order
-from styler.runtime.models import (
+from styler.planning.models import (
     ExecutionContext,
     ExecutionPlan,
     NodeKind,
@@ -19,12 +22,13 @@ from styler.runtime.models import (
     WorkflowDefinition,
     WorkflowRun,
 )
-from styler.runtime.plan import compile_workflow, plan_to_dict
-from styler.runtime.selection import select_plan_nodes
+from styler.planning.plan import compile_workflow
+from styler.planning.selection import select_plan_nodes
 
 from .client import PipeCraftIpcError
-from .compiler import compile_pipeline
-from .service import PipeCraftUnavailable, ensure_service, prepare_workspace
+from .compiler import compile_spec
+from .legacy_yaml import write_legacy_pipeline
+from .service import ensure_service, prepare_workspace
 
 PREFIX = "STYLER_EVENT\t"
 
@@ -47,7 +51,8 @@ def _summary(results: list[StepResult]) -> PipelineSummary:
         elif result.status == Status.BLOCKED:
             summary.blocked += 1
         elif result.status == Status.OK_WITH_WARNINGS:
-            summary.succeeded += 1; summary.warnings += 1
+            summary.succeeded += 1
+            summary.warnings += 1
         elif result.success:
             summary.succeeded += 1
         else:
@@ -56,51 +61,72 @@ def _summary(results: list[StepResult]) -> PipelineSummary:
 
 
 class PipeCraftBackend:
-    """Traduce Styler -> PipeCraft; PipeCraft es dueño de la ejecución."""
+    """Traduce Styler -> PipeCraft; PipeCraft es dueño del runtime."""
 
     def __init__(self, styler_root: Path) -> None:
         self.styler_root = Path(styler_root)
 
-    @staticmethod
-    def available() -> bool:
-        if os.environ.get("STYLER_RUNTIME", "auto").lower() == "local":
-            return False
-        from .service import locate_binary
-        return locate_binary() is not None
-
-    def run(self, workflow: WorkflowDefinition, ctx: ExecutionContext, plan: ExecutionPlan | None = None) -> WorkflowRun:
+    def run(
+        self,
+        workflow: WorkflowDefinition,
+        ctx: ExecutionContext,
+        plan: ExecutionPlan | None = None,
+    ) -> WorkflowRun:
         started = _now()
         plan = plan or compile_workflow(workflow)
         selected = select_plan_nodes(plan, ctx)
-        workspace = prepare_workspace(self.styler_root)
-        pipeline_dir = workspace / ".pipelines" / "pipelines"
-        # El nombre del archivo y el name YAML deben coincidir para catalog.load().
-        provisional = pipeline_dir / "styler-transient.yaml"
-        pipeline_name = compile_pipeline(workflow, plan, ctx, selected, provisional)
-        pipeline_path = pipeline_dir / f"{pipeline_name}.yaml"
-        if pipeline_path != provisional:
-            provisional.replace(pipeline_path)
+        pipeline_name, spec = compile_spec(workflow, plan, ctx, selected)
 
+        workspace = prepare_workspace(self.styler_root)
         client = ensure_service(self.styler_root)
+        info = client.ping()
+        capabilities = client.capabilities()
         max_workers = int(workflow.metadata.get("max_workers", 4) or 4)
-        run_id = client.submit(
-            pipeline_name,
-            execute=not ctx.dry_run,
-            approve=ctx.approve,
-            labels=list(ctx.labels),
-            max_workers=max_workers,
-        )
+
+        legacy_path: Path | None = None
+        if "submit_spec" in capabilities:
+            # La spec cruza IPC en memoria. PipeCraft debe persistir su snapshot
+            # durable antes de ejecutar para que resume sea reproducible.
+            if "validate_spec" in capabilities:
+                validation = client.validate_spec(spec)
+                if validation.get("valid") is False:
+                    errors = validation.get("errors") or []
+                    raise PipeCraftIpcError(f"PipeCraft rechazó la spec: {errors}")
+            run_id = client.submit_spec(
+                spec,
+                execute=not ctx.dry_run,
+                approve=ctx.approve,
+                labels=list(ctx.labels),
+                max_workers=max_workers,
+            )
+        else:
+            # Compatibilidad explícita con el runtime 1.5 actualmente bundled.
+            # Esta ruta desaparece cuando el paquete incluya PipeCraft 1.6.
+            legacy_path = write_legacy_pipeline(
+                spec, workspace / ".pipelines" / "pipelines"
+            )
+            run_id = client.submit(
+                pipeline_name,
+                execute=not ctx.dry_run,
+                approve=ctx.approve,
+                labels=list(ctx.labels),
+                max_workers=max_workers,
+            )
+            try:
+                legacy_path.unlink(missing_ok=True)
+            except OSError:
+                pass
+
         submitted = ctx.values.get("run_submitted_callback")
         if callable(submitted):
             try:
                 submitted(run_id)
             except Exception:
-                # Si Styler no puede persistir el identificador durable, no
-                # dejamos un job huérfano ejecutando efectos sin referencia.
                 try:
                     client.cancel(run_id)
                 finally:
                     raise
+
         callback = ctx.values.get("progress_callback")
         total = max(1, len(selected))
         completed: set[str] = set()
@@ -123,12 +149,23 @@ class PipeCraftBackend:
                 return
             if kind == "node_finished":
                 completed.add(step_id)
-            if callable(callback) and kind in {"node_started", "node_finished", "node_blocked", "node_cancelled", "node_skipped", "process_heartbeat", "process_timeout"}:
+            if callable(callback) and kind in {
+                "node_started",
+                "node_finished",
+                "node_blocked",
+                "node_cancelled",
+                "node_skipped",
+                "process_heartbeat",
+                "process_timeout",
+            }:
                 status = "running"
-                if kind == "node_finished": status = "completed"
-                elif kind in {"node_blocked", "node_cancelled"}: status = "failed"
-                elif kind == "node_skipped": status = "skipped"
-                payload = {
+                if kind == "node_finished":
+                    status = "completed"
+                elif kind in {"node_blocked", "node_cancelled"}:
+                    status = "failed"
+                elif kind == "node_skipped":
+                    status = "skipped"
+                callback({
                     "step_id": step_id,
                     "event_type": kind,
                     "status": status,
@@ -138,18 +175,24 @@ class PipeCraftBackend:
                     "message": str(data.get("message") or ""),
                     "elapsed_seconds": float(data.get("elapsed_ms", 0) or 0) / 1000.0,
                     "quiet_seconds": float(data.get("inactive_ms", 0) or 0) / 1000.0,
-                }
-                callback(payload)
+                })
 
         job = client.wait(run_id, progress=progress_event)
         if job.status == "interrupted":
             raise PipeCraftIpcError(
-                f"PipeCraft interrumpió {run_id}. Styler debe reconciliar el estado real antes de reanudar. {job.warning}"
+                f"PipeCraft interrumpió {run_id}. Styler debe reconciliar el estado real "
+                f"antes de reanudar. {job.warning}"
             )
         report = client.report(run_id)
         results = self._results(report, plan)
         success = bool(report.get("success", False)) and job.status == "succeeded"
         run_dir = str(report.get("run_dir") or "")
+        order = [str(v) for v in report.get("order", [])]
+        if not order:
+            # El orden de la spec no pretende reemplazar el scheduler; es sólo
+            # un fallback de trazabilidad si un reporte viejo no lo expone.
+            order = [str(step.get("id")) for step in spec.get("steps", []) if step.get("id")]
+
         run = WorkflowRun(
             run_id=run_id,
             workflow=workflow.name,
@@ -160,7 +203,7 @@ class PipeCraftBackend:
             results=results,
             operation=workflow.operation,
             status=job.status,
-            order=[str(v) for v in report.get("order", [])],
+            order=order,
             pipeline_fingerprint=plan.pipeline_fingerprint,
             plan_fingerprint=str(report.get("plan_fingerprint") or plan.plan_fingerprint),
             summary=_summary(results),
@@ -175,11 +218,18 @@ class PipeCraftBackend:
             artifacts_dir=str(report.get("artifacts_dir") or ""),
             logs_dir=str(report.get("logs_dir") or ""),
             events_path=str(report.get("events_path") or ""),
-            plan_path=str(pipeline_path),
+            plan_path=str(Path(run_dir) / "pipeline.snapshot.yaml") if run_dir else "",
             report_path=job.report_path or (str(Path(run_dir) / "report.json") if run_dir else ""),
             trace_path=str(Path(run_dir) / "semantic-trace.json") if run_dir else "",
         )
-        self._write_semantic_trace(run, workflow, plan)
+        self._write_semantic_trace(
+            run,
+            workflow,
+            plan,
+            order=order,
+            runtime_version=str(info.get("version") or "unknown"),
+            runtime_mode="spec-ipc" if "submit_spec" in capabilities else "legacy-yaml",
+        )
         return run
 
     @staticmethod
@@ -192,7 +242,10 @@ class PipeCraftBackend:
             step_id = str(raw.get("step_id", ""))
             data = dict(raw.get("data") or {}) if isinstance(raw.get("data"), dict) else {}
             node = nodes.get(step_id)
-            original_type = str(data.get("styler_step_type") or (node.step.step_type if node else raw.get("type", "plugin")))
+            original_type = str(
+                data.get("styler_step_type")
+                or (node.step.step_type if node else raw.get("type", "plugin"))
+            )
             status = str(
                 data.get("styler_status")
                 or raw.get("status")
@@ -215,7 +268,15 @@ class PipeCraftBackend:
         return out
 
     @staticmethod
-    def _write_semantic_trace(run: WorkflowRun, workflow: WorkflowDefinition, plan: ExecutionPlan) -> None:
+    def _write_semantic_trace(
+        run: WorkflowRun,
+        workflow: WorkflowDefinition,
+        plan: ExecutionPlan,
+        *,
+        order: list[str],
+        runtime_version: str,
+        runtime_mode: str,
+    ) -> None:
         if not run.trace_path:
             return
         path = Path(run.trace_path)
@@ -223,24 +284,28 @@ class PipeCraftBackend:
             path.parent.mkdir(parents=True, exist_ok=True)
             results = {r.node_id: r for r in run.results}
             trace = {
-                "schema": "styler.semantic-trace/3",
-                "runtime": "pipecraft/1.5",
+                "schema": "styler.semantic-trace/4",
+                "runtime": f"pipecraft/{runtime_version}",
+                "runtime_mode": runtime_mode,
                 "run_id": run.run_id,
                 "workflow": workflow.name,
                 "operation": workflow.operation,
                 "pipeline_fingerprint": run.pipeline_fingerprint,
                 "plan_fingerprint": run.plan_fingerprint,
-                "planned_order": topological_order(plan),
+                "planned_order": list(order),
                 "nodes": [],
             }
-            for pos, node_id in enumerate(topological_order(plan), 1):
-                node = plan.node(node_id); result = results.get(node_id)
-                if node is None: continue
+            for pos, node_id in enumerate(order, 1):
+                node = plan.node(node_id)
+                result = results.get(node_id)
+                if node is None:
+                    continue
                 trace["nodes"].append({
                     "planned_position": pos,
                     "node_id": node.id,
                     "source_step_id": node.source_id,
                     "step_type": node.step.step_type,
+                    "runtime_type": "command" if node.step.step_type == "command" else "plugin",
                     "phase": node.phase,
                     "block": node.block,
                     "needs": list(node.needs),
@@ -249,6 +314,4 @@ class PipeCraftBackend:
                 })
             path.write_text(json.dumps(trace, indent=2, ensure_ascii=False), encoding="utf-8")
         except OSError:
-            # El report durable de PipeCraft sigue siendo fuente de ejecución;
-            # la traza semántica es diagnóstico de Styler.
             pass

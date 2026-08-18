@@ -5,9 +5,9 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from styler.changes import ChangeService
-from styler.runtime.commands import CommandResult, command_failure_summary
-from styler.runtime.executors import PackageInstallExecutor
-from styler.runtime.models import ExecutionContext, StepDefinition, WorkflowDefinition
+from styler.execution.processes import CommandResult, command_failure_summary
+from styler.execution.executors import PackageInstallExecutor
+from styler.planning.models import ExecutionContext, StepDefinition, WorkflowDefinition
 
 
 def test_apt_plan_is_recognized_as_requiring_admin(monkeypatch, tmp_path):
@@ -47,7 +47,7 @@ def test_flatpak_plan_does_not_request_admin(monkeypatch, tmp_path):
 
 
 def test_package_install_failure_keeps_real_command_output(monkeypatch, tmp_path):
-    import styler.runtime.executors as module
+    import styler.execution.executors as module
 
     command = CommandResult(
         1,
@@ -87,7 +87,7 @@ def test_command_failure_summary_uses_only_useful_tail():
 
 
 def test_review_screen_authorizes_before_opening_progress():
-    source = Path("styler/tui/app.py").read_text(encoding="utf-8")
+    source = Path("styler/tui/screens/changes.py").read_text(encoding="utf-8")
     start = source.index("class ChangeReviewScreen")
     end = source.index("class ChangeProgressScreen")
     block = source[start:end]
@@ -97,9 +97,9 @@ def test_review_screen_authorizes_before_opening_progress():
 
 
 def test_failure_result_exposes_diagnostic_path_and_partial_rollback_wording():
-    source = Path("styler/tui/app.py").read_text(encoding="utf-8")
+    source = Path("styler/tui/screens/changes.py").read_text(encoding="utf-8")
     start = source.index("class ChangeResultScreen")
-    end = source.index("class ChangeConstructorScreen")
+    end = source.index("class ChangeBatchReviewScreen", start)
     block = source[start:end]
     assert "Diagnóstico técnico guardado en:" in block
     assert "Revertir lo alcanzado" in block

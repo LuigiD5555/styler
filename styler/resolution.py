@@ -22,7 +22,7 @@ from typing import Optional
 from styler import catalogs
 from styler import resolvers as resolvers_mod
 from styler.resolvers import Candidate, Resolver
-from styler.runtime.commands import Runner
+from styler.execution.processes import Runner
 from styler.target import Target
 
 

@@ -1,15 +1,16 @@
 """Undo DAG dinámico para paquetes instalados por Apply."""
 from __future__ import annotations
+from styler.changes.storage import save_record
 
 from pathlib import Path
 
 from styler.changes.models import ChangeStatus
 from styler.changes.service import ChangeService
 from styler.receipts import ReceiptKind, StepReceipt, compile_rollback_workflow
-from styler.runtime.commands import CommandResult
-from styler.runtime.models import ExecutionContext, Status, StepDefinition
-from styler.runtime.undo_executors import PackageUninstallExecutor
-import styler.runtime.undo_executors as undo_module
+from styler.execution.processes import CommandResult
+from styler.planning.models import ExecutionContext, Status, StepDefinition
+from styler.execution.undo import PackageUninstallExecutor
+import styler.execution.undo as undo_module
 
 
 def _receipt(**data) -> StepReceipt:
@@ -64,7 +65,7 @@ def test_uninstall_node_runs_after_all_filesystem_reversal():
 
 def test_package_is_not_uninstalled_when_another_active_change_needs_it(tmp_path: Path):
     service = ChangeService(tmp_path / "library", tmp_path / "home")
-    service._save_record(
+    save_record(service._records_path,
         "other-change",
         {
             "status": ChangeStatus.INTEGRATED,

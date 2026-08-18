@@ -1,6 +1,6 @@
 # PipeCraft runtime bundled with Styler
 
-Styler 0.11 distributes a private PipeCraft runtime binary per supported Linux
+Styler 0.12 distributes a private PipeCraft runtime binary per supported Linux
 architecture. The source repository does not need to vendor the PipeCraft source.
 
 Expected layout for the x86_64 bundle:

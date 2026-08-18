@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import os
 import re
 import stat
@@ -84,13 +85,17 @@ def _read_json(archive: zipfile.ZipFile, name: str) -> Mapping[str, Any]:
 
 
 def _version_tuple(value: str) -> tuple[int, ...]:
-    numeric = value.split("-", 1)[0].split("+", 1)[0]
-    parts: list[int] = []
-    for token in numeric.split("."):
-        if not token.isdigit():
-            raise PortablePackageError(f"Versión no comparable: '{value}'.")
-        parts.append(int(token))
-    return tuple(parts + [0] * (4 - len(parts)))
+    """Extrae la versión numérica base también de pre-releases PEP 440/SemVer.
+
+    Los manifiestos sólo expresan compatibilidad por versión base (por ejemplo
+    ``>=0.11.0``), así que ``0.12.0a1`` y ``0.12.0-alpha.1`` pertenecen a la
+    misma generación 0.12 para esta comparación.
+    """
+    match = re.match(r"^\s*(\d+(?:\.\d+)*)", value)
+    if not match:
+        raise PortablePackageError(f"Versión no comparable: '{value}'.")
+    parts = [int(token) for token in match.group(1).split(".")]
+    return tuple((parts + [0, 0, 0, 0])[:4])
 
 
 def _check_styler_requirement(requirement: str) -> None:

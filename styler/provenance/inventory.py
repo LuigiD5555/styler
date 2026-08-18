@@ -19,7 +19,7 @@ import uuid
 from pathlib import Path
 from typing import Callable, Iterable, Optional
 
-from styler.capture import detect_distro
+from styler.system_info import detect_distro
 from styler.provenance.detectors import (
     Detector,
     Runner,

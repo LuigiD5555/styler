@@ -1,16 +1,20 @@
 from __future__ import annotations
 
+import pytest
+
+pytestmark = pytest.mark.usefixtures("local_execution_backend")
+
 import time
 from pathlib import Path
 
 from styler.changes.service import ChangeService
 from styler.component_catalog.executors import CreateChangeCheckpointExecutor, extended_registry
 from styler.receipts import ReceiptJournal, ReceiptKind
-from styler.runtime.engine import WorkflowEngine
-from styler.runtime.commands import CommandResult
-from styler.runtime.executors import PackageInstallExecutor
-import styler.runtime.executors as runtime_executors
-from styler.runtime.models import ExecutionContext, Status, StepDefinition, WorkflowDefinition
+from tests.support.local_engine import WorkflowEngine
+from styler.execution.processes import CommandResult
+from styler.execution.executors import PackageInstallExecutor
+import styler.execution.executors as runtime_executors
+from styler.planning.models import ExecutionContext, Status, StepDefinition, WorkflowDefinition
 
 
 def _create_checkpoint(tmp_path: Path, home: Path, change_id: str, run_id: str) -> None:
