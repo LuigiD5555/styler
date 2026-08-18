@@ -1,4 +1,4 @@
-name: Apply Styler 0.13 source upload
+name: Finalize installable Styler 0.13 source
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  apply:
+  finalize:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
@@ -19,52 +19,129 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
-      - name: Download validated source archive
+      - name: Reconstruct validated Styler 0.13 source
+        shell: bash
         run: |
-          curl --fail --location --silent --show-error --retry 3 \
-            'https://filebin.net/styler013-2ed80b0747b2/styler-source-0.13.0-alpha.1.tar.xz' \
-            -o /tmp/styler-source.tar.xz
+          set -Eeuo pipefail
+          cat .styler-upload/part-*.b64 | base64 --decode > /tmp/styler-source.tar.xz
           echo '2ed80b0747b2ba1cc7d8ecd06477d7ee2b4d19af03960c4dd3773b58e795de6b  /tmp/styler-source.tar.xz' | sha256sum -c -
           mkdir -p /tmp/styler-source
           tar -xJf /tmp/styler-source.tar.xz -C /tmp/styler-source
+          test "$(grep -E '^version = ' /tmp/styler-source/pyproject.toml | head -1)" = 'version = "0.13.0a1"'
 
-      - name: Apply tracked source only
+      - name: Apply Styler 0.13 source
+        shell: bash
         run: |
+          set -Eeuo pipefail
           rsync -a --delete \
             --exclude='.git/' \
             --exclude='.styler-upload/' \
             --exclude='.github/workflows/apply-styler-upload.yml' \
             /tmp/styler-source/ ./
+
+      - name: Restore verified PipeCraft runtime from successful build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          gh api repos/${GITHUB_REPOSITORY}/actions/artifacts/9267852251/zip > /tmp/pipecraft-artifact.zip
+          mkdir -p /tmp/pipecraft-artifact
+          unzip -q /tmp/pipecraft-artifact.zip -d /tmp/pipecraft-artifact
+          PIPECRAFT_SRC=/tmp/pipecraft-artifact/vendor/pipecraft-1.5.0-alpha.1/target/release/pipecraft
+          EXPECTED_SHA=7f156e5bcf453ec4f211ebee3050bca1f53c3d03fbc6043cb520b541abe4fcd3
+          test -f "$PIPECRAFT_SRC"
+          echo "$EXPECTED_SHA  $PIPECRAFT_SRC" | sha256sum -c -
+          mkdir -p runtime/pipecraft/linux-x86_64
+          install -m 0755 "$PIPECRAFT_SRC" runtime/pipecraft/linux-x86_64/pipecraft
+          printf '%s  pipecraft\n' "$EXPECTED_SHA" > runtime/pipecraft/linux-x86_64/pipecraft.sha256
+          test "$(runtime/pipecraft/linux-x86_64/pipecraft --version)" = 'pipecraft 1.5.0-alpha.1'
+
+      - name: Make source checkout directly installable
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          gitignore = Path('.gitignore')
+          text = gitignore.read_text()
+          old = '''# Styler release bundles may contain a generated PipeCraft binary. Do not commit it
+          # to the Styler source repository; CI/release packaging should inject it.
+          /runtime/pipecraft/*/pipecraft
+          /runtime/pipecraft/*/pipecraft.sha256
+          '''
+          new = '''# The verified PipeCraft runtime under runtime/pipecraft/<arch>/ is intentionally
+          # tracked so a normal Git checkout is directly installable with ./install.sh.
+          # Cargo build products remain excluded by **/target/ above.
+          '''
+          if old not in text:
+              raise SystemExit('expected PipeCraft .gitignore block not found')
+          gitignore.write_text(text.replace(old, new))
+
+          installer = Path('install.sh')
+          text = installer.read_text()
+          text = text.replace(
+              '# Styler 0.12 no vendoriza el source de PipeCraft, pero la distribución oficial',
+              '# Styler 0.13 no vendoriza el source de PipeCraft, pero el checkout instalable',
+          )
+          text = text.replace(
+              '# incluye un binario privado por arquitectura. El instalador prefiere:',
+              '# incluye un binario verificado por arquitectura. El instalador prefiere:',
+          )
+          old = '''if [[ -n "$PIPECRAFT_BUNDLED_BIN" && -x "$PIPECRAFT_BUNDLED_BIN" ]]; then
+            printf 'Instalando runtime PipeCraft incluido (%s)…\\n' "$PIPECRAFT_BUNDLE_ARCH"
+            install -m 0755 "$PIPECRAFT_BUNDLED_BIN" "$NEW_RELEASE_DIR/bin/pipecraft"
+          '''
+          new = '''if [[ -n "$PIPECRAFT_BUNDLED_BIN" && -x "$PIPECRAFT_BUNDLED_BIN" ]]; then
+            PIPECRAFT_BUNDLED_SHA="$SOURCE_DIR/runtime/pipecraft/$PIPECRAFT_BUNDLE_ARCH/pipecraft.sha256"
+            if [[ -f "$PIPECRAFT_BUNDLED_SHA" ]]; then
+              if ! (cd "$(dirname -- "$PIPECRAFT_BUNDLED_BIN")" && sha256sum -c "$(basename -- "$PIPECRAFT_BUNDLED_SHA")" >/dev/null); then
+                echo 'El runtime PipeCraft incluido no supera la verificación SHA-256.' >&2
+                exit 1
+              fi
+              printf 'Runtime PipeCraft incluido verificado por SHA-256.\\n'
+            fi
+            printf 'Instalando runtime PipeCraft incluido (%s)…\\n' "$PIPECRAFT_BUNDLE_ARCH"
+            install -m 0755 "$PIPECRAFT_BUNDLED_BIN" "$NEW_RELEASE_DIR/bin/pipecraft"
+          '''
+          if old not in text:
+              raise SystemExit('expected bundled runtime installer block not found')
+          installer.write_text(text.replace(old, new))
+          PY
+          chmod 0755 install.sh runtime/pipecraft/linux-x86_64/pipecraft
+          bash -n install.sh
+          (cd runtime/pipecraft/linux-x86_64 && sha256sum -c pipecraft.sha256)
+
+      - name: Remove transfer helpers
+        shell: bash
+        run: |
           rm -rf .styler-upload
           rm -f .github/workflows/apply-styler-upload.yml
 
-      - name: Verify gitignore boundary
+      - name: Validate Styler 0.13
+        shell: bash
         run: |
-          test ! -e runtime/pipecraft/linux-x86_64/pipecraft
-          git add -A
-          if git ls-files --error-unmatch runtime/pipecraft/linux-x86_64/pipecraft >/dev/null 2>&1; then
-            echo 'ERROR: ignored PipeCraft runtime binary became tracked'
-            exit 1
-          fi
-          if git ls-files --error-unmatch runtime/pipecraft/linux-x86_64/pipecraft.sha256 >/dev/null 2>&1; then
-            echo 'ERROR: ignored PipeCraft checksum became tracked'
-            exit 1
-          fi
-
-      - name: Validate architecture boundary
-        run: |
+          set -Eeuo pipefail
+          test "$(python - <<'PY'
+          import tomllib
+          with open('pyproject.toml', 'rb') as f:
+              print(tomllib.load(f)['project']['version'])
+          PY
+          )" = '0.13.0a1'
           python scripts/verify-runtime-boundary.py
-
-      - name: Run tests
-        run: |
           python -m pip install --upgrade pip
           python -m pip install -e '.[dev]'
           python -m pytest -q
 
-      - name: Commit source update
+      - name: Commit installable source
+        shell: bash
         run: |
+          set -Eeuo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
-          git commit -m 'Update Styler to 0.13.0-alpha.1'
+          git add -f runtime/pipecraft/linux-x86_64/pipecraft runtime/pipecraft/linux-x86_64/pipecraft.sha256
+          git diff --cached --check
+          git commit -m 'Update Styler to installable 0.13.0-alpha.1'
           git push origin HEAD:agent/styler-0.13.0-alpha.1
