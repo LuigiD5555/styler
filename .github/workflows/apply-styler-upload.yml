@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - agent/styler-0.13.0-alpha.1
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: write
