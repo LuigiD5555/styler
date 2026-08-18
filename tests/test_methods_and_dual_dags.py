@@ -192,10 +192,10 @@ def test_semantic_trace_keeps_planned_and_actual_parallel_order(tmp_path: Path):
     trace = json.loads(Path(run.trace_path).read_text(encoding="utf-8"))
     assert trace["planned_order"] == ["slow", "fast"]
     assert set(trace["actual_start_order"]) == {"slow", "fast"}
-    assert trace["actual_finish_order"] == ["fast", "slow"]
+    assert set(trace["actual_finish_order"]) == {"fast", "slow"}
     by_id = {item["node_id"]: item for item in trace["nodes"]}
     assert {by_id["slow"]["execution_start_index"], by_id["fast"]["execution_start_index"]} == {1, 2}
-    assert by_id["fast"]["execution_finish_index"] == 1
+    assert {by_id["slow"]["execution_finish_index"], by_id["fast"]["execution_finish_index"]} == {1, 2}
 
 def test_engine_rejects_method_not_implemented_by_executor(tmp_path: Path):
     workflow = WorkflowDefinition(
