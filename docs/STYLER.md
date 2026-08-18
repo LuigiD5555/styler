@@ -1,15 +1,38 @@
 # Styler
 
-## Cambio
+## Cambio 0.13.1 — corrección de runtime PipeCraft
 
-Styler integra PipeCraft como backend de ejecución preferente para los flujos productivos de Cambios y restauración. Styler conserva la semántica del dominio —catálogo, resolución, receipts, reconciliación, retiro y UI— y compila su `ExecutionPlan` ya expandido a un pipeline transitorio que PipeCraft ejecuta por IPC.
+0.13.1 corrige el empaquetado/verificación del binario PipeCraft incluido. La frontera por spec se introdujo en 0.13.0a1.
 
-- PipeCraft corre como servicio Rust local y es dueño del scheduling del DAG, recursos, procesos, eventos, cancelación y persistencia de ejecución.
-- Los executors propios de Styler se invocan como plugins externos `pipecraft.plugin/v1`; el runtime Rust no conoce APT, Flatpak, overlays ni `.stylerpkg`.
-- Al aceptar un job, Styler persiste inmediatamente `pipecraft_run_id`. Si la conexión falla después de `submit`, Styler no repite el DAG con el runtime local porque el efecto remoto puede seguir en curso.
-- El runtime Python histórico permanece temporalmente sólo como arnés explícito de tests/compatibilidad interna. Las operaciones productivas no caen a él cuando PipeCraft falta o falla.
-- Styler no vendoriza el source de PipeCraft. La distribución oficial incluye un binario PipeCraft privado por arquitectura y `install.sh` lo copia al release aislado. `PIPECRAFT_BIN`, `PATH` y `PIPECRAFT_SOURCE_DIR` quedan como opciones de desarrollo.
-- Los estados semánticos adicionales de Styler se preservan en el resultado del plugin, mientras PipeCraft recibe estados canónicos para mantener correctos dependencias y resume.
+### Cambio 0.13.0a1 — frontera PipeCraft por spec
+
+- El compilador `styler.pipecraft.compiler` ya no escribe YAML: produce una spec `pipecraft/v1` en memoria.
+- El cliente IPC negocia capacidades y soporta `submit_spec`, `validate_spec` y `plan_spec` para PipeCraft 1.6+.
+- El PipeCraft 1.5.0-alpha.1 incluido permanece sin rebautizar y se usa mediante un adaptador YAML aislado hasta disponer del source/release 1.6.
+- Los steps declarados explícitamente como `command` bajan al executor Rust nativo; los steps semánticos siguen usando el host de plugins de Styler.
+- La recuperación DPKG salió de `ProcessRunner` y vive en el dominio de gestores de paquetes; existe un step semántico `apt_reconcile`.
+- La TUI fue separada por pantallas; `styler/tui/app.py` queda como router ligero.
+- `ChangeService` conserva la API pública pero su implementación se dividió en descubrimiento, planificación, ejecución y retiro; `service.py` queda concentrado en estado/persistencia.
+- Restauración pasó de `restore.py` + `advanced_restore.py` a un solo subsistema `styler/restore/` con modelos, fuentes, planner, executor, verificación, política y candidatos. La ruta histórica `styler.advanced_restore` es sólo compatibilidad.
+- Se añadió `packaging/pipecraft.lock`, un benchmark de hashing reproducible y guardas de regresión para impedir que el compilador vuelva a escribir pipelines temporales o que la capa PipeCraft absorba supervisión de procesos Python.
+
+## Cambio 0.12.0a1 — simplificación arquitectónica
+
+Styler 0.12 elimina capas que habían quedado vivas durante la migración a PipeCraft. La ruta productiva tiene una sola autoridad de ejecución: `styler.workflow` planifica y delega; PipeCraft 1.5 ejecuta el DAG por IPC.
+
+- Se eliminó por completo el paquete Python `styler.runtime`. Los contratos de DAG y planificación viven ahora en `styler.planning`; el único runtime productivo es PipeCraft. El arnés local equivalente existe únicamente bajo `tests/support`.
+- Se eliminó el segundo motor `rust/styler-engine` y sus bridges `engine_client.py`/`engine_cli.py`; hashing conserva sólo la extensión PyO3 opcional y fallback Python.
+- Se eliminaron las fachadas `orchestrator.py` y `pipelines.py`; restauración y stages convergen en `styler.restore`.
+- Se eliminaron adaptadores sin ruta productiva (`environment_restore.py`, `component_catalog.bridge` y `restore_bridge`); no se conservan wrappers sólo para sostener tests históricos.
+- Se eliminaron prototipos históricos sin consumidores (`diff.py`, `interpreter.py`, `review.py`, `demo.py`, `restoration_plan.py`, `session_profile.py`); el modelo productivo actual entra por componentes/catálogo y planificación explícita.
+- `styler/planning/` conserva sólo contratos, grafo, selección, validación y compilación de plan. La ejecución concreta vive en `styler/execution/`; el scheduler no.
+- `PipeCraftRunner` pasó a llamarse `ProcessRunner` para no confundir una utilidad de subprocess de los plugins con el runtime PipeCraft real.
+- La persistencia de Cambios se aisló en `styler.changes.storage`; el archivo gigante de ejecutores se separó en `gimp_runtime.py`, `photogimp_overlay.py` y ejecutores generales.
+- Los contratos de `StepExecutor`/`ExecutorRegistry` y la composición del registro se separaron, eliminando ciclos entre automation/undo/execution. También se rompieron los ciclos applications/resolvers, portable y provenance.
+- El YAML transitorio usado para `submit` se elimina en cuanto PipeCraft acepta el job; el snapshot durable de PipeCraft queda como fuente de verdad del plan ejecutado.
+- `scripts/verify-runtime-boundary.py` impide que reaparezcan motores históricos, dependencias productivas de `tests/support`, source vendorizado de PipeCraft o ciclos de imports en `styler/`.
+
+PipeCraft sigue sin conocer APT, Flatpak, PhotoGIMP, receipts ni `.stylerpkg`; esas decisiones permanecen en el dominio Styler.
 
 ## Cambio
 
@@ -283,7 +306,7 @@ El paquete de release debe contener únicamente el código, pruebas, documentaci
 ### Cambio de arquitectura
 
 - PipeCraft dejó de estar incluido como vendor dentro del repositorio de Styler. El runtime Rust se versiona y distribuye como proyecto independiente.
-- Los flujos productivos de integración/restauración fallan cerrado si PipeCraft no está disponible; `backend="auto"` ya no cae silenciosamente al scheduler Python.
+- Los flujos productivos de integración/restauración fallan cerrado si PipeCraft no está disponible; el scheduler Python ya no forma parte del paquete instalado.
 - El backend Python histórico permanece temporalmente sólo para pruebas unitarias y compatibilidad explícita mientras se retiran sus últimas dependencias de modelos/planificación.
 - `styler doctor` informa por separado binario, daemon, protocolo y compatibilidad de versión.
 - Esta separación hace que la barra de lenguajes de GitHub describa a **Styler** (UI y dominio, principalmente Python) y la del repositorio **PipeCraft** describa al runtime (Rust), en vez de mezclar dos proyectos en una sola estadística.

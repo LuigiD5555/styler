@@ -12,7 +12,7 @@ import pytest
 
 from styler.provenance import inventory as inventory_mod
 from styler.provenance import report as report_mod
-from styler.provenance.detectors import FakeRunner
+from tests.support.fake_provenance import FakeRunner
 from styler.provenance.detectors.appimage import (
     AppImageDetector,
     read_update_information,

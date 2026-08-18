@@ -15,11 +15,11 @@ import urllib.request
 from pathlib import Path
 from urllib.parse import urlparse
 
-from styler.applications import apt_install_argv
+from styler.package_commands import admin_prefix, apt_install_argv
 from styler.receipts import ReceiptKind, ReceiptWriteError, emit_receipt, ensure_receipts_writable
-from styler.runtime.commands import PipeCraftRunner, run_step_command
-from styler.runtime.executors import PackageInstallExecutor, StepExecutor, emit_step_progress
-from styler.runtime.models import ExecutionContext, Status, StepDefinition, StepResult
+from styler.execution.processes import ProcessRunner, run_step_command
+from styler.execution.executors import PackageInstallExecutor, StepExecutor, emit_step_progress
+from styler.planning.models import ExecutionContext, Status, StepDefinition, StepResult
 
 
 def _home(ctx: ExecutionContext) -> Path:
@@ -264,7 +264,7 @@ class PackageInstallArtifactExecutor(StepExecutor):
             ensure_receipts_writable(ctx)
         except ReceiptWriteError as exc:
             return StepResult.failed(step, str(exc), "RECEIPT_JOURNAL_UNAVAILABLE")
-        prefix = PackageInstallExecutor._privileged_prefix()
+        prefix = admin_prefix()
         if prefix is None or not shutil.which("apt-get"):
             return StepResult.failed(step, "APT o un mecanismo de privilegios no está disponible.", "APT_UNAVAILABLE")
         argv = apt_install_argv(prefix, str(path.resolve()))

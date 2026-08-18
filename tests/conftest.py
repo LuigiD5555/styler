@@ -1,13 +1,20 @@
-"""Aísla la suite del daemon externo.
+"""Fixtures compartidas de la suite.
 
-El runtime Python histórico ya no es fallback productivo, pero sigue siendo un
-arnés determinista para tests unitarios de semántica Styler mientras se migra la
-última lógica de dominio. Las pruebas específicas de PipeCraft borran esta
-variable cuando necesitan verificar el comportamiento fail-closed.
+Producción sólo ejecuta workflows por PipeCraft. Las pruebas unitarias que
+necesitan monkeypatches o runners falsos dentro del mismo proceso deben pedir de
+forma explícita ``local_execution_backend``; ya no existe un override autouse
+que haga que toda la suite pruebe una arquitectura distinta a producción.
 """
+from __future__ import annotations
+
 import pytest
 
 
-@pytest.fixture(autouse=True)
-def _explicit_local_test_runtime(monkeypatch):
-    monkeypatch.setenv("STYLER_RUNTIME", "local-test")
+@pytest.fixture
+def local_execution_backend(monkeypatch):
+    """Usa el scheduler de pruebas, nunca distribuido con Styler."""
+    from styler import workflow
+    from tests.support.local_engine import execute_backend
+
+    monkeypatch.setattr(workflow, "_execution_backend", execute_backend)
+    yield

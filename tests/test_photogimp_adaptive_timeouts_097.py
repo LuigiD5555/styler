@@ -20,7 +20,7 @@ def test_photogimp_gimp_initialization_has_no_outer_fixed_150_second_timeout() -
 
 
 def test_package_installer_declares_activity_timeout_instead_of_only_total_timeout() -> None:
-    source = (Path(__file__).resolve().parents[1] / "styler/runtime/executors.py").read_text(encoding="utf-8")
+    source = (Path(__file__).resolve().parents[1] / "styler/execution/executors.py").read_text(encoding="utf-8")
     assert 'step.config.get("idle_timeout_seconds", 300)' in source
     assert "idle_timeout=idle_timeout" in source
     assert 'command.timeout_reason == "idle"' in source

@@ -1,6 +1,10 @@
 """Los .stylerpkg de cambio convergen en la misma experiencia que PhotoGIMP."""
 from __future__ import annotations
 
+import pytest
+
+pytestmark = pytest.mark.usefixtures("local_execution_backend")
+
 import hashlib
 import json
 from pathlib import Path

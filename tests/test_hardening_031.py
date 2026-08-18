@@ -1,10 +1,13 @@
 """Regresiones de seguridad y honestidad incorporadas en 0.3.1."""
 from __future__ import annotations
+from styler.changes.storage import save_record
 
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+
+pytestmark = pytest.mark.usefixtures("local_execution_backend")
 
 from styler.automation.conditions import ConditionState, WaitResult, evaluate_state
 from styler.automation.diagnostics import capture_wait_failure
@@ -12,7 +15,7 @@ from styler.changes.models import ChangeOption, ChangeStatus
 from styler.changes.service import ChangeService
 from styler.component_catalog.executors import BackupConfigExecutor
 from styler.receipts import ReceiptJournal, ReceiptKind, ReceiptWriteError, emit_receipt
-from styler.runtime.models import ExecutionContext, StepDefinition
+from styler.planning.models import ExecutionContext, StepDefinition
 
 
 def test_boolean_options_parse_false_explicitly():
@@ -90,14 +93,14 @@ def test_effect_does_not_start_when_journal_is_unavailable(monkeypatch, tmp_path
 def test_package_receipt_is_consumed_when_package_is_already_absent(tmp_path, monkeypatch):
     home = tmp_path / "home"
     home.mkdir()
-    from styler.runtime.undo_executors import PackageUninstallExecutor
+    from styler.execution.undo import PackageUninstallExecutor
     monkeypatch.setattr(
         PackageUninstallExecutor,
         "_probe_installed",
         staticmethod(lambda manager, package: False),
     )
     service = ChangeService(root=tmp_path / "library", home=home)
-    service._save_record(
+    save_record(service._records_path,
         "photogimp",
         {
             "status": ChangeStatus.INTEGRATED,

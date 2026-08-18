@@ -14,7 +14,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Callable, Protocol, Sequence
 
-from styler.runtime.commands import PipeCraftRunner
+from styler.execution.processes import ProcessRunner
 
 
 class Condition(Protocol):
@@ -675,7 +675,7 @@ CommandRunner = Callable[[Sequence[str]], tuple[int, str, str]]
 
 
 def default_command_runner(argv: Sequence[str]) -> tuple[int, str, str]:
-    process = PipeCraftRunner(timeout=10).run(list(argv), timeout=10)
+    process = ProcessRunner(timeout=10).run(list(argv), timeout=10)
     return process.returncode, process.stdout, process.stderr
 
 

@@ -1,11 +1,12 @@
 from __future__ import annotations
+from styler.execution.registry import default_registry
 
 import json
 from pathlib import Path
 
-from styler.runtime.engine import WorkflowEngine
-from styler.runtime.executors import ExecutorRegistry, StepExecutor
-from styler.runtime.models import (
+from tests.support.local_engine import WorkflowEngine
+from styler.execution.base import ExecutorRegistry, StepExecutor
+from styler.planning.models import (
     CheckAttachment,
     CheckReference,
     ErrorPolicy,
@@ -78,7 +79,7 @@ def test_phase_and_block_filters_operate_on_compiled_plan() -> None:
 
 
 def test_error_policy_records_exact_provenance(tmp_path: Path) -> None:
-    registry = ExecutorRegistry.default()
+    registry = default_registry()
     registry.register(FailExecutor())
     workflow = WorkflowDefinition(
         "policy",

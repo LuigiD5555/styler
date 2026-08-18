@@ -1,4 +1,10 @@
-styler (0.11.0-1) unstable; urgency=medium
+styler (0.13.1-1) unstable; urgency=medium
+
+  * Fix bundled PipeCraft runtime checksum verification and packaging.
+
+ -- Styler contributors <noreply@example.invalid>  Mon, 17 Aug 2026 22:55:00 -0600
+
+styler (0.13.0a1-1) unstable; urgency=medium
 
   * Guard change execution against read-only state storage.
   * Preserve DAG outcome and recovery diagnostics when state persistence fails.

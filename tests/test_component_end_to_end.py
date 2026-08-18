@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import tempfile
-from dataclasses import dataclass, field
 from pathlib import Path
 
 from styler.component_catalog.compiler import compile_workflow
@@ -15,8 +14,7 @@ from styler.component_catalog.paths import (
 )
 from styler.component_catalog.registry import ComponentRegistry
 from styler.component_catalog.resolver import resolve
-from styler.component_catalog.restore_bridge import overlay_plan, run_overlays
-from styler.runtime.models import ExecutionContext, StepDefinition
+from styler.planning.models import ExecutionContext, StepDefinition
 
 
 def _registry() -> ComponentRegistry:
@@ -173,56 +171,6 @@ def test_verificacion_falla_si_el_marcador_no_esta():
         result = registry.get("verify").run(verify, ctx)
         assert not result.success
         assert result.data["error_code"] == "VERIFICATION_FAILED"
-
-
-# --------------------------------------------------------------------------- #
-# Integración con restore.py: overlays sí, aplicaciones base no (no se duplica)
-# --------------------------------------------------------------------------- #
-
-@dataclass
-class _FakeApp:
-    manager: str
-    name: str
-    identity: str = ""
-
-
-@dataclass
-class _FakeSource:
-    environment_id: str = ""
-    applications: list = field(default_factory=list)
-
-
-def test_overlay_plan_incluye_photogimp_si_la_configuracion_trae_gimp():
-    source = _FakeSource(applications=[_FakeApp(manager="apt", name="gimp")])
-    plan = overlay_plan(source, family="ubuntu")
-    assert "app.photogimp" in plan.components
-    # No duplica la instalación de GIMP: restore.py ya la hizo.
-    step_owners = {step.id.rsplit(".", 1)[0] for step in plan.workflow.steps}
-    assert "app.gimp" not in step_owners
-
-
-def test_overlay_plan_omite_photogimp_si_no_hay_gimp():
-    source = _FakeSource(applications=[_FakeApp(manager="apt", name="vlc")])
-    plan = overlay_plan(source, family="ubuntu")
-    assert "app.photogimp" not in plan.components
-    assert "app.photogimp" in plan.skipped
-    assert any("PhotoGIMP" in warning for warning in plan.warnings)
-
-
-def test_overlay_plan_incluye_config_kde_si_la_configuracion_trae_kde():
-    source = _FakeSource(environment_id="kde-plasma")
-    plan = overlay_plan(source, family="ubuntu")
-    assert "config.kde.user" in plan.components
-
-
-def test_run_overlays_en_dry_run_no_escribe_nada():
-    with tempfile.TemporaryDirectory() as tmp:
-        source = _FakeSource(applications=[_FakeApp(manager="apt", name="gimp")])
-        plan = overlay_plan(source, family="ubuntu")
-        results = run_overlays(plan, root=tmp, dry_run=True)
-        assert results
-        assert all(item.success for item in results)
-        assert all(item.status == "dry_run" for item in results)
 
 
 def test_overlay_rechaza_destino_fuera_del_home():

@@ -15,10 +15,11 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import pytest
 
-from styler import orchestrator
+from styler import restore as orchestrator
 from styler import restore as restore_mod
 from styler import target as target_mod
-from styler.applications import AppSpec, FakeRunner
+from styler.applications import AppSpec
+from tests.support.fake_runner import FakeRunner
 from styler.layers import Layer, save_layer
 from styler.models import DesktopEnvironmentRecord, FileEntry
 from styler.objectstore import ObjectStore

@@ -9,6 +9,7 @@ from typing import Any, Mapping, Sequence
 
 from styler.automation.specs import ActionRegistry, ActionSpec, SpecError
 from styler.portable.security import audit_execution_surface, audit_paths
+from .errors import PortablePackageError
 
 PACKAGE_SCHEMA = "styler.package/2"
 ACTION_SCHEMA = "styler.action/1"
@@ -19,8 +20,6 @@ _ID_RE = re.compile(r"^[a-z0-9][a-z0-9._-]{0,127}$")
 _VERSION_RE = re.compile(r"^[0-9]+(?:\.[0-9]+){0,3}(?:[-+][a-zA-Z0-9._-]+)?$")
 
 
-class PortablePackageError(SpecError):
-    """El paquete no puede importarse de forma segura o consistente."""
 
 
 class PackageType(str, Enum):

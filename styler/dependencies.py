@@ -12,7 +12,7 @@ from pathlib import PurePosixPath
 
 from styler.desktop_environment import kde_provider_package
 from styler.models import FileEntry, Package
-from styler.runtime.commands import PipeCraftRunner
+from styler.execution.processes import ProcessRunner
 
 KNOWN_APPLICATION_PACKAGES: dict[str, tuple[str, ...]] = {
     "konsole": ("konsole", "org.kde.konsole"),
@@ -88,7 +88,7 @@ def is_installed(package: Package) -> bool | None:
     program, argv, timeout = entry
     if not shutil.which(program):
         return None
-    result = PipeCraftRunner(timeout=timeout).run(argv, timeout=timeout)
+    result = ProcessRunner(timeout=timeout).run(argv, timeout=timeout)
     if package.manager == "apt":
         return result.returncode == 0 and "install ok installed" in result.stdout
     return result.returncode == 0

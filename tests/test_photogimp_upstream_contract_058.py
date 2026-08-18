@@ -19,10 +19,8 @@ import json
 from pathlib import Path
 
 from styler.changes import ChangeService
-from styler.component_catalog.executors import (
-    PHOTOGIMP_RELEASE_PREFIX,
-    _find_photogimp_payload,
-    _photogimp_template_root,
+from styler.component_catalog.photogimp_overlay import (
+    PHOTOGIMP_RELEASE_PREFIX, _find_photogimp_payload, _photogimp_template_root,
     resolve_photogimp_source,
 )
 

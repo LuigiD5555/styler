@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import pytest
+
+pytestmark = pytest.mark.usefixtures("local_execution_backend")
+
 from pathlib import Path
 
 from styler.changes import (
@@ -116,7 +120,7 @@ def test_batch_executes_sequentially_and_stops_before_next_change(tmp_path: Path
 
 
 def test_batch_ui_uses_clickable_rows_and_one_contextual_integration_action():
-    source = Path("styler/tui/app.py").read_text(encoding="utf-8")
+    source = Path("styler/tui/screens/changes.py").read_text(encoding="utf-8")
     assert 'id=f"batch-select-{safe}"' not in source
     assert 'id="integrate-batch"' not in source
     assert source.count('id="integrate-change"') == 1
@@ -131,7 +135,7 @@ def test_batch_ui_uses_clickable_rows_and_one_contextual_integration_action():
 def test_existing_single_change_progress_screen_remains_byte_identical():
     import hashlib
 
-    source = Path("styler/tui/app.py").read_text(encoding="utf-8")
+    source = Path("styler/tui/screens/changes.py").read_text(encoding="utf-8")
     start = source.index("class ChangeProgressScreen(Screen):")
     end = source.index("class ChangeResultScreen(Screen):")
     digest = hashlib.sha256(source[start:end].encode("utf-8")).hexdigest()

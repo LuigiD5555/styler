@@ -12,7 +12,7 @@ import shutil
 from dataclasses import dataclass, field
 from typing import Callable, Optional, Sequence
 
-from styler.runtime.commands import PipeCraftRunner
+from styler.execution.processes import ProcessRunner
 
 
 @dataclass(frozen=True)
@@ -29,7 +29,7 @@ RunInteractive = Callable[[Sequence[str]], int]
 
 def _run_interactive(argv: Sequence[str]) -> int:
     """Ejecuta heredando el terminal mediante la frontera de PipeCraft."""
-    completed = PipeCraftRunner().run_interactive(list(argv))
+    completed = ProcessRunner().run_interactive(list(argv))
     return int(completed.returncode)
 
 
@@ -188,7 +188,7 @@ class SudoTicket:
 
 def _refresh_sudo(argv: Sequence[str]) -> int:
     """Refresca sin abrir stdin: si no hay credencial vigente, falla y punto."""
-    completed = PipeCraftRunner(timeout=15).run(
+    completed = ProcessRunner(timeout=15).run(
         list(argv), timeout=15, quiet=True
     )
     return int(completed.returncode)

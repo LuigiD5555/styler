@@ -5,7 +5,7 @@ import shutil
 from dataclasses import dataclass
 
 from styler.compat import detect_environment
-from styler.runtime.commands import PipeCraftRunner
+from styler.execution.processes import ProcessRunner
 
 
 @dataclass(frozen=True)
@@ -16,7 +16,7 @@ class ReloadResult:
 
 
 def _call(command: list[str], timeout: int = 20) -> tuple[bool, str]:
-    result = PipeCraftRunner(timeout=timeout).run(command, timeout=timeout)
+    result = ProcessRunner(timeout=timeout).run(command, timeout=timeout)
     detail = (result.stderr or result.stdout).strip()
     return result.returncode == 0, detail
 

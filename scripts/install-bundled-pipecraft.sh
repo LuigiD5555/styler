@@ -12,13 +12,15 @@ DEST="$ROOT/runtime/pipecraft/$ARCH"
 mkdir -p "$DEST"
 install -m 0755 "$SRC" "$DEST/pipecraft"
 SHA="$(sha256sum "$DEST/pipecraft" | awk '{print $1}')"
+VERSION="$($DEST/pipecraft --version | awk '{print $NF}')"
 cat > "$DEST/manifest.json" <<EOF
 {
   "runtime": "pipecraft",
-  "version": "1.5.0-alpha.1",
+  "version": "$VERSION",
   "protocol": "pipecraft.ipc/v1",
   "target": "$ARCH",
-  "sha256": "$SHA"
+  "sha256": "$SHA",
+  "bundled_by": "styler 0.13.1"
 }
 EOF
 python3 "$ROOT/scripts/verify-bundled-pipecraft.py"

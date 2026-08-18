@@ -28,7 +28,7 @@ def _parse_change_options(raw_values: list[str] | None) -> dict[str, str]:
 
 
 def _print_change_workflow(workflow, *, show_candidates: bool = False) -> None:
-    from styler.runtime.graph import topological_order
+    from styler.planning.graph import topological_order
     order = topological_order(workflow.steps)
     by_id = {step.id: step for step in workflow.steps}
     print(f"{str(workflow.operation).upper()} DAG · {workflow.name}")

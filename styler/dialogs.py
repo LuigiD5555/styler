@@ -3,11 +3,11 @@ from __future__ import annotations
 
 import shutil
 from pathlib import Path
-from styler.runtime.commands import PipeCraftRunner
+from styler.execution.processes import ProcessRunner
 
 
 def _run(command: list[str]) -> str:
-    result = PipeCraftRunner(timeout=120).run(command, timeout=120)
+    result = ProcessRunner(timeout=120).run(command, timeout=120)
     return result.stdout.strip() if result.returncode == 0 else ""
 
 

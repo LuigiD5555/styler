@@ -12,7 +12,6 @@ class DependencyImpactItemView:
     affected_titles: tuple[str, ...] = ()
     independent_count: int = 0
     missing_capabilities: tuple[str, ...] = ()
-    catalog_note: str = ""
 
     @property
     def has_dependents(self) -> bool:

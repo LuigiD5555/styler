@@ -1,7 +1,7 @@
 """Compilador determinista de receta semántica a DAG PipeCraft."""
 from __future__ import annotations
 
-from styler.runtime.models import PhaseDefinition, StepDefinition, WorkflowDefinition, WorkflowOperation
+from styler.planning.models import PhaseDefinition, StepDefinition, WorkflowDefinition, WorkflowOperation
 from .models import ChangeRecipe, RecipeError
 
 

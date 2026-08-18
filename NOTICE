@@ -1,6 +1,6 @@
 Styler
 
-Styler 0.11 integrates PipeCraft 1.5 as its production execution runtime through
+Styler 0.12.0a1 uses PipeCraft 1.5 as its only production workflow runtime through
 the versioned local IPC protocol `pipecraft.ipc/v1`.
 
 PipeCraft
@@ -8,12 +8,17 @@ Copyright 2026 Luis
 Licensed under the Apache License, Version 2.0.
 
 PipeCraft is an independent runtime dependency. Its source is not vendored in
-the Styler repository; architecture-specific Styler release bundles may include a
-compiled private PipeCraft binary together with this license notice. PipeCraft owns DAG scheduling, global resource
-coordination, process supervision, cancellation, events and durable job/resume
-state. Styler owns Linux/domain semantics, receipts, backups, reconciliation,
-Apply/Undo meaning and the user interface.
+the Styler repository; architecture-specific Styler release bundles may include
+a compiled private PipeCraft binary together with this notice.
 
-The historical local Python runtime remains temporarily only as an explicit test
-and compatibility harness while remaining in-process model dependencies are
-removed. Production mutation flows fail closed when PipeCraft is unavailable.
+PipeCraft owns DAG scheduling, global resource coordination, the lifecycle of
+plugin processes, workflow cancellation/events and durable job/resume state.
+Styler owns Linux/domain semantics, receipts, backups, reconciliation,
+Apply/Undo meaning and the user interface. A Styler domain plugin may still
+launch a domain-specific child command (APT, Flatpak, etc.) through Styler's
+ProcessRunner; PipeCraft supervises the plugin boundary rather than pretending
+to understand those Linux-domain effects itself.
+
+The historical Python scheduler and the former `styler-engine` Rust executable
+are not shipped in Styler 0.12. Test-only in-process workflow helpers live under
+`tests/support` and are excluded from the installed package.

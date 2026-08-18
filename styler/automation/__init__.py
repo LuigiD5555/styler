@@ -1,6 +1,6 @@
 """Acciones, condiciones y estados declarativos usados por PipeCraft.
 
-El runtime único vive en :mod:`styler.runtime`; este paquete solo define las
+El runtime único vive en :mod:`styler.planning`; este paquete solo define las
 piezas observables y validables que los grafos pueden reutilizar.
 """
 from .actions import (
@@ -19,7 +19,6 @@ from .actions import (
     TimeoutAction,
     TryFinallyAction,
     WaitAction,
-    WithApplicationAction,
 )
 from .conditions import (
     AllCondition,
@@ -57,7 +56,7 @@ from .specs import (
     default_action_registry,
     default_condition_registry,
 )
-from .controller import ApplicationController, LaunchReadyReport
+from .controller import ApplicationController, WithApplicationAction, LaunchReadyReport
 from .events import Event, EventBus, EventType
 from .profiles import ApplicationProfile, callback_check
 from .states import AppState, ApplicationStateMachine, InvalidTransition, TransitionRecord

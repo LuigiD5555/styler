@@ -18,7 +18,7 @@ from typing import Any
 from styler.hashing import hash_file
 from styler.models import FileEntry, State
 from styler.objectstore import ObjectStore, ObjectStoreError
-from styler.runtime.models import Status, StepResult, WorkflowRun
+from styler.planning.models import Status, StepResult, WorkflowRun
 from styler import snapshot as snapshot_mod
 from styler.snapshot import Snapshot, load_snapshot, save_snapshot
 from styler.validation import (
@@ -502,7 +502,7 @@ def apply_snapshot_transactional(
     snapshot = load_snapshot(snapshot_id, root=root)
     warnings: list[str] = []
     # Este módulo es el plano de ARCHIVOS. Las aplicaciones las instala
-    # styler.orchestrator antes de llamar aquí; lo que no se puede prometer es
+    # styler.restore antes de llamar aquí; lo que no se puede prometer es
     # revertirlas, y eso se dice explícitamente.
     if snapshot.state.applications:
         from styler.applications import UNDO_DOES_NOT_UNINSTALL

@@ -2,7 +2,7 @@
 
 El catálogo TOML es la única fuente de verdad para capacidades, proveedores,
 dependencias, verificación, rollback y compilación al contrato de ejecución
-compatible con PipeCraft 1.3.1.
+que Styler compila y PipeCraft 1.5 ejecuta.
 """
 from styler.component_catalog.compiler import CompileResult, compile_workflow
 from styler.component_catalog.errors import ComponentCatalogError

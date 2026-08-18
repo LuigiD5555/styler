@@ -240,10 +240,9 @@ def test_repeated_refresh_does_not_duplicate_ids(tmp_path):
 
 
 def test_no_free_text_path_inputs_remain():
-    source = Path("styler/tui/app.py").read_text(encoding="utf-8")
+    source = Path("styler/tui/screens/constructor.py").read_text(encoding="utf-8")
     start = source.index("class ChangeConstructorScreen")
-    end = source.index("class HistoryScreen")
-    block = source[start:end]
+    block = source[start:]
     for obsolete in (
         "constructor-baseline-import-path",
         "constructor-package-import-path",

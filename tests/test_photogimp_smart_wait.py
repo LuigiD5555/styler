@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from styler.component_catalog import executors as component_executors
-from styler.runtime.models import ExecutionContext, Status, StepDefinition
+from styler.component_catalog import gimp_runtime as component_executors
+from styler.planning.models import ExecutionContext, Status, StepDefinition
 
 
 class FakeProcess:
@@ -57,7 +57,7 @@ def prepare_flatpak(monkeypatch, process: FakeProcess, *, active: bool = True):
         return True, active, "org.gimp.GIMP yes" if active else "org.gimp.GIMP no"
 
     monkeypatch.setattr(component_executors.shutil, "which", lambda name: f"/usr/bin/{name}")
-    monkeypatch.setattr(component_executors.PipeCraftRunner, "spawn", lambda self, *args, **kwargs: popen(*args, **kwargs))
+    monkeypatch.setattr(component_executors.ProcessRunner, "spawn", lambda self, *args, **kwargs: popen(*args, **kwargs))
     monkeypatch.setattr(
         component_executors.InitializeFlatpakAppExecutor,
         "_flatpak_state",

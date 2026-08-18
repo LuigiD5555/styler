@@ -12,11 +12,10 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import pytest
 
-from styler import orchestrator
+from styler import restore as orchestrator
 from styler.applications import (
     AppSpec,
     CommandResult,
-    FakeRunner,
     InstallStatus,
     applications_from_inventory,
     execute_plan,
@@ -24,6 +23,7 @@ from styler.applications import (
     plan_installation,
     privilege_prefix,
 )
+from tests.support.fake_runner import FakeRunner
 from styler.layers import Layer, save_layer
 from styler.models import FileEntry
 from styler.objectstore import ObjectStore

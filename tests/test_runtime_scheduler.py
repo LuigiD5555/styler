@@ -4,9 +4,9 @@ import threading
 import time
 from pathlib import Path
 
-from styler.runtime.engine import WorkflowEngine
-from styler.runtime.executors import ExecutorRegistry, StepExecutor
-from styler.runtime.models import ErrorPolicy, ExecutionContext, Status, StepDefinition, StepResult, WorkflowDefinition
+from tests.support.local_engine import WorkflowEngine
+from styler.execution.base import ExecutorRegistry, StepExecutor
+from styler.planning.models import ErrorPolicy, ExecutionContext, Status, StepDefinition, StepResult, WorkflowDefinition
 
 
 class ProbeExecutor(StepExecutor):

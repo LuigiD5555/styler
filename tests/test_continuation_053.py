@@ -1,20 +1,23 @@
 from __future__ import annotations
 
+import pytest
+
+pytestmark = pytest.mark.usefixtures("local_execution_backend")
+
+from styler.changes.storage import read_json, save_record
 from pathlib import Path
 import hashlib
 import json
 
 from styler.changes import ChangeService, ChangeStatus
-from styler.component_catalog.executors import (
-    BackupConfigExecutor,
-    InitializeFlatpakAppExecutor,
-    OverlayInstallExecutor,
-)
+from styler.component_catalog.executors import BackupConfigExecutor, OverlayInstallExecutor
+from styler.component_catalog.gimp_runtime import InitializeFlatpakAppExecutor
 from styler.receipts import ReceiptJournal, ReceiptKind
 from styler.flatpak_facts import FlatpakApplicationFacts, save_flatpak_facts
-from styler.runtime.engine import WorkflowEngine
-from styler.runtime.executors import ExecutorRegistry, PackageInstallExecutor
-from styler.runtime.models import ExecutionContext, Status, StepDefinition, WorkflowDefinition
+from tests.support.local_engine import WorkflowEngine
+from styler.execution.base import ExecutorRegistry
+from styler.execution.executors import PackageInstallExecutor
+from styler.planning.models import ExecutionContext, Status, StepDefinition, WorkflowDefinition
 
 
 def test_package_step_reuses_registered_installation_without_running_installer(monkeypatch, tmp_path: Path):
@@ -63,7 +66,7 @@ def test_package_step_reuses_registered_installation_without_running_installer(m
 
 def test_failed_change_plan_explains_that_existing_gimp_will_be_reused(monkeypatch, tmp_path: Path):
     service = ChangeService(tmp_path / "library", tmp_path / "home")
-    service._save_record("photogimp", {"status": ChangeStatus.FAILED, "provider_id": "flatpak"})
+    save_record(service._records_path, "photogimp", {"status": ChangeStatus.FAILED, "provider_id": "flatpak"})
     monkeypatch.setattr(PackageInstallExecutor, "_is_installed", staticmethod(lambda manager, name: True))
 
     plan = service.build_plan("photogimp", "flatpak")
@@ -104,7 +107,7 @@ def test_initialized_gimp_is_reused_when_closed(monkeypatch, tmp_path: Path):
         },
     )
     executor = InitializeFlatpakAppExecutor()
-    monkeypatch.setattr("styler.component_catalog.executors.shutil.which", lambda name: "/usr/bin/flatpak")
+    monkeypatch.setattr("styler.component_catalog.gimp_runtime.shutil.which", lambda name: "/usr/bin/flatpak")
     monkeypatch.setattr(executor, "_flatpak_state", lambda app_id: (False, False, "not running"))
 
     result = executor.reconcile(step, ExecutionContext(root=tmp_path, values={"home": str(home)}))
@@ -183,7 +186,7 @@ def test_overlay_marker_is_reused_only_when_continuing(tmp_path: Path):
 
 def test_execute_continues_failed_photogimp_without_repeating_completed_effects(monkeypatch, tmp_path: Path):
     from styler.component_catalog.executors import VerifyExecutor
-    from styler.runtime.models import StepResult
+    from styler.planning.models import StepResult
 
     root = tmp_path / "library"
     home = tmp_path / "home"
@@ -219,7 +222,7 @@ def test_execute_continues_failed_photogimp_without_repeating_completed_effects(
     )
 
     service = ChangeService(root, home)
-    service._save_record("photogimp", {"status": ChangeStatus.FAILED, "provider_id": "flatpak"})
+    save_record(service._records_path, "photogimp", {"status": ChangeStatus.FAILED, "provider_id": "flatpak"})
     journal = ReceiptJournal(root, "photogimp")
     journal.record(
         run_id="old-run",
@@ -240,7 +243,7 @@ def test_execute_continues_failed_photogimp_without_repeating_completed_effects(
 
     monkeypatch.setattr(PackageInstallExecutor, "_is_installed", staticmethod(lambda manager, name: True))
     monkeypatch.setattr(
-        "styler.component_catalog.executors.inspect_flatpak_application",
+        "styler.component_catalog.gimp_runtime.inspect_flatpak_application",
         lambda app_id: FlatpakApplicationFacts(
             application_id=app_id,
             installed=True,
@@ -250,7 +253,7 @@ def test_execute_continues_failed_photogimp_without_repeating_completed_effects(
         ),
     )
     monkeypatch.setattr(
-        "styler.component_catalog.executors.shutil.which",
+        "styler.component_catalog.gimp_runtime.shutil.which",
         lambda name: f"/usr/bin/{name}" if name in {"flatpak", "gdbus"} else None,
     )
     monkeypatch.setattr(
@@ -279,7 +282,7 @@ def test_execute_continues_failed_photogimp_without_repeating_completed_effects(
     assert result.ok is True
     assert result.status == ChangeStatus.INTEGRATED
     assert any("no se volverá a instalar" in detail or "reutilizará" in detail for detail in result.details)
-    record = service._load_records()["photogimp"]
+    record = read_json(service._records_path)["photogimp"]
     assert record["attempt_mode"] == "continue"
     assert record["last_run_id"]
     assert {

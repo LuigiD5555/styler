@@ -1,10 +1,10 @@
-from styler.runtime.dependency_analysis import (
+from styler.planning.dependency_analysis import (
     analyze_dependencies,
     impacted_by_capability,
     impacted_steps,
 )
-from styler.runtime.models import StepDefinition, WorkflowDefinition
-from styler.runtime.validation import validate_workflow
+from styler.planning.models import StepDefinition, WorkflowDefinition
+from styler.planning.validation import validate_workflow
 
 
 def _photogimp_workflow() -> WorkflowDefinition:

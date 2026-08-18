@@ -3,7 +3,7 @@ set -euo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 VERSION="$($ROOT/scripts/project-version.py)"
 OUT="$ROOT/dist/packages/rpm"
-RUNTIME="${STYLER_RUNTIME:-$ROOT/dist/runtime/styler-$VERSION.pyz}"
+RUNTIME="${STYLER_PYTHON_RUNTIME:-$ROOT/dist/runtime/styler-$VERSION.pyz}"
 TOP="$(mktemp -d)"
 trap 'rm -rf "$TOP"' EXIT
 command -v rpmbuild >/dev/null 2>&1 || { echo "Falta rpmbuild." >&2; exit 2; }

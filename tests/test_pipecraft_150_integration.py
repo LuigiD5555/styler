@@ -5,15 +5,14 @@ import subprocess
 import sys
 from pathlib import Path
 
-import yaml
 
-from styler.pipecraft.compiler import compile_pipeline
+from styler.pipecraft.compiler import compile_spec
 from styler.pipecraft.engine import PipeCraftBackend
 from styler.pipecraft.plugin_host import _runtime_status
 from styler.pipecraft.service import PipeCraftUnavailable
-from styler.runtime.engine import WorkflowEngine
-from styler.runtime.models import ExecutionContext, StepDefinition, WorkflowDefinition
-from styler.runtime.selection import select_plan_nodes
+from styler.workflow import WorkflowPlanner
+from styler.planning.models import ExecutionContext, StepDefinition, WorkflowDefinition
+from styler.planning.selection import select_plan_nodes
 
 
 def test_compiler_turns_styler_nodes_into_pipecraft_plugins(tmp_path: Path) -> None:
@@ -28,13 +27,11 @@ def test_compiler_turns_styler_nodes_into_pipecraft_plugins(tmp_path: Path) -> N
             ),
         ],
     )
-    engine = WorkflowEngine()
+    engine = WorkflowPlanner()
     plan = engine.compile(workflow)
     ctx = ExecutionContext(root=tmp_path, dry_run=False, approve=True, values={"change_id": "x", "home": tmp_path})
     selected = select_plan_nodes(plan, ctx)
-    path = tmp_path / "pipeline.yaml"
-    name = compile_pipeline(workflow, plan, ctx, selected, path)
-    raw = yaml.safe_load(path.read_text(encoding="utf-8"))
+    name, raw = compile_spec(workflow, plan, ctx, selected)
     assert name.startswith("styler-demo")
     assert [step["type"] for step in raw["steps"]] == ["plugin", "plugin"]
     assert raw["steps"][1]["needs"] == ["a"]
@@ -74,23 +71,23 @@ def test_plugin_host_executes_styler_executor_without_polluting_stdout(tmp_path:
     assert result["data"]["styler_step_type"] == "note"
 
 
-def test_auto_backend_fails_closed_when_pipecraft_is_not_available(monkeypatch, tmp_path: Path) -> None:
+def test_productive_execution_fails_closed_when_pipecraft_is_not_available(monkeypatch, tmp_path: Path) -> None:
+    import pytest
+    from styler import workflow as workflow_runtime
     import styler.pipecraft.service as service
 
-    monkeypatch.delenv("STYLER_RUNTIME", raising=False)
+    monkeypatch.setattr(workflow_runtime, "_execution_backend", workflow_runtime._pipecraft_execute)
     monkeypatch.setattr(service, "locate_binary", lambda: None)
     monkeypatch.setattr(service.PipeCraftClient, "ping", lambda self: (_ for _ in ()).throw(service.PipeCraftIpcError("offline")))
     workflow = WorkflowDefinition(name="demo", steps=[StepDefinition("a", "note", config={"message": "ok"})])
-    import pytest
     with pytest.raises(PipeCraftUnavailable):
-        WorkflowEngine(backend="auto").run(workflow, ExecutionContext(root=tmp_path, dry_run=False, approve=True))
+        workflow_runtime.execute(workflow, ExecutionContext(root=tmp_path, dry_run=False, approve=True))
 
 
-def test_explicit_local_backend_remains_available_for_tests(tmp_path: Path) -> None:
-    workflow = WorkflowDefinition(name="demo", steps=[StepDefinition("a", "note", config={"message": "ok"})])
-    run = WorkflowEngine(backend="local").run(workflow, ExecutionContext(root=tmp_path, dry_run=False, approve=True))
-    assert run.success is True
-    assert run.results[0].message == "ok"
+def test_product_package_has_no_local_scheduler() -> None:
+    root = Path(__file__).resolve().parents[1]
+    assert not (root / "styler/runtime/scheduler.py").exists()
+    assert not (root / "styler/runtime/events.py").exists()
 
 
 def test_pipecraft_status_normalization_preserves_styler_semantics() -> None:
@@ -102,7 +99,7 @@ def test_pipecraft_status_normalization_preserves_styler_semantics() -> None:
 
 def test_report_restores_styler_status_from_plugin_data() -> None:
     workflow = WorkflowDefinition(name="demo", steps=[StepDefinition("a", "note")])
-    plan = WorkflowEngine().compile(workflow)
+    plan = WorkflowPlanner().compile(workflow)
     report = {
         "results": [{
             "step_id": "a",
@@ -136,3 +133,38 @@ def test_plugin_host_argv_uses_zipapp_entrypoint(monkeypatch, tmp_path: Path) ->
     archive.write_bytes(b"placeholder")
     monkeypatch.setattr(sys, "argv", [str(archive)])
     assert compiler._plugin_host_argv() == [sys.executable, str(archive.resolve()), "__pipecraft_plugin_host"]
+
+
+def test_compiler_does_not_write_transient_yaml(tmp_path: Path) -> None:
+    workflow = WorkflowDefinition(name="pure", steps=[StepDefinition("a", "note")])
+    plan = WorkflowPlanner().compile(workflow)
+    ctx = ExecutionContext(root=tmp_path)
+    selected = select_plan_nodes(plan, ctx)
+    _name, spec = compile_spec(workflow, plan, ctx, selected)
+    assert spec["schema_version"] == "pipecraft/v1"
+    assert list(tmp_path.rglob("*.yaml")) == []
+
+
+def test_explicit_command_node_uses_native_pipecraft_command(tmp_path: Path) -> None:
+    workflow = WorkflowDefinition(
+        name="native-command",
+        steps=[
+            StepDefinition(
+                "echo",
+                "command",
+                config={"argv": ["printf", "%s", "hello"], "env": {"LANG": "C"}},
+                timeout=7,
+                retries=2,
+            )
+        ],
+    )
+    plan = WorkflowPlanner().compile(workflow)
+    ctx = ExecutionContext(root=tmp_path)
+    _name, spec = compile_spec(workflow, plan, ctx, {"echo"})
+    step = spec["steps"][0]
+    assert step["type"] == "command"
+    assert step["with"]["argv"] == ["printf", "%s", "hello"]
+    assert step["with"]["env"] == {"LANG": "C"}
+    assert step["with"]["timeout"] == 7
+    assert step["with"]["retries"] == 2
+    assert "styler_step" not in step["with"]

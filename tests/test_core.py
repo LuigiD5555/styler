@@ -7,72 +7,69 @@ from tempfile import TemporaryDirectory
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from styler.diff import diff_states
-from styler.interpreter import interpret
-from styler.models import Decision, FileEntry, Package, State
-from styler.review import auto_decide
-from styler.runtime.builder import workflow_from_changeset
-from styler.runtime.engine import WorkflowEngine
-from styler.runtime.executors import ExecutorRegistry, StepExecutor
-from styler.runtime.models import (
+from styler.models import Changeset, Component, Decision, FileEntry, Package
+from styler.planning.builder import workflow_from_changeset
+from tests.support.local_engine import WorkflowEngine
+from styler.execution.base import ExecutorRegistry, StepExecutor
+from styler.planning.models import (
     ExecutionContext,
     Status,
     StepDefinition,
     StepResult,
     WorkflowDefinition,
 )
-from styler.runtime.graph import DependencyCycleError, topological_order
+from styler.planning.graph import DependencyCycleError, topological_order
 
 
-def make_states():
-    base = State(state_id="base", label="base")
-    target = State(
-        state_id="target",
-        label="target",
+def included_changeset() -> Changeset:
+    """Changeset mínimo para probar la compilación semántica a workflow.
+
+    Estas pruebas ya no dependen del antiguo pipeline prototype
+    ``State -> diff -> interpreter -> review``. Ese flujo no tenía consumidores
+    productivos; el constructor/catálogo actual produce componentes directamente.
+    """
+    package_component = Component(
+        component_id="pkg-apt-gimp",
+        title="Instalar GIMP",
+        category="aplicaciones",
         packages=[Package(manager="apt", name="gimp", version="2.10.36-3")],
+        decision=Decision.INCLUDE,
+    )
+    custom_component = Component(
+        component_id="customize-gimp",
+        title="PhotoGIMP",
+        category="aplicaciones",
+        depends_on=[package_component.component_id],
         files=[
-            FileEntry(path="${HOME}/.config/GIMP/2.10/menurc", checksum="h1", size=10, owner_hint="user"),
-            FileEntry(path="${HOME}/.themes/Sweet/index.theme", checksum="h2", size=20, owner_hint="user"),
+            FileEntry(
+                path="${HOME}/.config/GIMP/2.10/menurc",
+                checksum="h1",
+                size=10,
+                owner_hint="user",
+            )
         ],
+        decision=Decision.INCLUDE,
     )
-    return base, target
-
-
-def included_changeset():
-    base, target = make_states()
-    changeset = interpret(base.state_id, target.state_id, diff_states(base, target))
-    auto_decide(changeset, default=Decision.INCLUDE)
-    return changeset
-
-
-def test_diff_detects_added_package_and_files():
-    base, target = make_states()
-    changes = diff_states(base, target)
-    kinds = {change.kind.value for change in changes}
-    assert "package_added" in kinds
-    assert "file_added" in kinds
-    assert len(changes) == 3
-
-
-def test_interpreter_links_customization_to_its_package():
-    changeset = included_changeset()
-    package_component = next(
-        component for component in changeset.components if component.component_id == "pkg-apt-gimp"
+    theme_component = Component(
+        component_id="files-themes-sweet",
+        title="Tema Sweet",
+        category="apariencia",
+        files=[
+            FileEntry(
+                path="${HOME}/.themes/Sweet/index.theme",
+                checksum="h2",
+                size=20,
+                owner_hint="user",
+            )
+        ],
+        decision=Decision.INCLUDE,
     )
-    custom_component = next(
-        component for component in changeset.components if component.component_id == "customize-gimp"
+    return Changeset(
+        changeset_id="base-target",
+        base_state="base",
+        target_state="target",
+        components=[package_component, custom_component, theme_component],
     )
-    assert package_component.depends_on == []
-    assert custom_component.depends_on == [package_component.component_id]
-    assert all("GIMP" in entry.path for entry in custom_component.files)
-
-
-def test_interpreter_groups_unrelated_files_separately():
-    changeset = included_changeset()
-    theme_component = next(
-        component for component in changeset.components if "themes" in component.component_id
-    )
-    assert theme_component.category == "apariencia"
 
 
 def test_workflow_respects_component_dependencies_without_yaml():
@@ -85,9 +82,9 @@ def test_workflow_respects_component_dependencies_without_yaml():
 
 
 def test_ignored_components_do_not_create_steps():
-    base, target = make_states()
-    changeset = interpret(base.state_id, target.state_id, diff_states(base, target))
-    auto_decide(changeset, default=Decision.IGNORED)
+    changeset = included_changeset()
+    for component in changeset.components:
+        component.decision = Decision.IGNORED
     workflow = workflow_from_changeset(changeset, name="empty")
     assert workflow.steps == []
     errors = WorkflowEngine().validate(workflow)
@@ -143,7 +140,8 @@ class FlakyExecutor(StepExecutor):
         return StepResult(step.id, step.step_type, True, Status.OK, "recuperado")
 
 
-def test_retries_are_integrated_in_the_internal_engine():
+def test_retries_are_covered_by_the_test_harness():
+    """Conserva prueba unitaria de retries sin reintroducir runtime productivo Python."""
     flaky = FlakyExecutor()
     registry = ExecutorRegistry()
     registry.register(flaky)
@@ -161,7 +159,7 @@ def test_retries_are_integrated_in_the_internal_engine():
     assert run.results[0].data["attempts"] == 2
 
 
-def test_run_report_is_written_under_styler_directory():
+def test_test_harness_report_is_written_under_styler_directory():
     workflow = WorkflowDefinition(name="report", steps=[StepDefinition("hello", "note")])
     with TemporaryDirectory() as temp:
         run = WorkflowEngine().run(
@@ -175,7 +173,7 @@ def test_run_report_is_written_under_styler_directory():
         assert '"workflow": "report"' in text
 
 
-def test_from_and_only_select_steps_in_resolved_order():
+def test_from_and_only_select_steps_in_resolved_order_in_test_harness():
     workflow = WorkflowDefinition(
         name="selection",
         steps=[
@@ -197,17 +195,3 @@ def test_from_and_only_select_steps_in_resolved_order():
     assert [result.node_id for result in run.results] == ["a", "b", "c"]
     assert [result.status for result in run.results] == ["skipped", "skipped", "blocked"]
     assert run.success is False
-
-
-if __name__ == "__main__":
-    tests = [obj for name, obj in list(globals().items()) if name.startswith("test_")]
-    failures = 0
-    for test in tests:
-        try:
-            test()
-            print(f"OK   {test.__name__}")
-        except Exception as exc:
-            failures += 1
-            print(f"FAIL {test.__name__}: {exc}")
-    print(f"\n{len(tests) - failures}/{len(tests)} pruebas pasaron")
-    raise SystemExit(1 if failures else 0)

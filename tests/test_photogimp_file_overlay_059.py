@@ -5,14 +5,12 @@ import zipfile
 from pathlib import Path
 from types import SimpleNamespace
 
-from styler.component_catalog.executors import (
-    CopyEffects,
-    OverlayInstallExecutor,
-    _copy_files_individually,
-    _find_photogimp_payload,
+from styler.component_catalog.executors import OverlayInstallExecutor
+from styler.component_catalog.photogimp_overlay import (
+    CopyEffects, _copy_files_individually, _find_photogimp_payload,
     _select_photogimp_template_from_archive,
 )
-from styler.runtime.models import ExecutionContext, StepDefinition
+from styler.planning.models import ExecutionContext, StepDefinition
 
 SOURCE = "https://github.com/Diolinux/PhotoGIMP/releases/download/3.0/PhotoGIMP-linux.zip"
 
@@ -105,15 +103,15 @@ def test_installer_accepts_nested_hidden_layout_and_copies_resources_individuall
     archive_bytes = archive.getvalue()
 
     monkeypatch.setattr(
-        "styler.component_catalog.executors.urlopen",
+        "styler.component_catalog.photogimp_overlay.urlopen",
         lambda request, timeout=45: Response(archive_bytes),
     )
     monkeypatch.setattr(
-        "styler.component_catalog.executors.shutil.which",
+        "styler.component_catalog.photogimp_overlay.shutil.which",
         lambda name: f"/usr/bin/{name}",
     )
     monkeypatch.setattr(
-        "styler.component_catalog.executors.run_step_command",
+        "styler.component_catalog.photogimp_overlay.run_step_command",
         lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout="", stderr=""),
     )
 
@@ -145,15 +143,15 @@ def test_large_zip_is_written_once_not_duplicated(monkeypatch, tmp_path: Path) -
     archive_bytes = archive.getvalue()
 
     monkeypatch.setattr(
-        "styler.component_catalog.executors.urlopen",
+        "styler.component_catalog.photogimp_overlay.urlopen",
         lambda request, timeout=45: Response(archive_bytes),
     )
     monkeypatch.setattr(
-        "styler.component_catalog.executors.shutil.which",
+        "styler.component_catalog.photogimp_overlay.shutil.which",
         lambda name: f"/usr/bin/{name}",
     )
     monkeypatch.setattr(
-        "styler.component_catalog.executors.run_step_command",
+        "styler.component_catalog.photogimp_overlay.run_step_command",
         lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout="", stderr=""),
     )
 

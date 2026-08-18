@@ -5,7 +5,7 @@ El plano de **aplicaciones** de Styler: qué programas forman parte de una
 configuración y cómo se vuelven a instalar en otra máquina.
 
 Styler observa aplicaciones (`styler.provenance`) y sabía
-ejecutar una instalación (`styler.runtime.executors`), pero nada conectaba
+ejecutar una instalación (`styler.execution.executors`), pero nada conectaba
 ambos planos: aplicar una configuración solo escribía archivos. Este módulo es
 esa conexión, y es la única capa autorizada a instalar programas.
 
@@ -30,7 +30,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Iterable, Optional
 
-from styler.runtime.commands import CommandResult, FakeRunner, Runner, PipeCraftRunner  # noqa: F401
+from styler.execution.processes import CommandResult, Runner, ProcessRunner  # noqa: F401
 
 # --------------------------------------------------------------------------- #
 # Estados de un paso
@@ -406,70 +406,7 @@ def privilege_available(runner: Runner, mode: str = "auto", is_root: bool | None
 # el bloqueo de dpkg en vez de romperlo.
 # --------------------------------------------------------------------------- #
 
-APT_NONINTERACTIVE_ENV = (
-    "DEBIAN_FRONTEND=noninteractive",
-    "DEBCONF_NONINTERACTIVE_SEEN=true",
-    "APT_LISTCHANGES_FRONTEND=none",
-    "NEEDRESTART_MODE=a",
-)
-
-
-def apt_install_argv(prefix: Iterable[str], *packages: str) -> list[str]:
-    """Construye una instalación APT que nunca abra diálogos interactivos.
-
-    ``-y`` solo responde a la confirmación de APT. No evita las preguntas de
-    ``debconf`` (por ejemplo, elegir LightDM o SDDM) ni los conflictos de
-    archivos de configuración. Por eso la política no interactiva y las
-    opciones de dpkg forman parte del comando, independientemente del paquete.
-    """
-
-    return [
-        *prefix,
-        "env",
-        *APT_NONINTERACTIVE_ENV,
-        "apt-get",
-        "-o",
-        "Dpkg::Use-Pty=0",
-        "-o",
-        "DPkg::Lock::Timeout=300",
-        "-o",
-        "Dpkg::Options::=--force-confdef",
-        "-o",
-        "Dpkg::Options::=--force-confold",
-        "-y",
-        "install",
-        *packages,
-    ]
-
-
-def apt_update_argv(prefix: Iterable[str]) -> list[str]:
-    """Construye una actualización de catálogo APT sin interfaz interactiva."""
-
-    return [
-        *prefix,
-        "env",
-        *APT_NONINTERACTIVE_ENV,
-        "apt-get",
-        "-o",
-        "Dpkg::Use-Pty=0",
-        "-o",
-        "DPkg::Lock::Timeout=300",
-        "update",
-    ]
-
-
-def dpkg_configure_argv(prefix: Iterable[str]) -> list[str]:
-    """Reanuda de forma segura una configuración de dpkg interrumpida."""
-
-    return [
-        *prefix,
-        "env",
-        *APT_NONINTERACTIVE_ENV,
-        "dpkg",
-        "--configure",
-        "-a",
-    ]
-
+from styler.package_commands import apt_install_argv, apt_update_argv, dpkg_configure_argv
 
 # --------------------------------------------------------------------------- #
 # Plan (vista de solo-aplicaciones; el plan completo vive en styler.restore)
@@ -490,7 +427,7 @@ def plan_installation(
     """
     from styler import resolution, target as target_mod
 
-    runner = runner or PipeCraftRunner()
+    runner = runner or ProcessRunner()
     target = target or target_mod.detect_target(root=root)
     prefix = privilege_prefix(runner, privilege, is_root)
     plan = InstallPlan(privilege=list(prefix))
@@ -557,7 +494,7 @@ def execute_plan(
     progress: ProgressCallback = None,
 ) -> InstallReport:
     """Instala lo pendiente del plan. Sin `execute` y `approve` no toca nada."""
-    runner = runner or PipeCraftRunner()
+    runner = runner or ProcessRunner()
     report = InstallReport(dry_run=not execute, started_at=time.time())
 
     for step in plan.steps:

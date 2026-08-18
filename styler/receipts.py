@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
-from styler.runtime.models import ExecutionContext, StepDefinition, WorkflowDefinition
+from styler.planning.models import ExecutionContext, StepDefinition, WorkflowDefinition
 
 RECEIPTS_ROOT = ".styler/receipts"
 CHECKPOINTS_ROOT = ".styler/checkpoints"

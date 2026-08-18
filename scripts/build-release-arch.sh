@@ -3,7 +3,7 @@ set -euo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 VERSION="$($ROOT/scripts/project-version.py)"
 OUT="$ROOT/dist/packages/arch"
-RUNTIME="${STYLER_RUNTIME:-$ROOT/dist/runtime/styler-$VERSION.pyz}"
+RUNTIME="${STYLER_PYTHON_RUNTIME:-$ROOT/dist/runtime/styler-$VERSION.pyz}"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 command -v makepkg >/dev/null 2>&1 || { echo "Falta makepkg." >&2; exit 2; }

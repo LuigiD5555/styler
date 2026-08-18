@@ -24,7 +24,7 @@ import shutil
 from dataclasses import dataclass, field
 
 from styler.parts import part_by_id
-from styler.runtime.commands import PipeCraftRunner
+from styler.execution.processes import ProcessRunner
 
 KDE = "kde"
 GTK = "gtk"
@@ -58,7 +58,7 @@ def detect_environment() -> Environment:
 
     desktop_version = ""
     if shutil.which("plasmashell"):
-        result = PipeCraftRunner(timeout=5).run(["plasmashell", "--version"], timeout=5)
+        result = ProcessRunner(timeout=5).run(["plasmashell", "--version"], timeout=5)
         if result.returncode == 0:
             desktop_version = result.stdout.strip()
 

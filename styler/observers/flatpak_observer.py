@@ -4,7 +4,7 @@ import shutil
 
 from styler.models import Package
 from styler.observers.base import BaseObserver
-from styler.runtime.commands import PipeCraftRunner
+from styler.execution.processes import ProcessRunner
 
 
 class FlatpakObserver(BaseObserver):
@@ -16,7 +16,7 @@ class FlatpakObserver(BaseObserver):
     def _read_flatpak(self) -> list[Package]:
         if not shutil.which("flatpak"):
             return []
-        result = PipeCraftRunner(timeout=30).run(
+        result = ProcessRunner(timeout=30).run(
             ["flatpak", "list", "--columns=application,version,arch"], timeout=30
         )
         if result.returncode != 0:

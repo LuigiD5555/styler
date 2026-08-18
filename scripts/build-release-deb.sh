@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 VERSION="$($ROOT/scripts/project-version.py)"
 OUT="$ROOT/dist/packages/deb"
-RUNTIME="${STYLER_RUNTIME:-$ROOT/dist/runtime/styler-$VERSION.pyz}"
+RUNTIME="${STYLER_PYTHON_RUNTIME:-$ROOT/dist/runtime/styler-$VERSION.pyz}"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 

@@ -5,7 +5,9 @@ import time
 from dataclasses import dataclass
 from typing import Callable
 
-from .actions import Action, ActionContext, ActionResult, SleepAction, WaitAction
+from .actions import (
+    Action, ActionContext, ActionResult, SleepAction, StopProcessAction, TryFinallyAction, WaitAction,
+)
 from .events import Event, EventBus, EventType
 from .profiles import ApplicationProfile
 from .states import AppState, ApplicationStateMachine
@@ -134,3 +136,48 @@ class ApplicationController:
             self.machine.state,
             max(0.0, self._monotonic() - started),
         )
+
+
+class WithApplicationAction:
+    """Abrir → esperar a que esté lista → cuerpo → cerrar siempre.
+
+    Reúne en un solo bloque reutilizable las tres responsabilidades que el
+    controlador mantiene separadas, sin fundirlas: por dentro sigue llamando a
+    `launch_wait_and_settle` y a `StopProcessAction`.
+    """
+
+    def __init__(
+        self,
+        name: str,
+        launch: Action,
+        profile: Any,
+        body: Action,
+        *,
+        controller: Any = None,
+        stop: Action | None = None,
+    ) -> None:
+        self.name = name
+        self.launch = launch
+        self.profile = profile
+        self.body = body
+        self.stop = stop or StopProcessAction()
+        self._controller = controller
+
+    def _make_controller(self) -> Any:
+        if self._controller is not None:
+            return self._controller
+        return ApplicationController(source=getattr(self.profile, "id", self.name))
+
+    def execute(self, context: ActionContext) -> ActionResult:
+        controller = self._make_controller()
+        report = controller.launch_wait_and_settle(self.launch, self.profile, context)
+        if not report.success:
+            self.stop.execute(context)
+            readiness = report.readiness
+            message = readiness.message if readiness else report.launch.message
+            return ActionResult(
+                False,
+                f"{self.name}: la aplicación no quedó lista: {message}",
+                {"readiness": dict(readiness.data) if readiness else {}},
+            )
+        return TryFinallyAction(self.name, self.body, self.stop).execute(context)

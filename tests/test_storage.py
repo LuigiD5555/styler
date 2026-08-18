@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import pytest
+
+pytestmark = pytest.mark.usefixtures("local_execution_backend")
+
 import os
 import sys
 from pathlib import Path
@@ -9,7 +13,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from styler.models import Decision, FileEntry, State
 from styler.objectstore import ObjectStore, ObjectStoreError
-from styler.runtime.models import Status
+from styler.planning.models import Status
 from styler.snapshot import (
     Snapshot,
     create_snapshot,
@@ -182,7 +186,7 @@ def test_restore_snapshot_execute_applies_real_content():
         store = ObjectStore(root=temp)
         checksum, object_path = store.store_file(source_content)
 
-        import styler.runtime.executors as executors_mod
+        import styler.execution.executors as executors_mod
         original_home = Path.home
         executors_mod.Path.home = staticmethod(lambda: home)  # type: ignore[assignment]
         try:

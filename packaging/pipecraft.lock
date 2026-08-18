@@ -1,0 +1,13 @@
+# Runtime contract for Styler 0.13.1.
+# The preferred runtime is PipeCraft 1.6 with spec IPC. The portable archive
+# still bundles the verified 1.5 binary below as an explicit compatibility path
+# until the PipeCraft Rust source/release is available to rebuild 1.6.
+preferred_version = "1.6.0-alpha.1"
+minimum_spec_version = "1.6.0-alpha.1"
+protocol = "pipecraft.ipc/v1"
+required_capabilities = ["submit_spec", "validate_spec", "plan_spec"]
+
+bundled_version = "1.5.0-alpha.1"
+bundled_architecture = "linux-x86_64"
+bundled_sha256 = "7f156e5bcf453ec4f211ebee3050bca1f53c3d03fbc6043cb520b541abe4fcd3"
+bundled_mode = "legacy-yaml-compat"

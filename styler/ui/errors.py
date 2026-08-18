@@ -9,7 +9,6 @@ from styler.objectstore import ObjectStoreError
 from styler.portable.models import PortablePackageError
 from styler.services import (
     AuthorizationError,
-    EnvironmentRestoreError,
     OperationCancelledError,
     UserError,
 )
@@ -33,7 +32,6 @@ class UserFacingError:
 _MAPPINGS: tuple[tuple[type[Exception], str, str, str, str | None], ...] = (
     (OperationCancelledError, "CANCELLED", "La operación fue cancelada de forma segura", "", None),
     (AuthorizationError, "AUTHORIZATION", "No se pudo obtener autorización administrativa", "", "Vuelve a intentarlo y escribe la contraseña en el terminal cuando se solicite."),
-    (EnvironmentRestoreError, "ENVIRONMENT", "No se pudo completar el entorno necesario", "", "Revisa el motivo y vuelve a intentarlo."),
     (PortablePackageError, "PORTABLE_PACKAGE", "No se pudo abrir este paquete", "El archivo está dañado, es incompatible o contiene una declaración insegura.", "Revisa los detalles y crea o solicita un paquete corregido."),
     (ObjectStoreError, "OBJECT", "Falta contenido en la biblioteca", "Uno de los archivos está dañado o incompleto.", "Vuelve a crear o importar el paquete completo."),
     (ValidationError, "VALIDATION", "Hay un dato que Styler no acepta", "Un identificador o una ruta no cumple las reglas de seguridad.", None),

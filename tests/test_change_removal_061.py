@@ -1,15 +1,18 @@
 """Retiro explícito de cambios integrados en Styler."""
 from __future__ import annotations
+from styler.changes.storage import save_record
 
 from pathlib import Path
 
 import pytest
 
+pytestmark = pytest.mark.usefixtures("local_execution_backend")
+
 from styler.changes.models import ChangeStatus
 from styler.changes.service import ChangeService
 from styler.cli import build_parser
 from styler.receipts import ReceiptJournal, ReceiptKind
-from styler.runtime.graph import topological_order
+from styler.planning.graph import topological_order
 
 
 def _service_with_receipts(tmp_path: Path, *, was_present: bool = False) -> ChangeService:
@@ -58,7 +61,7 @@ def _service_with_receipts(tmp_path: Path, *, was_present: bool = False) -> Chan
         },
         clock=lambda: 30.0,
     )
-    service._save_record(
+    save_record(service._records_path,
         "photogimp",
         {
             "status": ChangeStatus.INTEGRATED,
@@ -114,7 +117,7 @@ def test_removal_progress_uses_same_phase_ids_as_preview(tmp_path: Path):
 
 
 def test_tui_exposes_remove_button_and_executes_through_progress_screen():
-    source = (Path(__file__).resolve().parents[1] / "styler/tui/app.py").read_text()
+    source = (Path(__file__).resolve().parents[1] / "styler/tui/screens/changes.py").read_text()
 
     assert 'id="remove-change"' in source
     assert "build_removal_plan" in source
@@ -141,7 +144,7 @@ def test_removal_engine_is_not_hardcoded_to_photogimp(tmp_path: Path):
         kind=ReceiptKind.PATHS_WRITTEN,
         data={"created_paths": [str(tmp_path / "home/.icons/Ocean/cursor.theme")]},
     )
-    service._save_record(
+    save_record(service._records_path,
         "cursor-ocean",
         {"name": "Cursor Ocean", "status": ChangeStatus.INTEGRATED},
     )

@@ -7,13 +7,13 @@ import sys
 from pathlib import Path
 
 from styler import __version__
-from styler.runtime.commands import PipeCraftRunner
+from styler.execution.processes import ProcessRunner
 from .models import RuntimeComponent, RuntimeProfile
 
 
 def _version(command: list[str]) -> str:
     try:
-        completed = PipeCraftRunner(timeout=5).run(command, timeout=5)
+        completed = ProcessRunner(timeout=5).run(command, timeout=5)
     except Exception:
         return ""
     text = completed.stdout.strip().splitlines()

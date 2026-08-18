@@ -631,7 +631,7 @@ if ! create_venv "$NEW_RELEASE_DIR"; then
   exit 1
 fi
 
-# Styler 0.11 no vendoriza el source de PipeCraft, pero la distribución oficial
+# Styler 0.13.1 no vendoriza el source de PipeCraft, pero la distribución oficial
 # incluye un binario privado por arquitectura. El instalador prefiere:
 #   1) runtime PipeCraft incluido en este bundle;
 #   2) PIPECRAFT_BIN para desarrollo/override;
@@ -650,7 +650,19 @@ if [[ -n "$PIPECRAFT_BUNDLE_ARCH" ]]; then
   PIPECRAFT_BUNDLED_BIN="$SOURCE_DIR/runtime/pipecraft/$PIPECRAFT_BUNDLE_ARCH/pipecraft"
 fi
 
-if [[ -n "$PIPECRAFT_BUNDLED_BIN" && -x "$PIPECRAFT_BUNDLED_BIN" ]]; then
+if [[ -n "$PIPECRAFT_BUNDLED_BIN" && -f "$PIPECRAFT_BUNDLED_BIN" ]]; then
+  PIPECRAFT_BUNDLED_SHA="$SOURCE_DIR/runtime/pipecraft/$PIPECRAFT_BUNDLE_ARCH/pipecraft.sha256"
+  if [[ ! -f "$PIPECRAFT_BUNDLED_SHA" ]]; then
+    echo 'ERROR: falta el checksum SHA-256 del runtime PipeCraft incluido.' >&2
+    exit 1
+  fi
+  PIPECRAFT_EXPECTED_SHA="$(awk 'NF {print $1; exit}' "$PIPECRAFT_BUNDLED_SHA")"
+  PIPECRAFT_ACTUAL_SHA="$(sha256sum "$PIPECRAFT_BUNDLED_BIN" | awk '{print $1}')"
+  if [[ -z "$PIPECRAFT_EXPECTED_SHA" || "$PIPECRAFT_ACTUAL_SHA" != "$PIPECRAFT_EXPECTED_SHA" ]]; then
+    echo 'ERROR: el runtime PipeCraft incluido está dañado o no coincide con su SHA-256.' >&2
+    exit 1
+  fi
+  printf 'Runtime PipeCraft incluido verificado por SHA-256.\n'
   printf 'Instalando runtime PipeCraft incluido (%s)…\n' "$PIPECRAFT_BUNDLE_ARCH"
   install -m 0755 "$PIPECRAFT_BUNDLED_BIN" "$NEW_RELEASE_DIR/bin/pipecraft"
 elif [[ -n "$PIPECRAFT_EXTERNAL_BIN" && -x "$PIPECRAFT_EXTERNAL_BIN" ]]; then
@@ -673,7 +685,18 @@ arquitectura actual. Las operaciones con efectos no pueden ejecutarse.
 Usa el bundle oficial de Styler para tu arquitectura o, para desarrollo, define
 PIPECRAFT_BIN/PIPECRAFT_SOURCE_DIR. No existe fallback productivo a Python.
 EOF
+  exit 1
 fi
+
+if ! PIPECRAFT_INSTALLED_VERSION="$($NEW_RELEASE_DIR/bin/pipecraft --version 2>/dev/null)"; then
+  echo 'El runtime PipeCraft instalado no puede ejecutarse en esta máquina.' >&2
+  exit 1
+fi
+if [[ -z "$PIPECRAFT_INSTALLED_VERSION" ]]; then
+  echo 'El runtime PipeCraft instalado no reportó una versión válida.' >&2
+  exit 1
+fi
+printf 'Runtime PipeCraft verificado: %s\n' "$PIPECRAFT_INSTALLED_VERSION"
 
 PIP_ARGS=(--disable-pip-version-check)
 if [[ -d "$SOURCE_DIR/wheelhouse" ]] && compgen -G "$SOURCE_DIR/wheelhouse/*.whl" >/dev/null; then

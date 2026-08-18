@@ -21,7 +21,7 @@ from styler import resolution as resolution_mod
 from styler import target as target_mod
 from styler.applications import AppSpec
 from styler.resolvers import Candidate
-from styler.runtime.commands import Runner, PipeCraftRunner
+from styler.execution.processes import Runner, ProcessRunner
 
 
 @dataclass
@@ -189,7 +189,7 @@ def verify_requirements(
     runner: Runner | None = None,
     root: str = ".",
 ) -> VerificationResult:
-    runner = runner or PipeCraftRunner()
+    runner = runner or ProcessRunner()
     result = VerificationResult()
     if environment_id:
         result.checks.append(verify_desktop(environment_id, runner, root))

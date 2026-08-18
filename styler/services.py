@@ -29,9 +29,5 @@ class AuthorizationError(UserError):
     """La fase administrativa no obtuvo autorización."""
 
 
-class EnvironmentRestoreError(UserError):
-    """Un requisito obligatorio no quedó instalado o verificado."""
-
-
 class OperationCancelledError(UserError):
     """La persona canceló una operación y el sistema fue recogido."""

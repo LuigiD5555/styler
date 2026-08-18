@@ -32,7 +32,6 @@ from .actions import (
     TimeoutAction,
     TryFinallyAction,
     WaitAction,
-    WithApplicationAction,
     DesktopClickAction,
 )
 from .conditions import (
@@ -54,6 +53,7 @@ from .conditions import (
 from .profiles import ApplicationProfile
 from .desktop import AutoDesktopDriver, DesktopElementCondition, ElementLocator
 
+from .controller import WithApplicationAction
 SPEC_SCHEMA = "styler.automation/1"
 
 

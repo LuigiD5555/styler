@@ -22,4 +22,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      - run: cargo check --manifest-path rust/styler-engine/Cargo.toml
+      - run: cargo check --manifest-path styler/rust_ext/Cargo.toml

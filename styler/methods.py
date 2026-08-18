@@ -11,7 +11,7 @@ import shutil
 from dataclasses import dataclass, field, replace
 from typing import Any, Iterable, Mapping
 
-from styler.runtime.models import StepDefinition, WorkflowDefinition
+from styler.planning.models import StepDefinition, WorkflowDefinition
 
 
 class Mechanism:

@@ -4,10 +4,10 @@ import json
 import sys
 from pathlib import Path
 
-from styler.runtime.commands import PipeCraftRunner, run_step_command
-from styler.runtime.engine import WorkflowEngine
-from styler.runtime.executors import ExecutorRegistry, StepExecutor
-from styler.runtime.models import (
+from styler.execution.processes import ProcessRunner, run_step_command
+from tests.support.local_engine import WorkflowEngine
+from styler.execution.base import ExecutorRegistry, StepExecutor
+from styler.planning.models import (
     ExecutionContext,
     Status,
     StepDefinition,
@@ -61,7 +61,7 @@ def test_pipecraft_streams_output_heartbeats_and_persists_events(tmp_path: Path)
         root=tmp_path,
         values={
             "progress_callback": observed.append,
-            "command_runner": PipeCraftRunner(heartbeat_interval=0.05),
+            "command_runner": ProcessRunner(heartbeat_interval=0.05),
         },
     )
 
@@ -101,7 +101,7 @@ def test_pipecraft_is_the_only_python_process_boundary() -> None:
     offenders: list[str] = []
     for source in (project_root / "styler").rglob("*.py"):
         relative = source.relative_to(project_root).as_posix()
-        if relative == "styler/runtime/commands.py":
+        if relative == "styler/execution/processes.py":
             continue
         text = source.read_text(encoding="utf-8")
         if "import subprocess" in text or '__import__("subprocess")' in text:
@@ -113,7 +113,7 @@ def test_pipecraft_is_the_only_python_process_boundary() -> None:
 
 def test_change_screen_keeps_bars_and_adds_live_console() -> None:
     project_root = Path(__file__).resolve().parents[1]
-    app_source = (project_root / "styler/tui/app.py").read_text(encoding="utf-8")
+    app_source = (project_root / "styler/tui/screens/changes.py").read_text(encoding="utf-8")
     css = (project_root / "styler/tui/styles/screens.tcss").read_text(encoding="utf-8")
 
     assert 'ProgressBar(total=100, id="overall-progress")' in app_source
@@ -127,7 +127,7 @@ def test_change_screen_keeps_bars_and_adds_live_console() -> None:
 
 
 def test_streaming_command_uses_inactivity_not_total_elapsed_time() -> None:
-    runner = PipeCraftRunner(timeout=0.2, heartbeat_interval=0.05)
+    runner = ProcessRunner(timeout=0.2, heartbeat_interval=0.05)
     result = runner.run_streaming(
         [
             sys.executable,
@@ -145,7 +145,7 @@ def test_streaming_command_uses_inactivity_not_total_elapsed_time() -> None:
 
 
 def test_streaming_command_times_out_only_after_inactivity() -> None:
-    runner = PipeCraftRunner(timeout=5, heartbeat_interval=0.05)
+    runner = ProcessRunner(timeout=5, heartbeat_interval=0.05)
     result = runner.run_streaming(
         [sys.executable, "-c", "import time; time.sleep(0.5)"],
         idle_timeout=0.12,
