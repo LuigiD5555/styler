@@ -3,7 +3,7 @@ styler.provenance.inventory
 ===========================
 Construye y guarda el catálogo de procedencia.
 
-Garantías de esta capa (Styler 0.8):
+Garantías de esta capa (Styler 0.13.1):
 
 * SOLO LECTURA: no descarga, no instala, no modifica el sistema, no usa red.
 * Un gestor roto no tumba el escaneo completo (cada detector se aísla).

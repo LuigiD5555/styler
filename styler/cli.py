@@ -1,4 +1,4 @@
-"""CLI compacta de Styler 0.7: cambios, constructor, líneas base y .stylerpkg."""
+"""CLI compacta de Styler 0.13.1: cambios, constructor, líneas base y .stylerpkg."""
 from __future__ import annotations
 
 import argparse

@@ -1,4 +1,4 @@
-# Styler 0.13 — frontera de runtime
+# Styler 0.13.1 — frontera de runtime
 
 Styler decide **qué significa** una operación. PipeCraft decide **cómo se ejecuta**.
 
@@ -12,7 +12,7 @@ al runtime sin reserializar el pipeline a disco.
 
 ## Compatibilidad empaquetada
 
-El ZIP 0.13 conserva temporalmente el binario verificado PipeCraft
+El ZIP 0.13.1 conserva temporalmente el binario verificado PipeCraft
 `1.5.0-alpha.1` porque esta fuente de Styler no contiene el workspace Rust de
 PipeCraft y no existe una copia accesible del repositorio conectada. Esa ruta usa
 `styler/pipecraft/legacy_yaml.py`, aislada deliberadamente del compilador puro.
@@ -36,7 +36,7 @@ binario 1.5 incluido las tenga.
 
 ## Estado de esta entrega
 
-Completado en Styler 0.13.0-alpha.1:
+Completado en Styler 0.13.1:
 
 - compilador puro `compile_spec()`;
 - negociación de capabilities y cliente `submit_spec` / `validate_spec` / `plan_spec`;

@@ -1,4 +1,4 @@
-"""Pruebas de la capa de procedencia (Styler 0.8).
+"""Pruebas de la capa de procedencia (Styler 0.13.1).
 
 Ninguna prueba toca la red ni un gestor de paquetes real: todos los comandos
 externos pasan por FakeRunner.
