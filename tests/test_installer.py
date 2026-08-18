@@ -103,7 +103,7 @@ def _fake_python_that_builds_venvs(path: Path, *, fail_install: bool = False) ->
     install_branch = "exit 31" if fail_install else r"""
         cat > "$(dirname "$0")/styler" <<'STYLER'
 #!/usr/bin/env bash
-if [[ "${1:-}" == "--version" ]]; then echo 'Styler 0.13.1'; exit 0; fi
+if [[ "${1:-}" == "--version" ]]; then echo 'Styler 0.13.3'; exit 0; fi
 exit 0
 STYLER
         chmod +x "$(dirname "$0")/styler"
@@ -158,7 +158,7 @@ def test_installer_activates_only_a_fully_verified_staged_installation(tmp_path)
         capture_output=True,
         env=env,
     )
-    assert "0.13.1" in installed.stdout
+    assert "0.13.3" in installed.stdout
     assert not list((tmp_path / "data").glob("styler-install.*"))
 
 
@@ -309,7 +309,7 @@ def test_installer_creates_immediate_bridge_in_active_conda_path(tmp_path):
         capture_output=True,
     )
     assert resolved.stdout.splitlines()[0] == str(bridge)
-    assert "0.13.1" in resolved.stdout
+    assert "0.13.3" in resolved.stdout
 
 
 def test_uninstaller_removes_only_recorded_managed_bridge(tmp_path):
@@ -409,7 +409,7 @@ def test_installer_immediate_command_with_plain_python_and_system_path(tmp_path)
         capture_output=True,
     )
     assert resolved.stdout.splitlines()[0] == str(bridge)
-    assert "0.13.1" in resolved.stdout
+    assert "0.13.3" in resolved.stdout
 
 
 def test_installer_reuses_generic_user_bin_without_conda(tmp_path):
@@ -441,4 +441,25 @@ def test_installer_reuses_generic_user_bin_without_conda(tmp_path):
         capture_output=True,
     )
     assert resolved.stdout.splitlines()[0] == str(bridge)
-    assert "0.13.1" in resolved.stdout
+    assert "0.13.3" in resolved.stdout
+
+
+def test_installer_uses_real_bundled_pipecraft_without_override(tmp_path):
+    """Regression for the repeated source/archive runtime omission failure."""
+    fake_python = _fake_python_that_builds_venvs(tmp_path / "fake-python")
+    env = _installer_env(tmp_path, fake_python)
+    env.pop("PIPECRAFT_BIN", None)
+
+    result = subprocess.run(
+        ["bash", str(INSTALLER)],
+        env=env,
+        stdin=subprocess.DEVNULL,
+        text=True,
+        capture_output=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "Runtime PipeCraft incluido verificado por SHA-256." in result.stdout
+    assert "Runtime PipeCraft verificado: pipecraft 1.5.0-alpha.1" in result.stdout
+    installed = Path(env["XDG_DATA_HOME"]) / "styler-app" / "current" / "bin" / "pipecraft"
+    assert installed.is_file()

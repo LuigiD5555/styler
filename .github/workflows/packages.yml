@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Verify bundled PipeCraft runtime
+        run: python scripts/verify-bundled-pipecraft.py
       - name: Verify architecture boundary
         run: python scripts/verify-runtime-boundary.py
       - name: Build portable runtime, DEB, Arch and RPM

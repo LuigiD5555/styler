@@ -124,7 +124,5 @@ coverage.xml
 .DS_Store
 Thumbs.db
 .directory
-# Styler release bundles may contain a generated PipeCraft binary. Do not commit it
-# to the Styler source repository; CI/release packaging should inject it.
-/runtime/pipecraft/*/pipecraft
-/runtime/pipecraft/*/pipecraft.sha256
+# PipeCraft runtime binaries under runtime/pipecraft/<arch>/ are intentionally
+# tracked. A normal Git checkout and GitHub source archive must be installable.

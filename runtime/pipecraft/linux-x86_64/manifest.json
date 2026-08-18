@@ -11,5 +11,5 @@
     "compile_fix": "pipecraft-core loader.rs keeps sid alive through barrier parsing (id: sid.clone())",
     "artifact": "GitHub Actions build-pipecraft rerun 2026-08-18"
   },
-  "bundled_by": "styler 0.13.1"
+  "bundled_by": "styler 0.13.3"
 }

@@ -1,3 +1,11 @@
+styler (0.13.3-1) unstable; urgency=medium
+
+  * Keep the verified PipeCraft runtime tracked in the Styler repository.
+  * Ensure GitHub/source archives remain directly installable.
+  * Add regression coverage for bundled runtime presence and checksum.
+
+ -- Styler contributors <noreply@example.invalid>  Tue, 18 Aug 2026 00:42:00 -0600
+
 styler (0.13.1-1) unstable; urgency=medium
 
   * Fix bundled PipeCraft runtime checksum verification and packaging.

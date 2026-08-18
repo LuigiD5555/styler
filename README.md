@@ -1,4 +1,4 @@
-# Styler 0.13.1
+# Styler 0.13.3
 
 > **Convierte cambios hechos en Linux en paquetes que puedes revisar, reproducir, compartir y retirar.**
 

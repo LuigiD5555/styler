@@ -1,6 +1,6 @@
 Styler
 
-Styler 0.13.1 uses PipeCraft 1.5 as its only production workflow runtime through
+Styler 0.13.3 uses PipeCraft 1.5 as its only production workflow runtime through
 the versioned local IPC protocol `pipecraft.ipc/v1`.
 
 PipeCraft
@@ -20,5 +20,5 @@ ProcessRunner; PipeCraft supervises the plugin boundary rather than pretending
 to understand those Linux-domain effects itself.
 
 The historical Python scheduler and the former `styler-engine` Rust executable
-are not shipped in Styler 0.13.1. Test-only in-process workflow helpers live under
+are not shipped in Styler 0.13.3. Test-only in-process workflow helpers live under
 `tests/support` and are excluded from the installed package.

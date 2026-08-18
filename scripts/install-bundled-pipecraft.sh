@@ -20,7 +20,7 @@ cat > "$DEST/manifest.json" <<EOF
   "protocol": "pipecraft.ipc/v1",
   "target": "$ARCH",
   "sha256": "$SHA",
-  "bundled_by": "styler 0.13.1"
+  "bundled_by": "styler 0.13.3"
 }
 EOF
 python3 "$ROOT/scripts/verify-bundled-pipecraft.py"

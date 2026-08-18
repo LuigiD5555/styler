@@ -202,3 +202,73 @@ def test_el_asset_de_photogimp_existe():
     asset = Path("styler/catalog/components/assets/photogimp")
     assert asset.is_dir()
     assert (asset / ".photogimp-marker").is_file()
+
+
+def test_bundled_pipecraft_is_part_of_source_distribution_and_not_gitignored(tmp_path):
+    """Regression: a GitHub-style git archive must not lose PipeCraft again."""
+    import hashlib
+    import json
+    import shutil
+    import zipfile
+
+    runtime_dir = ROOT / "runtime" / "pipecraft" / "linux-x86_64"
+    binary = runtime_dir / "pipecraft"
+    checksum_file = runtime_dir / "pipecraft.sha256"
+    manifest_file = runtime_dir / "manifest.json"
+
+    assert binary.is_file(), "the tracked source tree must contain PipeCraft"
+    assert checksum_file.is_file(), "the tracked source tree must contain the checksum"
+    expected = checksum_file.read_text(encoding="utf-8").split()[0]
+    actual = hashlib.sha256(binary.read_bytes()).hexdigest()
+    manifest = json.loads(manifest_file.read_text(encoding="utf-8"))
+    assert actual == expected == manifest["sha256"]
+
+    mini = tmp_path / "repo"
+    mini.mkdir()
+    shutil.copy2(ROOT / ".gitignore", mini / ".gitignore")
+    shutil.copytree(ROOT / "runtime", mini / "runtime")
+    subprocess.run(["git", "init", "-q"], cwd=mini, check=True)
+    subprocess.run(["git", "config", "user.email", "test@example.invalid"], cwd=mini, check=True)
+    subprocess.run(["git", "config", "user.name", "Styler test"], cwd=mini, check=True)
+    subprocess.run(["git", "add", ".gitignore", "runtime"], cwd=mini, check=True)
+    tracked = subprocess.check_output(["git", "ls-files"], cwd=mini, text=True).splitlines()
+    assert "runtime/pipecraft/linux-x86_64/pipecraft" in tracked
+    assert "runtime/pipecraft/linux-x86_64/pipecraft.sha256" in tracked
+    subprocess.run(["git", "commit", "-qm", "archive contract"], cwd=mini, check=True)
+
+    archive = tmp_path / "source.zip"
+    with archive.open("wb") as fh:
+        subprocess.run(
+            ["git", "archive", "--format=zip", "--prefix=styler/", "HEAD"],
+            cwd=mini,
+            check=True,
+            stdout=fh,
+        )
+    with zipfile.ZipFile(archive) as zf:
+        names = set(zf.namelist())
+    assert "styler/runtime/pipecraft/linux-x86_64/pipecraft" in names
+    assert "styler/runtime/pipecraft/linux-x86_64/pipecraft.sha256" in names
+
+
+def test_source_archive_contains_verified_pipecraft_runtime(tmp_path):
+    import hashlib
+
+    result = subprocess.run(
+        [str(ROOT / "scripts/make-source-archive.sh"), str(tmp_path)],
+        check=True,
+        text=True,
+        capture_output=True,
+    )
+    archive = Path(result.stdout.strip().splitlines()[-1])
+    prefix = f"styler-{project_version()}/runtime/pipecraft/linux-x86_64/"
+    with tarfile.open(archive, "r:gz") as handle:
+        names = set(handle.getnames())
+        member = handle.extractfile(prefix + "pipecraft")
+        assert member is not None
+        actual = hashlib.sha256(member.read()).hexdigest()
+        checksum_member = handle.extractfile(prefix + "pipecraft.sha256")
+        assert checksum_member is not None
+        expected = checksum_member.read().decode().split()[0]
+    assert prefix + "pipecraft" in names
+    assert prefix + "pipecraft.sha256" in names
+    assert actual == expected
