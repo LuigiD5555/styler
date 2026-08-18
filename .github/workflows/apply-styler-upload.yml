@@ -26,10 +26,19 @@ jobs:
         shell: bash
         run: |
           set -Eeuo pipefail
-          : > /tmp/styler-source.tar.xz
-          for part in .styler-upload/part-*.b64; do
-            base64 --decode "$part" >> /tmp/styler-source.tar.xz
-          done
+          python - <<'PY'
+          from pathlib import Path
+          import base64
+
+          parts = sorted(Path('.styler-upload').glob('part-*.b64'))
+          if not parts:
+              raise SystemExit('no source upload parts found')
+          encoded = b''.join(part.read_bytes().strip() for part in parts)
+          encoded += b'=' * (-len(encoded) % 4)
+          decoded = base64.b64decode(encoded, validate=True)
+          Path('/tmp/styler-source.tar.xz').write_bytes(decoded)
+          print(f'reconstructed {len(parts)} parts -> {len(decoded)} bytes')
+          PY
           echo '2ed80b0747b2ba1cc7d8ecd06477d7ee2b4d19af03960c4dd3773b58e795de6b  /tmp/styler-source.tar.xz' | sha256sum -c -
           mkdir -p /tmp/styler-source
           tar -xJf /tmp/styler-source.tar.xz -C /tmp/styler-source
