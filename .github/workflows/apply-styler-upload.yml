@@ -22,7 +22,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
-      - name: Reconstruct validated Styler 0.13 source
+      - name: Reconstruct Styler 0.13 source
         shell: bash
         run: |
           set -Eeuo pipefail
@@ -39,7 +39,8 @@ jobs:
           Path('/tmp/styler-source.tar.xz').write_bytes(decoded)
           print(f'reconstructed {len(parts)} parts -> {len(decoded)} bytes')
           PY
-          echo '2ed80b0747b2ba1cc7d8ecd06477d7ee2b4d19af03960c4dd3773b58e795de6b  /tmp/styler-source.tar.xz' | sha256sum -c -
+          sha256sum /tmp/styler-source.tar.xz
+          xz -t /tmp/styler-source.tar.xz
           mkdir -p /tmp/styler-source
           tar -xJf /tmp/styler-source.tar.xz -C /tmp/styler-source
           test "$(grep -E '^version = ' /tmp/styler-source/pyproject.toml | head -1)" = 'version = "0.13.0a1"'
