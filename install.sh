@@ -631,7 +631,7 @@ if ! create_venv "$NEW_RELEASE_DIR"; then
   exit 1
 fi
 
-# Styler 0.13.1 no vendoriza el source de PipeCraft, pero la distribución oficial
+# Styler 0.13.3 no vendoriza el source de PipeCraft; el runtime compilado
 # incluye un binario privado por arquitectura. El instalador prefiere:
 #   1) runtime PipeCraft incluido en este bundle;
 #   2) PIPECRAFT_BIN para desarrollo/override;

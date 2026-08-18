@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Comprueba las fronteras de runtime de Styler 0.13.1.
+"""Comprueba las fronteras de runtime de Styler 0.13.3.
 
 Styler conserva dominio y semántica; PipeCraft es la autoridad de planificación
 y ejecución para la ruta productiva. La compatibilidad 1.5 queda aislada y no
