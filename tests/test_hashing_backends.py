@@ -5,7 +5,7 @@ from styler import hashing
 
 def test_python_hash_backend_matches_persisted_contract(tmp_path: Path, monkeypatch) -> None:
     sample = tmp_path / "sample.bin"
-    sample.write_bytes(b"styler-0.12\n" * 100)
+    sample.write_bytes(b"styler-0.13.1\n" * 100)
     monkeypatch.setattr(hashing, "_rust", None)
     checksum, size = hashing.hash_file(str(sample))
     expected, expected_size = hashing._hash_file_python(str(sample))

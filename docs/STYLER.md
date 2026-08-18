@@ -1,10 +1,10 @@
-# Styler
+# Styler 0.13.1
 
 ## Cambio 0.13.1 — corrección de runtime PipeCraft
 
-0.13.1 corrige el empaquetado/verificación del binario PipeCraft incluido. La frontera por spec se introdujo en 0.13.0a1.
+0.13.1 corrige el empaquetado y la verificación del binario PipeCraft incluido, y consolida la frontera por spec.
 
-### Cambio 0.13.0a1 — frontera PipeCraft por spec
+### Frontera PipeCraft por spec
 
 - El compilador `styler.pipecraft.compiler` ya no escribe YAML: produce una spec `pipecraft/v1` en memoria.
 - El cliente IPC negocia capacidades y soporta `submit_spec`, `validate_spec` y `plan_spec` para PipeCraft 1.6+.
@@ -16,9 +16,9 @@
 - Restauración pasó de `restore.py` + `advanced_restore.py` a un solo subsistema `styler/restore/` con modelos, fuentes, planner, executor, verificación, política y candidatos. La ruta histórica `styler.advanced_restore` es sólo compatibilidad.
 - Se añadió `packaging/pipecraft.lock`, un benchmark de hashing reproducible y guardas de regresión para impedir que el compilador vuelva a escribir pipelines temporales o que la capa PipeCraft absorba supervisión de procesos Python.
 
-## Cambio 0.12.0a1 — simplificación arquitectónica
+## Simplificación arquitectónica incluida en 0.13.1
 
-Styler 0.12 elimina capas que habían quedado vivas durante la migración a PipeCraft. La ruta productiva tiene una sola autoridad de ejecución: `styler.workflow` planifica y delega; PipeCraft 1.5 ejecuta el DAG por IPC.
+Styler 0.13.1 elimina capas que habían quedado vivas durante la migración a PipeCraft. La ruta productiva tiene una sola autoridad de ejecución: `styler.workflow` planifica y delega; PipeCraft 1.5 ejecuta el DAG por IPC.
 
 - Se eliminó por completo el paquete Python `styler.runtime`. Los contratos de DAG y planificación viven ahora en `styler.planning`; el único runtime productivo es PipeCraft. El arnés local equivalente existe únicamente bajo `tests/support`.
 - Se eliminó el segundo motor `rust/styler-engine` y sus bridges `engine_client.py`/`engine_cli.py`; hashing conserva sólo la extensión PyO3 opcional y fallback Python.

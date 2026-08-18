@@ -16,7 +16,22 @@ def _write_executable(path: Path, content: str) -> Path:
     return path
 
 
+def _fake_pipecraft(path: Path) -> Path:
+    return _write_executable(
+        path,
+        r"""
+        #!/usr/bin/env bash
+        if [[ "${1:-}" == "--version" ]]; then
+          echo 'pipecraft 1.5.0-alpha.1'
+          exit 0
+        fi
+        exit 0
+        """,
+    )
+
+
 def _installer_env(tmp_path: Path, python: Path) -> dict[str, str]:
+    fake_pipecraft = _fake_pipecraft(tmp_path / "fake-pipecraft")
     env = os.environ.copy()
     env.update(
         {
@@ -24,6 +39,7 @@ def _installer_env(tmp_path: Path, python: Path) -> dict[str, str]:
             "XDG_DATA_HOME": str(tmp_path / "data"),
             "XDG_BIN_HOME": str(tmp_path / "bin"),
             "STYLER_PYTHON": str(python),
+            "PIPECRAFT_BIN": str(fake_pipecraft),
             "TMPDIR": str(tmp_path / "tmp"),
             "PATH": "/usr/bin:/bin",
         }
@@ -87,7 +103,7 @@ def _fake_python_that_builds_venvs(path: Path, *, fail_install: bool = False) ->
     install_branch = "exit 31" if fail_install else r"""
         cat > "$(dirname "$0")/styler" <<'STYLER'
 #!/usr/bin/env bash
-if [[ "${1:-}" == "--version" ]]; then echo 'Styler 0.12.0a1'; exit 0; fi
+if [[ "${1:-}" == "--version" ]]; then echo 'Styler 0.13.1'; exit 0; fi
 exit 0
 STYLER
         chmod +x "$(dirname "$0")/styler"
@@ -142,8 +158,36 @@ def test_installer_activates_only_a_fully_verified_staged_installation(tmp_path)
         capture_output=True,
         env=env,
     )
-    assert "0.12.0a1" in installed.stdout
+    assert "0.13.1" in installed.stdout
     assert not list((tmp_path / "data").glob("styler-install.*"))
+
+
+def test_installer_fails_closed_without_a_pipecraft_runtime(tmp_path):
+    fake_python = _fake_python_that_builds_venvs(tmp_path / "fake-python")
+    env = _installer_env(tmp_path, fake_python)
+    env.pop("PIPECRAFT_BIN")
+    fake_bin = tmp_path / "fake-bin"
+    fake_bin.mkdir()
+    _write_executable(
+        fake_bin / "uname",
+        """
+        #!/usr/bin/env bash
+        echo 'unsupported-test-architecture'
+        """,
+    )
+    env["PATH"] = f"{fake_bin}:/usr/bin:/bin"
+
+    result = subprocess.run(
+        ["bash", str(INSTALLER)],
+        env=env,
+        stdin=subprocess.DEVNULL,
+        text=True,
+        capture_output=True,
+    )
+
+    assert result.returncode != 0
+    assert "no contiene un runtime PipeCraft compatible" in result.stderr
+    assert "No existe fallback productivo a Python" in result.stderr
 
 
 def test_failed_staged_install_preserves_previous_version(tmp_path):
@@ -265,7 +309,7 @@ def test_installer_creates_immediate_bridge_in_active_conda_path(tmp_path):
         capture_output=True,
     )
     assert resolved.stdout.splitlines()[0] == str(bridge)
-    assert "0.12.0a1" in resolved.stdout
+    assert "0.13.1" in resolved.stdout
 
 
 def test_uninstaller_removes_only_recorded_managed_bridge(tmp_path):
@@ -365,7 +409,7 @@ def test_installer_immediate_command_with_plain_python_and_system_path(tmp_path)
         capture_output=True,
     )
     assert resolved.stdout.splitlines()[0] == str(bridge)
-    assert "0.12.0a1" in resolved.stdout
+    assert "0.13.1" in resolved.stdout
 
 
 def test_installer_reuses_generic_user_bin_without_conda(tmp_path):
@@ -397,4 +441,4 @@ def test_installer_reuses_generic_user_bin_without_conda(tmp_path):
         capture_output=True,
     )
     assert resolved.stdout.splitlines()[0] == str(bridge)
-    assert "0.12.0a1" in resolved.stdout
+    assert "0.13.1" in resolved.stdout

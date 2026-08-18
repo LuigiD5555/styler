@@ -195,7 +195,7 @@ class LaunchProcessAction:
 
 
 class FunctionAction:
-    """Adapter para servicios y ejecutores ya existentes en Styler 0.1."""
+    """Adapter para servicios y ejecutores existentes en Styler 0.13.1."""
 
     def __init__(self, name: str, function: Callable[[ActionContext], Any]) -> None:
         self.name = name

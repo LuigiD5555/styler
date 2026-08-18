@@ -1,4 +1,4 @@
-# Styler
+# Styler 0.13.1
 
 > **Convierte cambios hechos en Linux en paquetes que puedes revisar, reproducir, compartir y retirar.**
 
@@ -463,10 +463,12 @@ No es necesario añadir manualmente una ruta específica para un nombre de usuar
 El README prioriza ahora el uso del programa. Los detalles técnicos quedan plegados para no interrumpir la explicación principal.
 
 <details>
-<summary><strong>▶ 0.12 — menos wrappers, una sola ruta productiva</strong></summary>
+<summary><strong>▶ 0.13.1 — runtime verificado y una sola ruta productiva</strong></summary>
 
 <br>
 
+- El bundle oficial verifica por SHA-256 el binario PipeCraft antes de instalarlo y falla cerrado si no existe un runtime compatible.
+- El compilador produce una spec `pipecraft/v1` en memoria; la compatibilidad YAML con PipeCraft 1.5 queda aislada.
 - Se eliminan el scheduler/event loop Python productivo y el antiguo `styler-engine` Rust.
 - `styler.workflow` es la única entrada productiva hacia PipeCraft 1.5; los helpers locales quedan sólo en tests.
 - Restauración deja de atravesar `pipelines.py → orchestrator.py → restore.py`: ahora usa directamente `styler.restore`.
@@ -474,8 +476,10 @@ El README prioriza ahora el uso del programa. Los detalles técnicos quedan pleg
 - Se retiran también prototipos históricos sin ruta productiva (`diff`, `interpreter`, `review`, `demo`, `restoration_plan`, `session_profile`); las pruebas construyen directamente el modelo actual de componentes.
 - Los procesos de dominio se llaman `ProcessRunner`; PipeCraft es únicamente el runtime Rust por IPC.
 - Persistencia, GIMP/Flatpak y overlay PhotoGIMP quedan en módulos con responsabilidades explícitas, en vez de crecer dentro de dos archivos gigantes.
+- `ChangeService`, restauración y la TUI están divididos por responsabilidad, manteniendo sus entradas públicas actuales.
 - Se eliminan ciclos de imports productivos y CI puede bloquear su reaparición mediante `verify-runtime-boundary.py`.
 - El pipeline YAML de submit es temporal: después de que PipeCraft crea su snapshot durable, Styler elimina la copia de catálogo.
+- Las pruebas del instalador declaran su runtime de prueba y se validan desde un checkout limpio, sin depender de binarios ignorados por Git.
 
 </details>
 

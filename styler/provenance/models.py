@@ -1,7 +1,7 @@
 """
 styler.provenance.models
 ========================
-Modelo central de procedencia de aplicaciones (Styler 0.8).
+Modelo central de procedencia de aplicaciones (Styler 0.13.1).
 
 Reglas del modelo:
 
