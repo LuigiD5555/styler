@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - build/pipecraft-1.6.0-alpha.1-spec-ipc
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -254,6 +256,7 @@ fn select_requested_order(
 
       - name: Format and test PipeCraft 1.6
         run: |
+          cargo fmt --manifest-path vendor/pipecraft-1.5.0-alpha.1/Cargo.toml --all
           cargo fmt --manifest-path vendor/pipecraft-1.5.0-alpha.1/Cargo.toml --all -- --check
           cargo test --manifest-path vendor/pipecraft-1.5.0-alpha.1/Cargo.toml --workspace
 
