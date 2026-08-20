@@ -41,7 +41,11 @@ jobs:
           test -f vendor/pipecraft-1.5.0-alpha.1/Cargo.toml
 
       - name: Apply PipeCraft 1.6 structured-spec IPC implementation
-        run: python scripts/build_pipecraft_16_temp.py
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/build_pipecraft_16_temp.py
+          sed -i '/serde_json.workspace = true/a serde_yaml.workspace = true' vendor/pipecraft-1.5.0-alpha.1/crates/pipecraft-service/Cargo.toml
 
       - name: Format and test PipeCraft workspace
         run: |
