@@ -51,7 +51,7 @@ jobs:
         run: |
           cargo fmt --manifest-path vendor/pipecraft-1.5.0-alpha.1/Cargo.toml --all
           cargo fmt --manifest-path vendor/pipecraft-1.5.0-alpha.1/Cargo.toml --all -- --check
-          cargo test --manifest-path vendor/pipecraft-1.5.0-alpha.1/Cargo.toml --workspace
+          cargo test --manifest-path vendor/pipecraft-1.5.0-alpha.1/Cargo.toml --workspace -- --test-threads=1
 
       - name: Build PipeCraft 1.6.0-alpha.1
         run: cargo build --release --manifest-path vendor/pipecraft-1.5.0-alpha.1/Cargo.toml -p pipecraft-cli
