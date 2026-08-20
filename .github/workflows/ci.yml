@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -e '.[dev]'
+      - run: python scripts/verify-bundled-pipecraft.py
+      - run: python scripts/verify-runtime-boundary.py
+      - run: pytest -q
+
+  styler-native:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo check --manifest-path styler/rust_ext/Cargo.toml
+
+  pipecraft-16-spec-ipc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Apply 1.6 source transformation
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('.github/workflows/build-pipecraft-1.6-spec-ipc.yml')
+          text = p.read_text()
+          marker = "          python - <<'PY'\n"
+          start = text.index(marker) + len(marker)
+          end = text.index("\n          PY\n", start)
+          code = '\n'.join(line[10:] if line.startswith('          ') else line for line in text[start:end].splitlines())
+          exec(compile(code, str(p), 'exec'))
+          PY
+      - name: Format and test
+        run: |
+          cargo fmt --manifest-path vendor/pipecraft-1.5.0-alpha.1/Cargo.toml --all
+          cargo test --manifest-path vendor/pipecraft-1.5.0-alpha.1/Cargo.toml --workspace
+      - name: Build release
+        run: cargo build --release --manifest-path vendor/pipecraft-1.5.0-alpha.1/Cargo.toml -p pipecraft-cli
+      - name: Verify structured IPC
+        shell: bash
+        run: |
+          set -euo pipefail
+          PC="$PWD/vendor/pipecraft-1.5.0-alpha.1/target/release/pipecraft"
+          ROOT="$(mktemp -d)"
+          mkdir -p "$ROOT/.pipelines/pipelines"
+          "$PC" --version | grep -F '1.6.0-alpha.1'
+          "$PC" serve --root "$ROOT" >"$ROOT/service.log" 2>&1 &
+          PID=$!
+          trap 'kill "$PID" 2>/dev/null || true' EXIT
+          for i in $(seq 1 100); do test -S "$ROOT/.pipelines/pipecraft.sock" && break; sleep 0.05; done
+          ROOT="$ROOT" python - <<'PY'
+          import json, os, socket, time
+          from pathlib import Path
+          endpoint = Path(os.environ['ROOT'])/'.pipelines/pipecraft.sock'
+          def call(payload):
+              s=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM); s.connect(str(endpoint)); s.sendall((json.dumps(payload)+'\n').encode()); data=b''
+              while not data.endswith(b'\n'):
+                  chunk=s.recv(65536)
+                  if not chunk: break
+                  data+=chunk
+              s.close(); response=json.loads(data); assert response['ok'], response; return response['data']
+          spec={'schema_version':'pipecraft/v1','name':'ipc-smoke','steps':[{'id':'a','type':'note','with':{'message':'a'}},{'id':'b','type':'note','needs':['a'],'with':{'message':'b'}}]}
+          ping=call({'op':'ping'}); assert {'submit_spec','validate_spec','plan_spec'} <= set(ping['capabilities']), ping
+          assert call({'op':'validate_spec','spec':spec})['valid']
+          assert call({'op':'plan_spec','spec':spec})['order']==['a','b']
+          run_id=call({'op':'submit_spec','spec':spec,'execute':False,'max_workers':2})['run_id']
+          for _ in range(200):
+              status=call({'op':'status','run_id':run_id})
+              if status['status'] in {'succeeded','failed','cancelled','interrupted'}: break
+              time.sleep(.025)
+          assert status['status']=='succeeded', status
+          assert call({'op':'report','run_id':run_id})['success'] is True
+          print('structured spec IPC OK')
+          PY
+      - name: Package
+        run: |
+          BIN=vendor/pipecraft-1.5.0-alpha.1/target/release/pipecraft
+          sha256sum "$BIN" > pipecraft.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pipecraft-1.6.0-alpha.1-linux-x86_64
+          path: |
+            vendor/pipecraft-1.5.0-alpha.1/target/release/pipecraft
+            pipecraft.sha256
+          if-no-files-found: error
